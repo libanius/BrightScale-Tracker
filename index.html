@@ -128,6 +128,40 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;background:var(--ac);
 <script>
 'use strict';
 
+/* Global error handlers */
+window.onerror = function(msg, url, line, col, error) {
+var el = document.getElementById(‘main’);
+if (el) {
+el.innerHTML = ‘<div class="empty"><div class="ei">⚠️</div>’ +
+‘<div class="et">JavaScript Error<br><br>’ +
+‘<b>’ + msg + ‘</b><br>’ +
+’Line: ’ + line + ’, Col: ’ + col + ‘<br><br>’ +
+‘<button class="btn bp bfull" onclick="location.reload()">Reload</button></div></div>’;
+}
+console.error(‘Global error:’, msg, ‘at’, line + ‘:’ + col, error);
+return true;
+};
+
+window.addEventListener(‘unhandledrejection’, function(event) {
+var el = document.getElementById(‘main’);
+if (el) {
+el.innerHTML = ‘<div class="empty"><div class="ei">⚠️</div>’ +
+‘<div class="et">Promise Error<br><br>’ +
+‘<b>’ + (event.reason ? event.reason.message || event.reason : ‘Unknown error’) + ‘</b><br><br>’ +
+‘<button class="btn bp bfull" onclick="location.reload()">Reload</button></div></div>’;
+}
+console.error(‘Unhandled promise rejection:’, event.reason);
+});
+
+/* Show initial loading */
+document.addEventListener(‘DOMContentLoaded’, function() {
+var main = document.getElementById(‘main’);
+if (main && !main.innerHTML) {
+main.innerHTML = ‘<div class="empty"><div class="ei">⏳</div>’ +
+‘<div class="et">Loading BrightScale Tracker…</div></div>’;
+}
+});
+
 /* ═══════════════════════════════════════════
 TEMPLATES - Baseados na planilha NEW_CASTLE
 ═══════════════════════════════════════════ */
@@ -315,7 +349,7 @@ return new Date(s+‘T12:00:00’).toLocaleDateString(‘pt-BR’,
 }
 function esc(s) {
 return String(s||’’).replace(/&/g,’&’).replace(/</g,’<’)
-.replace(/>/g,’>’).replace(/”/g,’"’);
+.replace(/>/g,’>’).replace(/”/g,’"’).replace(/’/g,’'’);
 }
 function calcDaysRemaining(deadline) {
 if (!deadline) return null;
