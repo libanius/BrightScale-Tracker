@@ -241,7 +241,7 @@ INDEXEDDB
 var DB;
 function openDB() {
 return new Promise(function(res, rej) {
-var r = indexedDB.open(‘construction_tracker_v1’, 1);
+var r = indexedDB.open(‘brightscale_v1’, 1);
 r.onupgradeneeded = function(e) {
 var d = e.target.result;
 if (!d.objectStoreNames.contains(‘projects’))
@@ -2359,37 +2359,20 @@ mo.appendChild(row);
 /* ═══════════════════════════════════════════
 BOOT
 ═══════════════════════════════════════════ */
-window.onerror = function(msg, url, line, col, error) {
-console.error(‘Global error:’, msg, ‘at’, line + ‘:’ + col);
-document.getElementById(‘main’).innerHTML =
-‘<div class="empty"><div class="ei">⚠️</div>’ +
-‘<div class="et">Erro ao inicializar o app.<br>’ +
-’Erro: ’ + msg + ’<br>Linha: ’ + line + ‘<br>’ +
-‘Tente recarregar a página.</div></div>’;
-return false;
-};
+(function() {
+console.log(‘BrightScale Tracker iniciando…’);
 
-try {
-console.log(‘Iniciando app…’);
 openDB().then(function() {
-console.log(‘IndexedDB aberto com sucesso’);
+console.log(‘DB aberto, carregando dados…’);
 return reload();
-}).then(function() {
-console.log(‘Dados carregados com sucesso’);
 }).catch(function(err) {
 console.error(‘Erro no boot:’, err);
 document.getElementById(‘main’).innerHTML =
 ‘<div class="empty"><div class="ei">⚠️</div>’ +
-‘<div class="et">Erro ao abrir banco de dados.<br>’ +
-err.message + ‘<br>Recarregue a página.</div></div>’;
+‘<div class="et">Erro ao inicializar:<br>’ + err.message + ‘<br><br>’ +
+‘<button class="btn bp bfull" onclick="location.reload()">Recarregar</button></div></div>’;
 });
-} catch(err) {
-console.error(‘Erro crítico:’, err);
-document.getElementById(‘main’).innerHTML =
-‘<div class="empty"><div class="ei">⚠️</div>’ +
-‘<div class="et">Erro crítico ao inicializar.<br>’ +
-err.message + ‘</div></div>’;
-}
+})();
 </script>
 
 </body>
