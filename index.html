@@ -121,12 +121,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;background:var(--ac);
 </head>
 <body>
 <div id="app">
-  <div class="main" id="main">
-    <div class="empty">
-      <div class="ei">⏳</div>
-      <div class="et">Carregando BrightScale Tracker...</div>
-    </div>
-  </div>
+  <div class="main" id="main"></div>
   <nav class="nav" id="nav"></nav>
 </div>
 <div id="tc"></div>
@@ -299,6 +294,8 @@ tasks: [],
 currentProjectId: null,
 currentUnitId: null
 };
+var F = {date: ‘’, useNow: true};
+var RS = {period: ‘today’, df: ‘’, dt: ‘’};
 
 /* ═══════════════════════════════════════════
 UTILS
@@ -2359,20 +2356,16 @@ mo.appendChild(row);
 /* ═══════════════════════════════════════════
 BOOT
 ═══════════════════════════════════════════ */
-(function() {
-console.log(‘BrightScale Tracker iniciando…’);
-
 openDB().then(function() {
-console.log(‘DB aberto, carregando dados…’);
+F.date = today(); F.useNow = true;
+RS.period = ‘today’; RS.df = today(); RS.dt = today();
 return reload();
 }).catch(function(err) {
-console.error(‘Erro no boot:’, err);
 document.getElementById(‘main’).innerHTML =
 ‘<div class="empty"><div class="ei">⚠️</div>’ +
-‘<div class="et">Erro ao inicializar:<br>’ + err.message + ‘<br><br>’ +
-‘<button class="btn bp bfull" onclick="location.reload()">Recarregar</button></div></div>’;
+‘<div class="et">Erro ao abrir banco.<br>Recarregue a pagina.</div></div>’;
+console.error(err);
 });
-})();
 </script>
 
 </body>
