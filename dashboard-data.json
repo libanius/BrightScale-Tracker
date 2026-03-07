@@ -60,15 +60,6 @@
       "updatedAt": "2026-03-04T23:46:54.286Z"
     },
     {
-      "id": "1b9465e6-aaa4-45f1-a7f2-3f1d6cc48c7f",
-      "unitId": "364cd9ac-06e9-46d3-978a-cd631b0e5ac0",
-      "title": "Painting",
-      "order": 8,
-      "weight": 0.1,
-      "createdAt": "2026-03-05T22:53:11.466Z",
-      "updatedAt": "2026-03-05T22:53:29.528Z"
-    },
-    {
       "id": "4a2e4fcf-de61-4afe-92f5-328437292fc2",
       "unitId": "364cd9ac-06e9-46d3-978a-cd631b0e5ac0",
       "title": "Final Clean + Walkthrough",
@@ -134,18 +125,6 @@
   ],
   "tasks": [
     {
-      "id": "04d21dc0-2a91-4d78-8847-818543a26351",
-      "scopeId": "1b9465e6-aaa4-45f1-a7f2-3f1d6cc48c7f",
-      "title": "Wall prime",
-      "order": 3,
-      "progress": 0,
-      "contractor": "",
-      "deadline": "",
-      "status": "pending",
-      "createdAt": "2026-03-05T22:54:20.144Z",
-      "updatedAt": "2026-03-05T22:54:20.144Z"
-    },
-    {
       "id": "0a94538b-9c0a-4619-ba20-afd8a6cf7557",
       "scopeId": "1a3d90c3-5e33-4dd5-8d3e-804a318fdd2f",
       "title": "Demo half walls entrance",
@@ -202,12 +181,12 @@
       "scopeId": "1a3d90c3-5e33-4dd5-8d3e-804a318fdd2f",
       "title": "Demo tile",
       "order": 5,
-      "progress": 100,
+      "progress": 90,
       "contractor": "",
       "deadline": "",
-      "status": "completed",
+      "status": "in_progress",
       "createdAt": "2026-03-04T23:47:32.797Z",
-      "updatedAt": "2026-03-05T22:49:03.750Z"
+      "updatedAt": "2026-03-04T23:50:39.387Z"
     },
     {
       "id": "36d4bc96-b639-4756-9ac4-725ae57c8682",
@@ -311,7 +290,7 @@
       "deadline": "",
       "status": "completed",
       "createdAt": "2026-03-04T23:49:37.546Z",
-      "updatedAt": "2026-03-05T22:50:05.265Z"
+      "updatedAt": "2026-03-07T23:46:22.883Z"
     },
     {
       "id": "4f66bd62-b561-4806-a619-13802aa95cd3",
@@ -330,24 +309,22 @@
       "scopeId": "bb4a521a-2128-46c9-8d3c-95575bb85f42",
       "title": "Kitchen / Living Room / Dining Room / Foyer / Fireplace",
       "order": 4,
-      "progress": 10,
-      "contractor": "",
-      "deadline": "",
-      "status": "in_progress",
+      "progress": 0,
+      "status": "pending",
       "createdAt": "2026-03-04T23:46:54.286Z",
-      "updatedAt": "2026-03-05T22:52:00.338Z"
+      "updatedAt": "2026-03-04T23:46:54.286Z"
     },
     {
       "id": "50fcb52b-bb2a-4e24-8e10-40e912d4b1c9",
       "scopeId": "1a3d90c3-5e33-4dd5-8d3e-804a318fdd2f",
       "title": "Demo laminate glue down",
       "order": 6,
-      "progress": 25,
+      "progress": 15,
       "contractor": "",
       "deadline": "",
       "status": "in_progress",
       "createdAt": "2026-03-04T23:47:47.239Z",
-      "updatedAt": "2026-03-05T22:49:21.182Z"
+      "updatedAt": "2026-03-04T23:50:47.699Z"
     },
     {
       "id": "585e4436-7e80-4274-ad9c-ecaf33bfe6ee",
@@ -358,18 +335,6 @@
       "status": "pending",
       "createdAt": "2026-03-04T23:46:54.286Z",
       "updatedAt": "2026-03-04T23:46:54.286Z"
-    },
-    {
-      "id": "64c73652-7870-402c-b924-8eca2129984a",
-      "scopeId": "1b9465e6-aaa4-45f1-a7f2-3f1d6cc48c7f",
-      "title": "Ceiling Prime",
-      "order": 2,
-      "progress": 0,
-      "contractor": "",
-      "deadline": "",
-      "status": "pending",
-      "createdAt": "2026-03-05T22:54:09.704Z",
-      "updatedAt": "2026-03-05T22:54:09.704Z"
     },
     {
       "id": "65a0b71b-305e-4a4c-99fa-ab143ae42cef",
@@ -506,18 +471,6 @@
       "updatedAt": "2026-03-04T23:46:54.286Z"
     },
     {
-      "id": "b9e78385-b21e-4f44-82c5-e8c88b38b9ba",
-      "scopeId": "1b9465e6-aaa4-45f1-a7f2-3f1d6cc48c7f",
-      "title": "Upstairs doors and trims Painted",
-      "order": 4,
-      "progress": 0,
-      "contractor": "",
-      "deadline": "",
-      "status": "pending",
-      "createdAt": "2026-03-05T22:54:52.059Z",
-      "updatedAt": "2026-03-05T22:54:52.059Z"
-    },
-    {
       "id": "bad9258a-083b-445a-9dd6-40f00cb1f0c6",
       "scopeId": "05fdb8fe-97f4-4117-882e-f98b83ea999b",
       "title": "General jobsite setup",
@@ -528,18 +481,6 @@
       "status": "in_progress",
       "createdAt": "2026-03-04T23:46:54.286Z",
       "updatedAt": "2026-03-04T23:53:19.150Z"
-    },
-    {
-      "id": "bcdc9420-e596-4eba-8318-c23b534d2740",
-      "scopeId": "1b9465e6-aaa4-45f1-a7f2-3f1d6cc48c7f",
-      "title": "Prep of spray painting",
-      "order": 1,
-      "progress": 0,
-      "contractor": "",
-      "deadline": "",
-      "status": "pending",
-      "createdAt": "2026-03-05T22:53:55.471Z",
-      "updatedAt": "2026-03-05T22:53:55.471Z"
     },
     {
       "id": "bd8e9254-3681-49a3-bd9f-fc4c7b53b2d7",
@@ -558,12 +499,12 @@
       "scopeId": "1a3d90c3-5e33-4dd5-8d3e-804a318fdd2f",
       "title": "Demo bar",
       "order": 7,
-      "progress": 100,
+      "progress": 85,
       "contractor": "",
       "deadline": "",
-      "status": "completed",
+      "status": "in_progress",
       "createdAt": "2026-03-04T23:47:57.615Z",
-      "updatedAt": "2026-03-05T22:49:37.013Z"
+      "updatedAt": "2026-03-04T23:50:58.368Z"
     },
     {
       "id": "e50f9177-910c-4981-a420-8f4e7249f9e9",
@@ -602,12 +543,12 @@
       "scopeId": "bb4a521a-2128-46c9-8d3c-95575bb85f42",
       "title": "Master Bedroom",
       "order": 1,
-      "progress": 100,
+      "progress": 80,
       "contractor": "",
       "deadline": "",
-      "status": "completed",
+      "status": "in_progress",
       "createdAt": "2026-03-04T23:46:54.286Z",
-      "updatedAt": "2026-03-05T22:51:39.573Z"
+      "updatedAt": "2026-03-04T23:51:18.561Z"
     },
     {
       "id": "ee9ad6f4-f7bc-4c0d-9636-2ba5bb360b67",
@@ -624,13 +565,11 @@
       "scopeId": "b9848d70-e628-4848-a5c8-75a857742b50",
       "title": "Remove/secure existing soffit wiring",
       "order": 1,
-      "progress": 50,
-      "contractor": "",
-      "deadline": "",
-      "status": "in_progress",
+      "progress": 0,
+      "status": "pending",
       "createdAt": "2026-03-04T23:46:54.286Z",
-      "updatedAt": "2026-03-05T22:50:30.751Z"
+      "updatedAt": "2026-03-04T23:46:54.286Z"
     }
   ],
-  "updatedAt": "2026-03-07T22:26:12.783Z"
+  "updatedAt": "2026-03-07T23:46:29.281Z"
 }
