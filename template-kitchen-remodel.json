@@ -1,0 +1,66 @@
+[
+  {
+    "title": "Demolition",
+    "weight": 0.15,
+    "tasks": [
+      {"title": "Remove Old Cabinets", "order": 1},
+      {"title": "Remove Countertops", "order": 2},
+      {"title": "Remove Old Appliances", "order": 3},
+      {"title": "Demo Backsplash", "order": 4},
+      {"title": "Haul Debris", "order": 5}
+    ]
+  },
+  {
+    "title": "Plumbing",
+    "weight": 0.2,
+    "tasks": [
+      {"title": "Rough-in Plumbing", "order": 1},
+      {"title": "Install Sink", "order": 2},
+      {"title": "Install Dishwasher Line", "order": 3},
+      {"title": "Install Faucet", "order": 4},
+      {"title": "Test All Connections", "order": 5}
+    ]
+  },
+  {
+    "title": "Electrical",
+    "weight": 0.2,
+    "tasks": [
+      {"title": "Rough-in Electrical", "order": 1},
+      {"title": "Install Outlets", "order": 2},
+      {"title": "Install Under-Cabinet Lighting", "order": 3},
+      {"title": "Install Pendant Lights", "order": 4},
+      {"title": "Test All Circuits", "order": 5}
+    ]
+  },
+  {
+    "title": "Cabinetry",
+    "weight": 0.25,
+    "tasks": [
+      {"title": "Install Base Cabinets", "order": 1},
+      {"title": "Install Wall Cabinets", "order": 2},
+      {"title": "Install Hardware", "order": 3},
+      {"title": "Adjust Doors & Drawers", "order": 4}
+    ]
+  },
+  {
+    "title": "Countertops & Backsplash",
+    "weight": 0.15,
+    "tasks": [
+      {"title": "Template Countertops", "order": 1},
+      {"title": "Install Countertops", "order": 2},
+      {"title": "Install Backsplash Tile", "order": 3},
+      {"title": "Grout Backsplash", "order": 4},
+      {"title": "Seal & Clean", "order": 5}
+    ]
+  },
+  {
+    "title": "Final Phase",
+    "weight": 0.05,
+    "tasks": [
+      {"title": "Install Appliances", "order": 1},
+      {"title": "Touch-up Paint", "order": 2},
+      {"title": "Final Cleaning", "order": 3},
+      {"title": "Punch List", "order": 4}
+    ]
+  }
+]

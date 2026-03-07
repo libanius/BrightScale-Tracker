@@ -1,0 +1,53 @@
+[
+  {
+    "title": "Preparation",
+    "weight": 0.3,
+    "tasks": [
+      {"title": "Move Furniture", "order": 1},
+      {"title": "Cover Floors & Furniture", "order": 2},
+      {"title": "Remove Wall Plates", "order": 3},
+      {"title": "Clean Walls", "order": 4},
+      {"title": "Tape Edges", "order": 5}
+    ]
+  },
+  {
+    "title": "Repairs",
+    "weight": 0.2,
+    "tasks": [
+      {"title": "Fill Holes", "order": 1},
+      {"title": "Patch Drywall", "order": 2},
+      {"title": "Sand Patches", "order": 3},
+      {"title": "Clean Dust", "order": 4}
+    ]
+  },
+  {
+    "title": "Priming",
+    "weight": 0.2,
+    "tasks": [
+      {"title": "Prime Repairs", "order": 1},
+      {"title": "Prime New Drywall", "order": 2},
+      {"title": "Let Dry", "order": 3}
+    ]
+  },
+  {
+    "title": "Painting",
+    "weight": 0.25,
+    "tasks": [
+      {"title": "Cut In Edges", "order": 1},
+      {"title": "Roll First Coat", "order": 2},
+      {"title": "Let Dry", "order": 3},
+      {"title": "Roll Second Coat", "order": 4},
+      {"title": "Touch-ups", "order": 5}
+    ]
+  },
+  {
+    "title": "Cleanup",
+    "weight": 0.05,
+    "tasks": [
+      {"title": "Remove Tape", "order": 1},
+      {"title": "Reinstall Wall Plates", "order": 2},
+      {"title": "Remove Covers", "order": 3},
+      {"title": "Return Furniture", "order": 4}
+    ]
+  }
+]

@@ -1,0 +1,66 @@
+[
+  {
+    "title": "Demo & Prep",
+    "weight": 0.1,
+    "tasks": [
+      {"title": "Remove Fixtures", "order": 1},
+      {"title": "Demo Tile", "order": 2},
+      {"title": "Remove Vanity", "order": 3},
+      {"title": "Dispose of Debris", "order": 4}
+    ]
+  },
+  {
+    "title": "Rough-In Work",
+    "weight": 0.25,
+    "tasks": [
+      {"title": "Plumbing Rough-In", "order": 1},
+      {"title": "Electrical Rough-In", "order": 2},
+      {"title": "HVAC/Ventilation", "order": 3},
+      {"title": "Framing Adjustments", "order": 4},
+      {"title": "Insulation", "order": 5}
+    ]
+  },
+  {
+    "title": "Waterproofing",
+    "weight": 0.15,
+    "tasks": [
+      {"title": "Install Cement Board", "order": 1},
+      {"title": "Apply Waterproof Membrane", "order": 2},
+      {"title": "Seal Corners & Seams", "order": 3},
+      {"title": "Inspection", "order": 4}
+    ]
+  },
+  {
+    "title": "Tile Work",
+    "weight": 0.25,
+    "tasks": [
+      {"title": "Install Floor Tile", "order": 1},
+      {"title": "Install Shower Tile", "order": 2},
+      {"title": "Install Wall Tile", "order": 3},
+      {"title": "Grout All Tile", "order": 4},
+      {"title": "Seal Grout", "order": 5}
+    ]
+  },
+  {
+    "title": "Fixtures & Finish",
+    "weight": 0.2,
+    "tasks": [
+      {"title": "Install Vanity", "order": 1},
+      {"title": "Install Toilet", "order": 2},
+      {"title": "Install Shower/Tub", "order": 3},
+      {"title": "Install Faucets", "order": 4},
+      {"title": "Install Mirrors & Accessories", "order": 5},
+      {"title": "Install Lighting", "order": 6}
+    ]
+  },
+  {
+    "title": "Final Phase",
+    "weight": 0.05,
+    "tasks": [
+      {"title": "Caulking", "order": 1},
+      {"title": "Touch-up Paint", "order": 2},
+      {"title": "Final Cleaning", "order": 3},
+      {"title": "Final Walkthrough", "order": 4}
+    ]
+  }
+]
