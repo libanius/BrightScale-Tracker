@@ -1,7 +1,636 @@
 {
-  "projects": [],
-  "units": [],
-  "scopes": [],
-  "tasks": [],
-  "updatedAt": "2024-03-07T00:00:00.000Z"
+  "projects": [
+    {
+      "id": "7dd4b78d-207e-49a6-82c6-f6f7e951372b",
+      "name": "Sujata Bathia",
+      "address": "12601 Eagle Trace Blvd N, Coral Springs, FL 33071, USA",
+      "client": {
+        "name": "Sujata and Jhon",
+        "contact": "+1 (314) 276-5590"
+      },
+      "createdAt": "2026-03-04T23:44:02.090Z",
+      "updatedAt": "2026-03-04T23:44:02.090Z"
+    }
+  ],
+  "units": [
+    {
+      "id": "364cd9ac-06e9-46d3-978a-cd631b0e5ac0",
+      "projectId": "7dd4b78d-207e-49a6-82c6-f6f7e951372b",
+      "unitNumber": "12601",
+      "bdBa": "4b4b",
+      "invoice": "0",
+      "startDate": "2026-02-28",
+      "deadline": "2026-03-21",
+      "supervisors": {
+        "demo": "Paulo",
+        "painter": "Paulo",
+        "tile": "Paulo",
+        "assembler": "Paulo"
+      },
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    }
+  ],
+  "scopes": [
+    {
+      "id": "05fdb8fe-97f4-4117-882e-f98b83ea999b",
+      "unitId": "364cd9ac-06e9-46d3-978a-cd631b0e5ac0",
+      "title": "Site Preparation",
+      "order": 1,
+      "weight": 0.05,
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "19ab611f-f9bd-4958-8e95-30c145b72fb4",
+      "unitId": "364cd9ac-06e9-46d3-978a-cd631b0e5ac0",
+      "title": "Drywall (Optional)",
+      "order": 6,
+      "weight": 0.12,
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "1a3d90c3-5e33-4dd5-8d3e-804a318fdd2f",
+      "unitId": "364cd9ac-06e9-46d3-978a-cd631b0e5ac0",
+      "title": "Demolition",
+      "order": 2,
+      "weight": 0.1,
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "1b9465e6-aaa4-45f1-a7f2-3f1d6cc48c7f",
+      "unitId": "364cd9ac-06e9-46d3-978a-cd631b0e5ac0",
+      "title": "Painting",
+      "order": 8,
+      "weight": 0.1,
+      "createdAt": "2026-03-05T22:53:11.466Z",
+      "updatedAt": "2026-03-05T22:53:29.528Z"
+    },
+    {
+      "id": "4a2e4fcf-de61-4afe-92f5-328437292fc2",
+      "unitId": "364cd9ac-06e9-46d3-978a-cd631b0e5ac0",
+      "title": "Final Clean + Walkthrough",
+      "order": 10,
+      "weight": 0.02,
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "8fdc1f95-9d5f-4b19-be3d-a83133d676fe",
+      "unitId": "364cd9ac-06e9-46d3-978a-cd631b0e5ac0",
+      "title": "Flooring Installation (LVP)",
+      "order": 8,
+      "weight": 0.15,
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "aaa5c265-453e-44b2-a8d7-0a61d697ee2d",
+      "unitId": "364cd9ac-06e9-46d3-978a-cd631b0e5ac0",
+      "title": "Concrete Work",
+      "order": 3,
+      "weight": 0.2,
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "b39a5149-50ea-4251-be4b-0017e0a4ac95",
+      "unitId": "364cd9ac-06e9-46d3-978a-cd631b0e5ac0",
+      "title": "Framing (Optional)",
+      "order": 5,
+      "weight": 0.08,
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "b9848d70-e628-4848-a5c8-75a857742b50",
+      "unitId": "364cd9ac-06e9-46d3-978a-cd631b0e5ac0",
+      "title": "Electrical Rough (Optional)",
+      "order": 4,
+      "weight": 0.1,
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "bb4a521a-2128-46c9-8d3c-95575bb85f42",
+      "unitId": "364cd9ac-06e9-46d3-978a-cd631b0e5ac0",
+      "title": "Ceiling Popcorn Removal + Level 4 Finish",
+      "order": 7,
+      "weight": 0.15,
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "ef7060ab-77b4-4cb9-955d-21b082875d8c",
+      "unitId": "364cd9ac-06e9-46d3-978a-cd631b0e5ac0",
+      "title": "Finish Carpentry (Baseboards)",
+      "order": 9,
+      "weight": 0.03,
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "04d21dc0-2a91-4d78-8847-818543a26351",
+      "scopeId": "1b9465e6-aaa4-45f1-a7f2-3f1d6cc48c7f",
+      "title": "Wall prime",
+      "order": 3,
+      "progress": 0,
+      "contractor": "",
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-03-05T22:54:20.144Z",
+      "updatedAt": "2026-03-05T22:54:20.144Z"
+    },
+    {
+      "id": "0a94538b-9c0a-4619-ba20-afd8a6cf7557",
+      "scopeId": "1a3d90c3-5e33-4dd5-8d3e-804a318fdd2f",
+      "title": "Demo half walls entrance",
+      "order": 8,
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
+      "createdAt": "2026-03-04T23:48:52.738Z",
+      "updatedAt": "2026-03-04T23:51:09.030Z"
+    },
+    {
+      "id": "13ecec1d-fcfc-45c7-9f0d-3f2af4dee749",
+      "scopeId": "ef7060ab-77b4-4cb9-955d-21b082875d8c",
+      "title": "Touch-up and final finish",
+      "order": 3,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "17288abf-1e1c-4fb8-af29-a66b67a5d76c",
+      "scopeId": "ef7060ab-77b4-4cb9-955d-21b082875d8c",
+      "title": "Caulk + fill nail holes",
+      "order": 2,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "1a041cde-967d-45c4-9207-be924682c163",
+      "scopeId": "aaa5c265-453e-44b2-a8d7-0a61d697ee2d",
+      "title": "Final patch/finish and alignment",
+      "order": 4,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "1a8e4d57-518f-4df9-9035-29e7c8c50e92",
+      "scopeId": "ef7060ab-77b4-4cb9-955d-21b082875d8c",
+      "title": "Clean area after install",
+      "order": 4,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "204611ed-4bc8-4488-a803-ed47597e37e0",
+      "scopeId": "1a3d90c3-5e33-4dd5-8d3e-804a318fdd2f",
+      "title": "Demo tile",
+      "order": 5,
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
+      "createdAt": "2026-03-04T23:47:32.797Z",
+      "updatedAt": "2026-03-05T22:49:03.750Z"
+    },
+    {
+      "id": "36d4bc96-b639-4756-9ac4-725ae57c8682",
+      "scopeId": "05fdb8fe-97f4-4117-882e-f98b83ea999b",
+      "title": "Debris/disposal staging",
+      "order": 3,
+      "progress": 50,
+      "contractor": "",
+      "deadline": "",
+      "status": "in_progress",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:53:10.223Z"
+    },
+    {
+      "id": "38fee1b9-f26a-41cc-b5c7-34643717a2d7",
+      "scopeId": "b39a5149-50ea-4251-be4b-0017e0a4ac95",
+      "title": "Secure/reinforce framing",
+      "order": 3,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "3c51cdbd-501e-4408-9be3-38c6c60747b1",
+      "scopeId": "b39a5149-50ea-4251-be4b-0017e0a4ac95",
+      "title": "Frame new kitchen ceiling layout",
+      "order": 1,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "3c5b1727-5280-40bb-a9b2-6f3e2c5dff26",
+      "scopeId": "19ab611f-f9bd-4958-8e95-30c145b72fb4",
+      "title": "Install drywall per new design",
+      "order": 1,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "3dac1701-2a52-43d1-ae81-4018d228068f",
+      "scopeId": "4a2e4fcf-de61-4afe-92f5-328437292fc2",
+      "title": "Client walkthrough / closeout",
+      "order": 4,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "3f966a9e-9408-41ca-a4f3-cc695ab4093d",
+      "scopeId": "8fdc1f95-9d5f-4b19-be3d-a83133d676fe",
+      "title": "Subfloor check + prep (leveling/grinding if needed)",
+      "order": 1,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "46b3f4f0-0caa-48e1-8bda-e61cd0fe1a81",
+      "scopeId": "aaa5c265-453e-44b2-a8d7-0a61d697ee2d",
+      "title": "Cut/grind/repair step-down (dining to family)",
+      "order": 3,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "477104d6-ca8f-4ab3-8c8c-24afe38032b6",
+      "scopeId": "aaa5c265-453e-44b2-a8d7-0a61d697ee2d",
+      "title": "Pour + finish slab (entrance to fireplace)",
+      "order": 2,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "4771158f-7662-4ee3-80fd-3359b5ab9f8a",
+      "scopeId": "8fdc1f95-9d5f-4b19-be3d-a83133d676fe",
+      "title": "Final adjustments + transitions/finish",
+      "order": 4,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "4e59115c-790c-45a6-ac24-9e7fdf619402",
+      "scopeId": "1a3d90c3-5e33-4dd5-8d3e-804a318fdd2f",
+      "title": "Demo Bar soffits wall opening",
+      "order": 9,
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
+      "createdAt": "2026-03-04T23:49:37.546Z",
+      "updatedAt": "2026-03-05T22:50:05.265Z"
+    },
+    {
+      "id": "4f66bd62-b561-4806-a619-13802aa95cd3",
+      "scopeId": "1a3d90c3-5e33-4dd5-8d3e-804a318fdd2f",
+      "title": "Remove carpet (mezzanine) + haul away",
+      "order": 1,
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:50:29.778Z"
+    },
+    {
+      "id": "50ed161a-508b-43e6-ad35-d779985bf4ff",
+      "scopeId": "bb4a521a-2128-46c9-8d3c-95575bb85f42",
+      "title": "Kitchen / Living Room / Dining Room / Foyer / Fireplace",
+      "order": 4,
+      "progress": 10,
+      "contractor": "",
+      "deadline": "",
+      "status": "in_progress",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-05T22:52:00.338Z"
+    },
+    {
+      "id": "50fcb52b-bb2a-4e24-8e10-40e912d4b1c9",
+      "scopeId": "1a3d90c3-5e33-4dd5-8d3e-804a318fdd2f",
+      "title": "Demo laminate glue down",
+      "order": 6,
+      "progress": 25,
+      "contractor": "",
+      "deadline": "",
+      "status": "in_progress",
+      "createdAt": "2026-03-04T23:47:47.239Z",
+      "updatedAt": "2026-03-05T22:49:21.182Z"
+    },
+    {
+      "id": "585e4436-7e80-4274-ad9c-ecaf33bfe6ee",
+      "scopeId": "b9848d70-e628-4848-a5c8-75a857742b50",
+      "title": "Close slab opening (rebar/mesh + concrete patch)",
+      "order": 4,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "64c73652-7870-402c-b924-8eca2129984a",
+      "scopeId": "1b9465e6-aaa4-45f1-a7f2-3f1d6cc48c7f",
+      "title": "Ceiling Prime",
+      "order": 2,
+      "progress": 0,
+      "contractor": "",
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-03-05T22:54:09.704Z",
+      "updatedAt": "2026-03-05T22:54:09.704Z"
+    },
+    {
+      "id": "65a0b71b-305e-4a4c-99fa-ab143ae42cef",
+      "scopeId": "05fdb8fe-97f4-4117-882e-f98b83ea999b",
+      "title": "Protect areas (floors/furniture)",
+      "order": 1,
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:52:59.435Z"
+    },
+    {
+      "id": "6749b7b0-49a9-4803-8a75-3b0119ec2020",
+      "scopeId": "ef7060ab-77b4-4cb9-955d-21b082875d8c",
+      "title": "Install baseboards (mezzanine lounge)",
+      "order": 1,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "68315128-a66d-47dc-8638-d862489f16dd",
+      "scopeId": "b9848d70-e628-4848-a5c8-75a857742b50",
+      "title": "Reroute wiring + prep 4 ceiling lights (kitchen)",
+      "order": 2,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "738179fc-c9ff-4213-9f6c-8686bf5e55f5",
+      "scopeId": "4a2e4fcf-de61-4afe-92f5-328437292fc2",
+      "title": "Punch list (if needed)",
+      "order": 3,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "747253a4-8a51-47b1-86e9-e890ba35e0a6",
+      "scopeId": "4a2e4fcf-de61-4afe-92f5-328437292fc2",
+      "title": "Final cleaning (dust/detail)",
+      "order": 1,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "83996d7f-8c4d-42e1-b198-f875c94f98f1",
+      "scopeId": "b9848d70-e628-4848-a5c8-75a857742b50",
+      "title": "Cut slab + reroute floor receptacle (family)",
+      "order": 3,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "90875815-a04e-4e08-8134-0c75b9529422",
+      "scopeId": "19ab611f-f9bd-4958-8e95-30c145b72fb4",
+      "title": "Sand and prep for finish",
+      "order": 3,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "94f3b884-c681-49a8-98ab-cd900eec0d60",
+      "scopeId": "bb4a521a-2128-46c9-8d3c-95575bb85f42",
+      "title": "Master Closet",
+      "order": 2,
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:51:34.192Z"
+    },
+    {
+      "id": "952db2e3-b4bc-477e-9944-0fd5c0fa4dbd",
+      "scopeId": "19ab611f-f9bd-4958-8e95-30c145b72fb4",
+      "title": "Touch-up repairs after electrical",
+      "order": 4,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "a6d149e9-5494-4fec-8104-8a957f5ff28f",
+      "scopeId": "8fdc1f95-9d5f-4b19-be3d-a83133d676fe",
+      "title": "Install LVP in mezzanine lounge",
+      "order": 2,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "af489790-24fc-496a-a355-c1e61be80012",
+      "scopeId": "8fdc1f95-9d5f-4b19-be3d-a83133d676fe",
+      "title": "Install LVP on stairs (treads/risers)",
+      "order": 3,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "b01ca2fb-c85d-48a0-ac8a-08738f4a0d8c",
+      "scopeId": "19ab611f-f9bd-4958-8e95-30c145b72fb4",
+      "title": "Tape + mud (1st/2nd coat)",
+      "order": 2,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "b7a5d2cb-f10d-4611-90ac-08b76a4f83ba",
+      "scopeId": "b39a5149-50ea-4251-be4b-0017e0a4ac95",
+      "title": "Adjust framing for lighting layout",
+      "order": 2,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "b9e78385-b21e-4f44-82c5-e8c88b38b9ba",
+      "scopeId": "1b9465e6-aaa4-45f1-a7f2-3f1d6cc48c7f",
+      "title": "Upstairs doors and trims Painted",
+      "order": 4,
+      "progress": 0,
+      "contractor": "",
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-03-05T22:54:52.059Z",
+      "updatedAt": "2026-03-05T22:54:52.059Z"
+    },
+    {
+      "id": "bad9258a-083b-445a-9dd6-40f00cb1f0c6",
+      "scopeId": "05fdb8fe-97f4-4117-882e-f98b83ea999b",
+      "title": "General jobsite setup",
+      "order": 4,
+      "progress": 80,
+      "contractor": "",
+      "deadline": "",
+      "status": "in_progress",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:53:19.150Z"
+    },
+    {
+      "id": "bcdc9420-e596-4eba-8318-c23b534d2740",
+      "scopeId": "1b9465e6-aaa4-45f1-a7f2-3f1d6cc48c7f",
+      "title": "Prep of spray painting",
+      "order": 1,
+      "progress": 0,
+      "contractor": "",
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-03-05T22:53:55.471Z",
+      "updatedAt": "2026-03-05T22:53:55.471Z"
+    },
+    {
+      "id": "bd8e9254-3681-49a3-bd9f-fc4c7b53b2d7",
+      "scopeId": "bb4a521a-2128-46c9-8d3c-95575bb85f42",
+      "title": "Upstairs Rooms",
+      "order": 3,
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:51:51.471Z"
+    },
+    {
+      "id": "d49cdf50-3933-4200-83c7-e12f55210cc7",
+      "scopeId": "1a3d90c3-5e33-4dd5-8d3e-804a318fdd2f",
+      "title": "Demo bar",
+      "order": 7,
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
+      "createdAt": "2026-03-04T23:47:57.615Z",
+      "updatedAt": "2026-03-05T22:49:37.013Z"
+    },
+    {
+      "id": "e50f9177-910c-4981-a420-8f4e7249f9e9",
+      "scopeId": "b39a5149-50ea-4251-be4b-0017e0a4ac95",
+      "title": "Verify level and alignment",
+      "order": 4,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "ed36b9be-1d5d-4564-8133-d57e4c2c5857",
+      "scopeId": "05fdb8fe-97f4-4117-882e-f98b83ea999b",
+      "title": "Dust control setup (plastic barriers)",
+      "order": 2,
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:53:04.327Z"
+    },
+    {
+      "id": "edfb7a62-c680-4581-b267-8908444acd87",
+      "scopeId": "4a2e4fcf-de61-4afe-92f5-328437292fc2",
+      "title": "Quality inspection (ceiling + flooring)",
+      "order": 2,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "ee45b4f2-e72a-4b68-8728-c5438a6e0ce8",
+      "scopeId": "bb4a521a-2128-46c9-8d3c-95575bb85f42",
+      "title": "Master Bedroom",
+      "order": 1,
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-05T22:51:39.573Z"
+    },
+    {
+      "id": "ee9ad6f4-f7bc-4c0d-9636-2ba5bb360b67",
+      "scopeId": "aaa5c265-453e-44b2-a8d7-0a61d697ee2d",
+      "title": "Forms + reinforcement for slab (4x16)",
+      "order": 1,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-04T23:46:54.286Z"
+    },
+    {
+      "id": "fc56feea-d798-44bb-b28e-8dad8453a354",
+      "scopeId": "b9848d70-e628-4848-a5c8-75a857742b50",
+      "title": "Remove/secure existing soffit wiring",
+      "order": 1,
+      "progress": 50,
+      "contractor": "",
+      "deadline": "",
+      "status": "in_progress",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-05T22:50:30.751Z"
+    }
+  ],
+  "updatedAt": "2026-03-08T04:23:41.247Z"
 }
