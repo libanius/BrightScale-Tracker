@@ -1,0 +1,55 @@
+[
+  {
+    "title": "Site Assessment",
+    "weight": 0.1,
+    "tasks": [
+      {"title": "Measure Space", "order": 1},
+      {"title": "Calculate Load Requirements", "order": 2},
+      {"title": "Check Electrical Capacity", "order": 3},
+      {"title": "Determine Equipment Location", "order": 4}
+    ]
+  },
+  {
+    "title": "Equipment Installation",
+    "weight": 0.3,
+    "tasks": [
+      {"title": "Install Outdoor Unit", "order": 1},
+      {"title": "Install Indoor Air Handler", "order": 2},
+      {"title": "Mount Thermostat", "order": 3},
+      {"title": "Secure All Units", "order": 4}
+    ]
+  },
+  {
+    "title": "Ductwork",
+    "weight": 0.25,
+    "tasks": [
+      {"title": "Install Supply Ducts", "order": 1},
+      {"title": "Install Return Ducts", "order": 2},
+      {"title": "Install Registers & Grilles", "order": 3},
+      {"title": "Seal All Connections", "order": 4},
+      {"title": "Insulate Ducts", "order": 5}
+    ]
+  },
+  {
+    "title": "Electrical & Refrigerant",
+    "weight": 0.25,
+    "tasks": [
+      {"title": "Run Electrical Wiring", "order": 1},
+      {"title": "Connect Thermostat", "order": 2},
+      {"title": "Install Refrigerant Lines", "order": 3},
+      {"title": "Vacuum System", "order": 4},
+      {"title": "Charge Refrigerant", "order": 5}
+    ]
+  },
+  {
+    "title": "Testing & Commissioning",
+    "weight": 0.1,
+    "tasks": [
+      {"title": "Test All Zones", "order": 1},
+      {"title": "Check Airflow", "order": 2},
+      {"title": "Test Thermostat", "order": 3},
+      {"title": "Verify Temperature Control", "order": 4},
+      {"title": "Customer Training", "order": 5}
+    ]
+  }
+]

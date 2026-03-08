@@ -1,0 +1,112 @@
+[
+  {
+    "title": "Site Preparation",
+    "order": 1,
+    "weight": 0.05,
+    "tasks": [
+      { "title": "Protect areas (floors/furniture)", "order": 1 },
+      { "title": "Dust control setup (plastic barriers)", "order": 2 },
+      { "title": "Debris/disposal staging", "order": 3 },
+      { "title": "General jobsite setup", "order": 4 }
+    ]
+  },
+  {
+    "title": "Demolition",
+    "order": 2,
+    "weight": 0.10,
+    "tasks": [
+      { "title": "Remove carpet (mezzanine) + haul away", "order": 1 },
+      { "title": "Demo kitchen soffits (if applicable)", "order": 2 },
+      { "title": "Remove soffit framing/drywall (if applicable)", "order": 3 },
+      { "title": "Rough clean and prep areas", "order": 4 }
+    ]
+  },
+  {
+    "title": "Concrete Work",
+    "order": 3,
+    "weight": 0.20,
+    "tasks": [
+      { "title": "Forms + reinforcement for slab (4x16)", "order": 1 },
+      { "title": "Pour + finish slab (entrance to fireplace)", "order": 2 },
+      { "title": "Cut/grind/repair step-down (dining to family)", "order": 3 },
+      { "title": "Final patch/finish and alignment", "order": 4 }
+    ]
+  },
+  {
+    "title": "Electrical Rough (Optional)",
+    "order": 4,
+    "weight": 0.10,
+    "tasks": [
+      { "title": "Remove/secure existing soffit wiring", "order": 1 },
+      { "title": "Reroute wiring + prep 4 ceiling lights (kitchen)", "order": 2 },
+      { "title": "Cut slab + reroute floor receptacle (family)", "order": 3 },
+      { "title": "Close slab opening (rebar/mesh + concrete patch)", "order": 4 }
+    ]
+  },
+  {
+    "title": "Framing (Optional)",
+    "order": 5,
+    "weight": 0.08,
+    "tasks": [
+      { "title": "Frame new kitchen ceiling layout", "order": 1 },
+      { "title": "Adjust framing for lighting layout", "order": 2 },
+      { "title": "Secure/reinforce framing", "order": 3 },
+      { "title": "Verify level and alignment", "order": 4 }
+    ]
+  },
+  {
+    "title": "Drywall (Optional)",
+    "order": 6,
+    "weight": 0.12,
+    "tasks": [
+      { "title": "Install drywall per new design", "order": 1 },
+      { "title": "Tape + mud (1st/2nd coat)", "order": 2 },
+      { "title": "Sand and prep for finish", "order": 3 },
+      { "title": "Touch-up repairs after electrical", "order": 4 }
+    ]
+  },
+  {
+    "title": "Ceiling Popcorn Removal + Level 4 Finish",
+    "order": 7,
+    "weight": 0.15,
+    "tasks": [
+      { "title": "Master Bedroom", "order": 1 },
+      { "title": "Master Closet", "order": 2 },
+      { "title": "Upstairs Rooms", "order": 3 },
+      { "title": "Kitchen / Living Room / Dining Room / Foyer / Fireplace", "order": 4 }
+    ]
+  },
+  {
+    "title": "Flooring Installation (LVP)",
+    "order": 8,
+    "weight": 0.15,
+    "tasks": [
+      { "title": "Subfloor check + prep (leveling/grinding if needed)", "order": 1 },
+      { "title": "Install LVP in mezzanine lounge", "order": 2 },
+      { "title": "Install LVP on stairs (treads/risers)", "order": 3 },
+      { "title": "Final adjustments + transitions/finish", "order": 4 }
+    ]
+  },
+  {
+    "title": "Finish Carpentry (Baseboards)",
+    "order": 9,
+    "weight": 0.03,
+    "tasks": [
+      { "title": "Install baseboards (mezzanine lounge)", "order": 1 },
+      { "title": "Caulk + fill nail holes", "order": 2 },
+      { "title": "Touch-up and final finish", "order": 3 },
+      { "title": "Clean area after install", "order": 4 }
+    ]
+  },
+  {
+    "title": "Final Clean + Walkthrough",
+    "order": 10,
+    "weight": 0.02,
+    "tasks": [
+      { "title": "Final cleaning (dust/detail)", "order": 1 },
+      { "title": "Quality inspection (ceiling + flooring)", "order": 2 },
+      { "title": "Punch list (if needed)", "order": 3 },
+      { "title": "Client walkthrough / closeout", "order": 4 }
+    ]
+  }
+]

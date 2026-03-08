@@ -47,12 +47,22 @@ body{background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSyst
 .stat-card{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:20px;text-align:center;}
 .stat-value{font-size:32px;font-weight:700;color:var(--ac);font-family:monospace;}
 .stat-label{font-size:12px;color:var(--mu);margin-top:4px;text-transform:uppercase;letter-spacing:1px;}
+.task-list{margin-top:16px;border-top:1px solid var(--bd);padding-top:12px;}
+.task-item{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;margin-bottom:4px;background:var(--bg);border-radius:8px;}
+.task-status{padding:4px 10px;border-radius:12px;font-size:10px;font-weight:700;text-transform:uppercase;}
+.task-status.done{background:rgba(0,229,160,.15);color:var(--ac);}
+.task-status.progress{background:rgba(255,185,60,.15);color:#ffb93c;}
+.task-status.pending{background:rgba(107,107,138,.15);color:var(--mu);}
+.chart-container{margin:20px 0;padding:16px;background:var(--sf2);border-radius:12px;}
+.chart-bar{height:24px;background:linear-gradient(90deg,var(--ac),var(--ac2));border-radius:12px;position:relative;margin-bottom:8px;}
+.chart-label{font-size:11px;color:var(--mu);margin-bottom:4px;display:flex;justify-content:space-between;}
+.version-badge{position:fixed;bottom:20px;right:20px;padding:8px 16px;background:var(--sf);border:1px solid var(--bd);border-radius:20px;font-size:11px;color:var(--mu);}
 </style>
 </head>
 <body>
 <div class="container">
   <div class="header">
-    <div class="logo">🏗️</div>
+    <img src="brightscale-icon-192.png" class="dash-logo" alt="BrightScale" onerror="this.style.display='none'"/>
     <h1>BrightScale Dashboard</h1>
     <div class="subtitle">Project Progress Overview</div>
   </div>
@@ -62,6 +72,8 @@ body{background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSyst
   <div class="footer">
     BrightScale Tracker &copy; 2025 &middot; Real-time Project Management
   </div>
+  
+  <div class="version-badge">v7.4</div>
 </div>
 
 <script>
@@ -142,10 +154,16 @@ function render(data) {
   
   if (!data || !data.projects) {
     content.innerHTML = '<div class="empty">' +
-      '<div class="empty-icon">📋</div>' +
-      '<div style="font-size:18px;font-weight:700;margin-bottom:8px">No Data Available</div>' +
-      '<div>Please generate a dashboard link from the BrightScale Tracker app.</div>' +
-      '</div>';
+      '<div class="empty-icon">📊</div>' +
+      '<div style="font-size:18px;font-weight:700;margin-bottom:12px">Dashboard Setup Required</div>' +
+      '<div style="max-width:500px;margin:0 auto;line-height:1.7">' +
+      'To display project data, you need to:<br><br>' +
+      '1. Open the <b>BrightScale Tracker</b> app<br>' +
+      '2. Configure your <b>GitHub Token</b> in Settings<br>' +
+      '3. Go to <b>Reports</b> and click <b>"☁️ Sync Now"</b><br><br>' +
+      'Or manually create a <code>dashboard-data.json</code> file in your repository.<br><br>' +
+      '<a href="index.html" style="color:var(--ac);text-decoration:none;font-weight:700">→ Open BrightScale Tracker App</a>' +
+      '</div></div>';
     return;
   }
   
@@ -207,6 +225,19 @@ function render(data) {
     html += '<div class="project-progress">' + projectProgress + '%</div>';
     html += '</div>';
     
+    // Progress Chart
+    if (projectUnits.length > 0) {
+      html += '<div class="chart-container">';
+      html += '<div style="font-size:11px;font-weight:700;color:var(--mu);margin-bottom:12px;text-transform:uppercase">📊 Units Progress</div>';
+      projectUnits.forEach(function(u) {
+        var uProgress = calcUnitProgress(scopes, tasks, u.id);
+        html += '<div class="chart-label"><span>Unit #' + esc(u.unitNumber) + '</span><span>' + uProgress + '%</span></div>';
+        html += '<div style="height:8px;background:var(--bd);border-radius:4px;overflow:hidden;margin-bottom:12px">';
+        html += '<div class="chart-bar" style="width:' + uProgress + '%;height:100%"></div></div>';
+      });
+      html += '</div>';
+    }
+    
     if (!projectUnits.length) {
       html += '<div style="text-align:center;padding:20px;color:var(--mu)">No units in this project</div>';
     } else {
@@ -264,6 +295,42 @@ function render(data) {
             html += '<div class="supervisor-row"><span class="supervisor-label">Assembler:</span>' +
               '<span>' + esc(unit.supervisors.assembler) + '</span></div>';
           }
+          html += '</div>';
+        }
+        
+        // Tasks by Scope
+        var unitScopes = scopes.filter(function(s) { return s.unitId === unit.id; })
+          .sort(function(a,b) { return (a.order || 0) - (b.order || 0); });
+        
+        if (unitScopes.length > 0) {
+          html += '<div class="task-list">';
+          html += '<div style="font-size:11px;font-weight:700;color:var(--mu);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">📋 Scopes & Tasks</div>';
+          
+          unitScopes.forEach(function(scope) {
+            var scopeTasks = tasks.filter(function(t) { return t.scopeId === scope.id; })
+              .sort(function(a,b) { return (a.order || 0) - (b.order || 0); });
+            var scopeProgress = calcScopeProgress(scopes, tasks, scope.id);
+            
+            html += '<div style="margin-bottom:12px">';
+            html += '<div style="font-size:12px;font-weight:700;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">';
+            html += '<span>' + esc(scope.title) + '</span>';
+            html += '<span style="color:var(--ac);font-family:monospace">' + scopeProgress + '%</span>';
+            html += '</div>';
+            
+            if (scopeTasks.length > 0) {
+              scopeTasks.forEach(function(task) {
+                var status = task.progress === 100 ? 'done' : task.progress > 0 ? 'progress' : 'pending';
+                var statusLabel = task.progress === 100 ? '✓ Done' : task.progress > 0 ? task.progress + '%' : 'Pending';
+                
+                html += '<div class="task-item">';
+                html += '<span style="font-size:11px">' + esc(task.title) + '</span>';
+                html += '<span class="task-status ' + status + '">' + statusLabel + '</span>';
+                html += '</div>';
+              });
+            }
+            html += '</div>';
+          });
+          
           html += '</div>';
         }
         

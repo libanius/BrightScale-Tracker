@@ -6,9 +6,6 @@
 <meta name="theme-color" content="#0a0a0f"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<link rel="manifest" href="manifest.json"/>
-<link rel="icon" type="image/png" sizes="192x192" href="brightscale-icon-192.png"/>
-<link rel="apple-touch-icon" href="brightscale-icon-192.png"/>
 <title>BrightScale Tracker</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -119,15 +116,6 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;background:var(--ac);
 .task-actions{display:flex;gap:4px;flex-shrink:0;}
 .icon-btn{background:none;border:none;padding:6px;cursor:pointer;color:var(--mu);font-size:16px;line-height:1;}
 .icon-btn:active{opacity:.6;}
-.logo-img{width:48px;height:48px;margin-right:12px;vertical-align:middle;}
-.splash-screen{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;}
-.splash-logo{width:128px;height:128px;margin-bottom:24px;animation:pulse 2s ease-in-out infinite;}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.7;transform:scale(0.95);}}
-.splash-text{font-size:24px;font-weight:700;margin-bottom:8px;}
-.splash-subtitle{font-size:14px;color:var(--mu);margin-bottom:16px;}
-.spinner{width:40px;height:40px;border:4px solid var(--bd);border-top-color:var(--ac);border-radius:50%;animation:spin 1s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
-.dash-logo{width:80px;height:80px;margin:0 auto 16px;display:block;}
 </style>
 </head>
 <body>
@@ -138,46 +126,6 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;background:var(--ac);
 <div id="tc"></div>
 <script>
 'use strict';
-
-/* Logo BrightScale (base64) */
-var LOGO_HEADER = 'data:image/png;base64,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';
-
-/* Global error handlers */
-window.onerror = function(msg, url, line, col, error) {
-  var el = document.getElementById('main');
-  if (el) {
-    el.innerHTML = '<div class="empty"><div class="ei">⚠️</div>' +
-      '<div class="et">JavaScript Error<br><br>' +
-      '<b>' + msg + '</b><br>' +
-      'Line: ' + line + ', Col: ' + col + '<br><br>' +
-      '<button class="btn bp bfull" onclick="location.reload()">Reload</button></div></div>';
-  }
-  console.error('Global error:', msg, 'at', line + ':' + col, error);
-  return true;
-};
-
-window.addEventListener('unhandledrejection', function(event) {
-  var el = document.getElementById('main');
-  if (el) {
-    el.innerHTML = '<div class="empty"><div class="ei">⚠️</div>' +
-      '<div class="et">Promise Error<br><br>' +
-      '<b>' + (event.reason ? event.reason.message || event.reason : 'Unknown error') + '</b><br><br>' +
-      '<button class="btn bp bfull" onclick="location.reload()">Reload</button></div></div>';
-  }
-  console.error('Unhandled promise rejection:', event.reason);
-});
-
-/* Show initial loading */
-document.addEventListener('DOMContentLoaded', function() {
-  var main = document.getElementById('main');
-  if (main && !main.innerHTML) {
-    main.innerHTML = '<div class="splash-screen">' +
-      '<img src="' + LOGO_HEADER + '" class="splash-logo" alt="BrightScale"/>' +
-      '<div class="splash-text">BrightScale Tracker</div>' +
-      '<div class="splash-subtitle">Construction Management</div>' +
-      '<div class="spinner"></div></div>';
-  }
-});
 
 /* ═══════════════════════════════════════════
    TEMPLATES - Baseados na planilha NEW_CASTLE
@@ -287,7 +235,7 @@ var TEMPLATES = {
 var DB;
 function openDB() {
   return new Promise(function(res, rej) {
-    var r = indexedDB.open('brightscale_v1', 1);
+    var r = indexedDB.open('construction_tracker_v1', 1);
     r.onupgradeneeded = function(e) {
       var d = e.target.result;
       if (!d.objectStoreNames.contains('projects'))
@@ -345,8 +293,6 @@ var S = {
   currentProjectId: null,
   currentUnitId: null
 };
-var F = {date: '', useNow: true};
-var RS = {period: 'today', df: '', dt: ''};
 
 /* ═══════════════════════════════════════════
    UTILS
@@ -366,7 +312,7 @@ function fDate(s) {
 }
 function esc(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 function calcDaysRemaining(deadline) {
   if (!deadline) return null;
@@ -523,7 +469,7 @@ function renderNav() {
     tabs.appendChild(b);
   });
   nav.appendChild(tabs);
-  nav.appendChild(div('nav-ver', 'v1.0'));
+  nav.appendChild(div('nav-ver', 'BrightScale Tracker v1.0'));
 }
 
 function render() {
@@ -553,20 +499,10 @@ function render() {
 function renderProjects(main) {
   var hdr = div('hdr');
   var ht = div('');
-  var titleRow = div('');
-  titleRow.style.cssText = 'display:flex;align-items:center;gap:12px';
-  var logo = document.createElement('img');
-  logo.src = LOGO_HEADER;
-  logo.className = 'logo-img';
-  logo.alt = 'BrightScale';
-  titleRow.appendChild(logo);
-  var textCol = div('');
-  textCol.appendChild(el('h1', null, 'Projetos'));
-  textCol.appendChild(div('hsub', new Date().toLocaleDateString('pt-BR', {
+  ht.appendChild(el('h1', null, 'Projetos'));
+  ht.appendChild(div('hsub', new Date().toLocaleDateString('pt-BR', {
     weekday:'long', day:'2-digit', month:'long'
   })));
-  titleRow.appendChild(textCol);
-  ht.appendChild(titleRow);
   hdr.appendChild(ht);
   hdr.appendChild(btn('btn bp bsm', '+ Novo', function() {
     console.log('Clicou em + Novo Projeto');
@@ -872,230 +808,12 @@ function renderUnitDetail(main) {
 }
 
 /* ═══════════════════════════════════════════
-   GITHUB SYNC
-═══════════════════════════════════════════ */
-function syncToGitHub(callback) {
-  var user = localStorage.getItem('gh_user');
-  var repo = localStorage.getItem('gh_repo');
-  var token = localStorage.getItem('gh_token');
-  
-  if (!user || !repo || !token) {
-    toast('Configure o GitHub em Ajustes primeiro', 'w', 4000);
-    if (callback) callback(false);
-    return;
-  }
-  
-  var data = {
-    projects: S.projects,
-    units: S.units,
-    scopes: S.scopes,
-    tasks: S.tasks,
-    updatedAt: new Date().toISOString()
-  };
-  
-  var json = JSON.stringify(data, null, 2);
-  var content = btoa(unescape(encodeURIComponent(json)));
-  
-  var fileName = 'dashboard-data.json';
-  var apiUrl = 'https://api.github.com/repos/' + user + '/' + repo + '/contents/' + fileName;
-  
-  // Step 1: Get current file SHA (if exists)
-  fetch(apiUrl, {
-    headers: {
-      'Authorization': 'token ' + token,
-      'Accept': 'application/vnd.github.v3+json'
-    }
-  })
-  .then(function(res) {
-    if (res.ok) return res.json();
-    if (res.status === 404) return null; // File doesn't exist yet
-    throw new Error('GitHub API error: ' + res.status);
-  })
-  .then(function(fileData) {
-    // Step 2: Create or update file
-    var body = {
-      message: 'Update dashboard data - ' + new Date().toLocaleString('pt-BR'),
-      content: content,
-      branch: 'main'
-    };
-    
-    if (fileData && fileData.sha) {
-      body.sha = fileData.sha; // Required for updates
-    }
-    
-    return fetch(apiUrl, {
-      method: 'PUT',
-      headers: {
-        'Authorization': 'token ' + token,
-        'Accept': 'application/vnd.github.v3+json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(body)
-    });
-  })
-  .then(function(res) {
-    if (!res.ok) {
-      return res.json().then(function(err) {
-        throw new Error(err.message || 'Upload failed');
-      });
-    }
-    return res.json();
-  })
-  .then(function() {
-    localStorage.setItem('last_sync', new Date().toISOString());
-    toast('✅ Sincronizado com GitHub!');
-    if (callback) callback(true);
-  })
-  .catch(function(err) {
-    console.error('GitHub sync error:', err);
-    toast('❌ Erro ao sincronizar: ' + err.message, 'e', 4000);
-    if (callback) callback(false);
-  });
-}
-
-/* ═══════════════════════════════════════════
    REPORTS TAB
 ═══════════════════════════════════════════ */
 function renderReports(main) {
   var hdr = div('hdr');
   hdr.appendChild(el('h1', null, 'Relatórios'));
   main.appendChild(hdr);
-  
-  // Dashboard Link Card
-  var dashCard = div('card');
-  dashCard.appendChild(div('ct', 'Dashboard Público'));
-  dashCard.appendChild(div('', '<div style="font-size:13px;color:var(--mu);margin-bottom:12px">' +
-    'Gere um link compartilhável para visualização pública do progresso dos projetos.</div>'));
-  
-  var genDashBtn = btn('btn bp bfull', '🔗 Gerar Link do Dashboard', function() {
-    var data = {
-      projects: S.projects,
-      units: S.units,
-      scopes: S.scopes,
-      tasks: S.tasks,
-      updatedAt: new Date().toISOString()
-    };
-    
-    var json = JSON.stringify(data);
-    var encoded = btoa(json);
-    var baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
-    var dashUrl = baseUrl + 'dashboard.html?data=' + encoded;
-    
-    showModal(function(mo, close) {
-      mo.appendChild(div('mtit', 'Link do Dashboard'));
-      mo.appendChild(div('', '<div style="font-size:13px;color:var(--mu);margin-bottom:12px">' +
-        'Compartilhe este link com clientes ou equipe para visualização do progresso:</div>'));
-      
-      var urlBox = document.createElement('textarea');
-      urlBox.value = dashUrl;
-      urlBox.readOnly = true;
-      urlBox.style.cssText = 'width:100%;height:120px;background:var(--sf2);border:1px solid var(--bd);' +
-        'border-radius:10px;color:var(--tx);font-size:11px;font-family:monospace;padding:12px;' +
-        'outline:none;resize:none;margin-bottom:12px;';
-      mo.appendChild(urlBox);
-      
-      var row = div('brow');
-      var copyBtn = btn('btn bp', '📋 Copiar Link', function() {
-        urlBox.select();
-        if (navigator.clipboard) {
-          navigator.clipboard.writeText(dashUrl).then(function() {
-            toast('Link copiado!');
-            close();
-          }).catch(function() {
-            try {
-              document.execCommand('copy');
-              toast('Link copiado!');
-              close();
-            } catch(e) {
-              toast('Selecione e copie manualmente', 'w', 4000);
-            }
-          });
-        } else {
-          try {
-            document.execCommand('copy');
-            toast('Link copiado!');
-            close();
-          } catch(e) {
-            toast('Selecione e copie manualmente', 'w', 4000);
-          }
-        }
-      });
-      copyBtn.style.flex = '1';
-      
-      var shareBtn = btn('btn bs', '📤 Compartilhar', function() {
-        if (navigator.share) {
-          navigator.share({
-            title: 'BrightScale Dashboard',
-            text: 'Visualize o progresso dos projetos',
-            url: dashUrl
-          }).then(function() {
-            close();
-          }).catch(function() {});
-        } else {
-          toast('Compartilhamento não disponível neste navegador', 'w');
-        }
-      });
-      shareBtn.style.flex = '1';
-      
-      var closeBtn = btn('btn bs', 'Fechar', close);
-      closeBtn.style.flex = '1';
-      
-      row.appendChild(copyBtn);
-      row.appendChild(shareBtn);
-      row.appendChild(closeBtn);
-      mo.appendChild(row);
-      
-      setTimeout(function() { urlBox.select(); }, 200);
-    });
-  });
-  
-  dashCard.appendChild(genDashBtn);
-  main.appendChild(dashCard);
-  
-  // GitHub Sync Card
-  var syncCard = div('card');
-  syncCard.appendChild(div('ct', 'Sincronizar com GitHub'));
-  syncCard.appendChild(div('', '<div style="font-size:13px;color:var(--mu);margin-bottom:12px">' +
-    'Envie os dados para o GitHub e atualize o dashboard público automaticamente.</div>'));
-  
-  var syncBtn = btn('btn bp bfull', '☁️ Sincronizar Agora', function() {
-    syncBtn.textContent = '⏳ Sincronizando...';
-    syncBtn.disabled = true;
-    
-    syncToGitHub(function(success) {
-      syncBtn.textContent = '☁️ Sincronizar Agora';
-      syncBtn.disabled = false;
-      
-      if (success) {
-        showModal(function(mo, close) {
-          mo.appendChild(div('mtit', '✅ Sincronizado!'));
-          mo.appendChild(div('', '<div style="font-size:14px;color:var(--mu);margin-bottom:16px;line-height:1.7">' +
-            'Dashboard atualizado com sucesso!<br><br>' +
-            'O dashboard público agora mostra os dados mais recentes.<br><br>' +
-            'Link do dashboard:<br>' +
-            '<code style="background:var(--sf2);padding:8px 12px;border-radius:6px;display:block;margin-top:8px;' +
-            'font-size:11px;word-break:break-all;color:var(--ac)">' +
-            window.location.origin + window.location.pathname.replace('index.html', '') + 'dashboard.html</code>' +
-            '</div>'));
-          
-          var okBtn = btn('btn bp bfull', 'OK', close);
-          mo.appendChild(okBtn);
-        });
-      }
-    });
-  });
-  
-  syncCard.appendChild(syncBtn);
-  
-  var lastSync = localStorage.getItem('last_sync');
-  if (lastSync) {
-    var syncInfo = div('');
-    syncInfo.style.cssText = 'font-size:11px;color:var(--mu);margin-top:8px;text-align:center;';
-    syncInfo.textContent = 'Última sync: ' + new Date(lastSync).toLocaleString('pt-BR');
-    syncCard.appendChild(syncInfo);
-  }
-  
-  main.appendChild(syncCard);
   
   var ec = div('card');
   ec.appendChild(div('ct', 'Exportar Dados'));
@@ -1404,104 +1122,6 @@ function renderSettings(main) {
   hdr.appendChild(el('h1', null, 'Ajustes'));
   main.appendChild(hdr);
   
-  // GitHub Sync Configuration
-  var ghCard = div('card');
-  ghCard.appendChild(div('ct', 'Sincronização GitHub'));
-  ghCard.appendChild(div('', '<div style="font-size:13px;color:var(--mu);margin-bottom:12px;line-height:1.6">' +
-    'Configure sua chave de acesso do GitHub para sincronizar automaticamente o dashboard.<br>' +
-    '<a href="https://github.com/settings/tokens" target="_blank" style="color:var(--ac)">Criar token aqui →</a></div>'));
-  
-  var ghFg1 = div('fg');
-  ghFg1.appendChild(mkLbl('GitHub Username'));
-  var ghUserInp = el('input', '');
-  ghUserInp.type = 'text';
-  ghUserInp.placeholder = 'seu-usuario';
-  ghUserInp.value = localStorage.getItem('gh_user') || '';
-  ghFg1.appendChild(ghUserInp);
-  ghCard.appendChild(ghFg1);
-  
-  var ghFg2 = div('fg');
-  ghFg2.appendChild(mkLbl('Repository Name'));
-  var ghRepoInp = el('input', '');
-  ghRepoInp.type = 'text';
-  ghRepoInp.placeholder = 'BrightScale-Tracker';
-  ghRepoInp.value = localStorage.getItem('gh_repo') || 'BrightScale-Tracker';
-  ghFg2.appendChild(ghRepoInp);
-  ghCard.appendChild(ghFg2);
-  
-  var ghFg3 = div('fg');
-  ghFg3.appendChild(mkLbl('GitHub Token (Personal Access Token)'));
-  var ghTokenInp = el('input', '');
-  ghTokenInp.type = 'password';
-  ghTokenInp.placeholder = 'ghp_xxxxxxxxxxxxxxxxxxxx';
-  ghTokenInp.value = localStorage.getItem('gh_token') || '';
-  ghFg3.appendChild(ghTokenInp);
-  ghCard.appendChild(ghFg3);
-  
-  var ghSaveBtn = btn('btn bp bfull', 'Salvar Configuração', function() {
-    var user = ghUserInp.value.trim();
-    var repo = ghRepoInp.value.trim();
-    var token = ghTokenInp.value.trim();
-    
-    if (!user || !repo || !token) {
-      toast('Preencha todos os campos', 'w');
-      return;
-    }
-    
-    localStorage.setItem('gh_user', user);
-    localStorage.setItem('gh_repo', repo);
-    localStorage.setItem('gh_token', token);
-    
-    toast('Configuração salva!');
-  });
-  ghSaveBtn.style.marginTop = '4px';
-  ghCard.appendChild(ghSaveBtn);
-  
-  var ghTestBtn = btn('btn bs bfull', 'Testar Conexão', function() {
-    var user = localStorage.getItem('gh_user');
-    var repo = localStorage.getItem('gh_repo');
-    var token = localStorage.getItem('gh_token');
-    
-    if (!user || !repo || !token) {
-      toast('Configure o GitHub primeiro', 'w');
-      return;
-    }
-    
-    ghTestBtn.textContent = 'Testando...';
-    ghTestBtn.disabled = true;
-    
-    fetch('https://api.github.com/repos/' + user + '/' + repo, {
-      headers: {
-        'Authorization': 'token ' + token,
-        'Accept': 'application/vnd.github.v3+json'
-      }
-    })
-    .then(function(res) {
-      ghTestBtn.textContent = 'Testar Conexão';
-      ghTestBtn.disabled = false;
-      
-      if (res.ok) {
-        toast('✅ Conexão OK!');
-      } else if (res.status === 401) {
-        toast('❌ Token inválido', 'e');
-      } else if (res.status === 404) {
-        toast('❌ Repositório não encontrado', 'e');
-      } else {
-        toast('❌ Erro: ' + res.status, 'e');
-      }
-    })
-    .catch(function(err) {
-      ghTestBtn.textContent = 'Testar Conexão';
-      ghTestBtn.disabled = false;
-      toast('❌ Erro de conexão', 'e');
-      console.error(err);
-    });
-  });
-  ghTestBtn.style.marginTop = '8px';
-  ghCard.appendChild(ghTestBtn);
-  
-  main.appendChild(ghCard);
-  
   var pc = div('card');
   var ph = div('');
   ph.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;';
@@ -1725,7 +1345,7 @@ function renderSettings(main) {
   main.appendChild(div('card',
     '<div class="ct">Sobre</div>' +
     '<div style="font-size:13px;color:var(--mu);line-height:1.9">' +
-    '<b style="color:var(--tx)">BrightScale Tracker v7.4</b><br>' +
+    '<b style="color:var(--tx)">BrightScale Tracker v1.0</b><br>' +
     'Gerencie projetos de construção com progresso hierárquico.<br>' +
     'Dados armazenados localmente no seu dispositivo.<br><br>' +
     '<span style="font-family:monospace;font-size:11px">IndexedDB · PWA · Offline-first</span></div>'
@@ -1956,52 +1576,42 @@ function openUnitForm(projectId, unit) {
         importBtns.style.cssText = 'display:flex;gap:8px;margin-bottom:12px;';
         
         var pasteBtn = btn('btn bs bsm', '📋 Colar JSON', function() {
-          // Criar overlay personalizado que não conflita com o modal principal
-          var overlay = div('ov');
-          overlay.id = 'json-overlay';
-          overlay.style.zIndex = '250'; // Acima do modal da unit (200)
-          
-          var modal = div('modal');
-          modal.appendChild(div('mtit', 'Colar Template JSON'));
-          
-          var ta = document.createElement('textarea');
-          ta.style.cssText = 'width:100%;height:200px;background:var(--sf2);border:1px solid var(--bd);' +
-            'border-radius:10px;color:var(--tx);font-size:12px;font-family:monospace;padding:12px;' +
-            'outline:none;resize:vertical;';
-          ta.placeholder = '[\n  {\n    "title": "Scope",\n    "weight": 0.5,\n    "tasks": [...]\n  }\n]';
-          modal.appendChild(ta);
-          
-          var row2 = div('brow');
-          var cb2 = btn('btn bs', 'Cancelar', function() {
-            document.body.removeChild(overlay);
+          showModal(function(mo2, close2) {
+            mo2.appendChild(div('mtit', 'Colar Template JSON'));
+            
+            var ta = document.createElement('textarea');
+            ta.style.cssText = 'width:100%;height:200px;background:var(--sf2);border:1px solid var(--bd);' +
+              'border-radius:10px;color:var(--tx);font-size:12px;font-family:monospace;padding:12px;' +
+              'outline:none;resize:vertical;';
+            ta.placeholder = '[\n  {\n    "title": "Scope",\n    "weight": 0.5,\n    "tasks": [...]\n  }\n]';
+            mo2.appendChild(ta);
+            
+            var row2 = div('brow');
+            var cb2 = btn('btn bs', 'Cancelar', close2);
+            cb2.style.flex = '1';
+            
+            var ok2 = btn('btn bp', 'Usar Template', function() {
+              try {
+                var tmpl = JSON.parse(ta.value.trim());
+                if (!Array.isArray(tmpl)) throw new Error('Deve ser array');
+                customTemplate = tmpl;
+                close2();
+                templateContent.innerHTML = '<div style="background:var(--sf2);border:1px solid var(--bd);' +
+                  'border-radius:10px;padding:12px;font-size:13px;color:var(--ac)">✓ Template carregado: ' +
+                  tmpl.length + ' scope(s)</div>';
+                toast('Template carregado!');
+              } catch(err) {
+                toast('JSON inválido: ' + err.message, 'e', 4000);
+              }
+            });
+            ok2.style.flex = '1';
+            
+            row2.appendChild(cb2);
+            row2.appendChild(ok2);
+            mo2.appendChild(row2);
+            
+            setTimeout(function() { ta.focus(); }, 200);
           });
-          cb2.style.flex = '1';
-          
-          var ok2 = btn('btn bp', 'Usar Template', function() {
-            try {
-              var tmpl = JSON.parse(ta.value.trim());
-              if (!Array.isArray(tmpl)) throw new Error('Deve ser array');
-              customTemplate = tmpl;
-              console.log('CustomTemplate setado! Length:', customTemplate.length, 'Data:', customTemplate);
-              document.body.removeChild(overlay);
-              templateContent.innerHTML = '<div style="background:var(--sf2);border:1px solid var(--bd);' +
-                'border-radius:10px;padding:12px;font-size:13px;color:var(--ac)">✓ Template carregado: ' +
-                tmpl.length + ' scope(s)</div>';
-              toast('Template carregado!');
-            } catch(err) {
-              toast('JSON inválido: ' + err.message, 'e', 4000);
-            }
-          });
-          ok2.style.flex = '1';
-          
-          row2.appendChild(cb2);
-          row2.appendChild(ok2);
-          modal.appendChild(row2);
-          
-          overlay.appendChild(modal);
-          document.body.appendChild(overlay);
-          
-          setTimeout(function() { ta.focus(); }, 200);
         });
         pasteBtn.style.flex = '1';
         
@@ -2098,15 +1708,8 @@ function openUnitForm(projectId, unit) {
         return;
       }
       
-      if (!unit && templateType === 'custom' && !customTemplate) {
-        toast('Carregue um template JSON ou escolha um padrão', 'w');
-        return;
-      }
-      
       var now = new Date().toISOString();
       var unitId = unit ? unit.id : uid();
-      
-      console.log('Salvando unit. TemplateType:', templateType, 'CustomTemplate:', customTemplate ? 'Carregado' : 'null');
       
       dbPut('units', {
         id: unitId,
@@ -2125,23 +1728,17 @@ function openUnitForm(projectId, unit) {
         createdAt: unit ? unit.createdAt : now,
         updatedAt: now
       }).then(function() {
-        console.log('Unit salva com sucesso. UnitId:', unitId);
         if (!unit) {
           var template;
           if (templateType === 'custom' && customTemplate) {
-            console.log('Usando custom template com', customTemplate.length, 'scopes');
             template = customTemplate;
           } else {
             var tsel = document.getElementById('builtin-template-select');
-            console.log('Usando builtin template:', tsel ? tsel.value : 'SELECT NOT FOUND');
             template = TEMPLATES[tsel.value];
           }
           
-          console.log('Template a usar:', template);
-          
           var promises = [];
           template.forEach(function(scopeTpl, idx) {
-            console.log('Criando scope:', scopeTpl.title);
             var scopeId = uid();
             promises.push(dbPut('scopes', {
               id: scopeId,
@@ -2154,7 +1751,6 @@ function openUnitForm(projectId, unit) {
             }));
             
             if (scopeTpl.tasks && scopeTpl.tasks.length) {
-              console.log('Criando', scopeTpl.tasks.length, 'tasks para', scopeTpl.title);
               scopeTpl.tasks.forEach(function(taskTpl) {
                 promises.push(dbPut('tasks', {
                   id: uid(),
@@ -2169,20 +1765,14 @@ function openUnitForm(projectId, unit) {
               });
             }
           });
-          console.log('Total de promises:', promises.length);
           return Promise.all(promises);
         }
-      }).then(function() {
+      }).then(reload).then(function() {
+        close();
         if (!unit) {
           S.currentUnitId = unitId;
         }
-        return reload();
-      }).then(function() {
-        close();
         toast(unit ? 'Unit atualizada' : 'Unit criada com sucesso!');
-      }).catch(function(err) {
-        console.error('ERRO ao salvar unit:', err);
-        toast('Erro ao salvar: ' + err.message, 'e', 5000);
       });
     });
     sb.style.flex = '1';
@@ -2676,14 +2266,10 @@ function openTaskEdit(task) {
 /* ═══════════════════════════════════════════
    BOOT
 ═══════════════════════════════════════════ */
-openDB().then(function() {
-  F.date = today(); F.useNow = true;
-  RS.period = 'today'; RS.df = today(); RS.dt = today();
-  return reload();
-}).catch(function(err) {
+openDB().then(reload).catch(function(err) {
   document.getElementById('main').innerHTML =
     '<div class="empty"><div class="ei">⚠️</div>' +
-    '<div class="et">Erro ao abrir banco.<br>Recarregue a pagina.</div></div>';
+    '<div class="et">Erro ao abrir banco de dados.<br>Recarregue a página.</div></div>';
   console.error(err);
 });
 </script>
