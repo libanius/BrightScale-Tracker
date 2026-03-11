@@ -614,10 +614,12 @@
       "scopeId": "aaa5c265-453e-44b2-a8d7-0a61d697ee2d",
       "title": "Forms + reinforcement for slab (4x16)",
       "order": 1,
-      "progress": 0,
-      "status": "pending",
+      "progress": 15,
+      "contractor": "Alex",
+      "deadline": "2026-03-14",
+      "status": "in_progress",
       "createdAt": "2026-03-04T23:46:54.286Z",
-      "updatedAt": "2026-03-04T23:46:54.286Z"
+      "updatedAt": "2026-03-10T17:59:26.840Z"
     },
     {
       "id": "fc56feea-d798-44bb-b28e-8dad8453a354",
@@ -632,5 +634,5 @@
       "updatedAt": "2026-03-05T22:50:30.751Z"
     }
   ],
-  "updatedAt": "2026-03-09T20:20:41.929Z"
+  "updatedAt": "2026-03-11T00:21:56.592Z"
 }
