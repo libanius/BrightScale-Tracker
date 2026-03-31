@@ -123,6 +123,15 @@
       "updatedAt": "2026-03-04T23:46:54.286Z"
     },
     {
+      "id": "dd286830-9ed0-48ac-a1b3-a061e03aa8f6",
+      "unitId": "364cd9ac-06e9-46d3-978a-cd631b0e5ac0",
+      "title": "Tile flooring",
+      "order": 11,
+      "weight": 0.5,
+      "createdAt": "2026-03-31T22:50:08.343Z",
+      "updatedAt": "2026-03-31T22:50:08.343Z"
+    },
+    {
       "id": "ef7060ab-77b4-4cb9-955d-21b082875d8c",
       "unitId": "364cd9ac-06e9-46d3-978a-cd631b0e5ac0",
       "title": "Finish Carpentry (Baseboards)",
@@ -138,12 +147,12 @@
       "scopeId": "1b9465e6-aaa4-45f1-a7f2-3f1d6cc48c7f",
       "title": "Wall prime",
       "order": 3,
-      "progress": 0,
+      "progress": 100,
       "contractor": "",
       "deadline": "",
-      "status": "pending",
+      "status": "completed",
       "createdAt": "2026-03-05T22:54:20.144Z",
-      "updatedAt": "2026-03-05T22:54:20.144Z"
+      "updatedAt": "2026-03-26T02:42:02.162Z"
     },
     {
       "id": "0a94538b-9c0a-4619-ba20-afd8a6cf7557",
@@ -158,6 +167,30 @@
       "updatedAt": "2026-03-04T23:51:09.030Z"
     },
     {
+      "id": "0ca3e6a5-7729-4df3-808e-47918458d2ce",
+      "scopeId": "1b9465e6-aaa4-45f1-a7f2-3f1d6cc48c7f",
+      "title": "Baseboards painted",
+      "order": 5,
+      "progress": 20,
+      "contractor": "",
+      "deadline": "",
+      "status": "in_progress",
+      "createdAt": "2026-03-26T02:42:28.498Z",
+      "updatedAt": "2026-03-26T02:42:38.011Z"
+    },
+    {
+      "id": "109afd21-d37e-441f-9824-48993cacc0c5",
+      "scopeId": "dd286830-9ed0-48ac-a1b3-a061e03aa8f6",
+      "title": "Steps fireplace area",
+      "order": 14,
+      "progress": 0,
+      "contractor": "",
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-03-31T22:54:51.822Z",
+      "updatedAt": "2026-03-31T22:54:51.822Z"
+    },
+    {
       "id": "13ecec1d-fcfc-45c7-9f0d-3f2af4dee749",
       "scopeId": "ef7060ab-77b4-4cb9-955d-21b082875d8c",
       "title": "Touch-up and final finish",
@@ -168,24 +201,52 @@
       "updatedAt": "2026-03-04T23:46:54.286Z"
     },
     {
+      "id": "157fe8b3-3cbf-432e-bf6a-33f9eb08d2a9",
+      "scopeId": "dd286830-9ed0-48ac-a1b3-a061e03aa8f6",
+      "title": "Kitchen",
+      "order": 2,
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
+      "createdAt": "2026-03-31T22:50:44.748Z",
+      "updatedAt": "2026-03-31T22:53:56.983Z"
+    },
+    {
       "id": "17288abf-1e1c-4fb8-af29-a66b67a5d76c",
       "scopeId": "ef7060ab-77b4-4cb9-955d-21b082875d8c",
       "title": "Caulk + fill nail holes",
       "order": 2,
-      "progress": 0,
-      "status": "pending",
+      "progress": 10,
+      "contractor": "",
+      "deadline": "",
+      "status": "in_progress",
       "createdAt": "2026-03-04T23:46:54.286Z",
-      "updatedAt": "2026-03-04T23:46:54.286Z"
+      "updatedAt": "2026-03-26T02:43:31.228Z"
+    },
+    {
+      "id": "19ae65cb-e4b8-4577-b6bf-2bba9bc3a1ef",
+      "scopeId": "dd286830-9ed0-48ac-a1b3-a061e03aa8f6",
+      "title": "Fireplace area",
+      "order": 6,
+      "progress": 10,
+      "contractor": "",
+      "deadline": "",
+      "status": "in_progress",
+      "createdAt": "2026-03-31T22:51:40.730Z",
+      "updatedAt": "2026-03-31T22:55:17.402Z"
     },
     {
       "id": "1a041cde-967d-45c4-9207-be924682c163",
       "scopeId": "aaa5c265-453e-44b2-a8d7-0a61d697ee2d",
       "title": "Final patch/finish and alignment",
       "order": 4,
-      "progress": 0,
-      "status": "pending",
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
       "createdAt": "2026-03-04T23:46:54.286Z",
-      "updatedAt": "2026-03-04T23:46:54.286Z"
+      "updatedAt": "2026-03-26T02:40:22.034Z"
     },
     {
       "id": "1a8e4d57-518f-4df9-9035-29e7c8c50e92",
@@ -210,46 +271,64 @@
       "updatedAt": "2026-03-05T22:49:03.750Z"
     },
     {
+      "id": "310b2020-058e-4b2a-9bf3-3f79190b980b",
+      "scopeId": "dd286830-9ed0-48ac-a1b3-a061e03aa8f6",
+      "title": "Foyer",
+      "order": 4,
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
+      "createdAt": "2026-03-31T22:51:14.208Z",
+      "updatedAt": "2026-03-31T22:54:59.512Z"
+    },
+    {
       "id": "36d4bc96-b639-4756-9ac4-725ae57c8682",
       "scopeId": "05fdb8fe-97f4-4117-882e-f98b83ea999b",
       "title": "Debris/disposal staging",
       "order": 3,
-      "progress": 50,
+      "progress": 100,
       "contractor": "",
       "deadline": "",
-      "status": "in_progress",
+      "status": "completed",
       "createdAt": "2026-03-04T23:46:54.286Z",
-      "updatedAt": "2026-03-04T23:53:10.223Z"
+      "updatedAt": "2026-03-14T03:24:19.622Z"
     },
     {
       "id": "38fee1b9-f26a-41cc-b5c7-34643717a2d7",
       "scopeId": "b39a5149-50ea-4251-be4b-0017e0a4ac95",
       "title": "Secure/reinforce framing",
       "order": 3,
-      "progress": 0,
-      "status": "pending",
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
       "createdAt": "2026-03-04T23:46:54.286Z",
-      "updatedAt": "2026-03-04T23:46:54.286Z"
+      "updatedAt": "2026-03-26T02:41:03.295Z"
     },
     {
       "id": "3c51cdbd-501e-4408-9be3-38c6c60747b1",
       "scopeId": "b39a5149-50ea-4251-be4b-0017e0a4ac95",
       "title": "Frame new kitchen ceiling layout",
       "order": 1,
-      "progress": 0,
-      "status": "pending",
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
       "createdAt": "2026-03-04T23:46:54.286Z",
-      "updatedAt": "2026-03-04T23:46:54.286Z"
+      "updatedAt": "2026-03-26T02:40:55.011Z"
     },
     {
       "id": "3c5b1727-5280-40bb-a9b2-6f3e2c5dff26",
       "scopeId": "19ab611f-f9bd-4958-8e95-30c145b72fb4",
       "title": "Install drywall per new design",
       "order": 1,
-      "progress": 0,
-      "status": "pending",
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
       "createdAt": "2026-03-04T23:46:54.286Z",
-      "updatedAt": "2026-03-04T23:46:54.286Z"
+      "updatedAt": "2026-03-26T02:41:18.559Z"
     },
     {
       "id": "3dac1701-2a52-43d1-ae81-4018d228068f",
@@ -266,40 +345,48 @@
       "scopeId": "8fdc1f95-9d5f-4b19-be3d-a83133d676fe",
       "title": "Subfloor check + prep (leveling/grinding if needed)",
       "order": 1,
-      "progress": 0,
-      "status": "pending",
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
       "createdAt": "2026-03-04T23:46:54.286Z",
-      "updatedAt": "2026-03-04T23:46:54.286Z"
+      "updatedAt": "2026-03-26T02:42:48.282Z"
     },
     {
       "id": "46b3f4f0-0caa-48e1-8bda-e61cd0fe1a81",
       "scopeId": "aaa5c265-453e-44b2-a8d7-0a61d697ee2d",
       "title": "Cut/grind/repair step-down (dining to family)",
       "order": 3,
-      "progress": 0,
-      "status": "pending",
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
       "createdAt": "2026-03-04T23:46:54.286Z",
-      "updatedAt": "2026-03-04T23:46:54.286Z"
+      "updatedAt": "2026-03-26T02:40:15.921Z"
     },
     {
       "id": "477104d6-ca8f-4ab3-8c8c-24afe38032b6",
       "scopeId": "aaa5c265-453e-44b2-a8d7-0a61d697ee2d",
       "title": "Pour + finish slab (entrance to fireplace)",
       "order": 2,
-      "progress": 0,
-      "status": "pending",
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
       "createdAt": "2026-03-04T23:46:54.286Z",
-      "updatedAt": "2026-03-04T23:46:54.286Z"
+      "updatedAt": "2026-03-26T02:40:10.858Z"
     },
     {
       "id": "4771158f-7662-4ee3-80fd-3359b5ab9f8a",
       "scopeId": "8fdc1f95-9d5f-4b19-be3d-a83133d676fe",
       "title": "Final adjustments + transitions/finish",
       "order": 4,
-      "progress": 0,
-      "status": "pending",
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
       "createdAt": "2026-03-04T23:46:54.286Z",
-      "updatedAt": "2026-03-04T23:46:54.286Z"
+      "updatedAt": "2026-03-26T02:43:10.643Z"
     },
     {
       "id": "4e59115c-790c-45a6-ac24-9e7fdf619402",
@@ -330,12 +417,12 @@
       "scopeId": "bb4a521a-2128-46c9-8d3c-95575bb85f42",
       "title": "Kitchen / Living Room / Dining Room / Foyer / Fireplace",
       "order": 4,
-      "progress": 10,
+      "progress": 100,
       "contractor": "",
       "deadline": "",
-      "status": "in_progress",
+      "status": "completed",
       "createdAt": "2026-03-04T23:46:54.286Z",
-      "updatedAt": "2026-03-05T22:52:00.338Z"
+      "updatedAt": "2026-03-26T02:41:49.000Z"
     },
     {
       "id": "50fcb52b-bb2a-4e24-8e10-40e912d4b1c9",
@@ -350,26 +437,64 @@
       "updatedAt": "2026-03-09T20:19:01.517Z"
     },
     {
+      "id": "5341e465-9565-4ddf-8c18-f3949294580b",
+      "scopeId": "dd286830-9ed0-48ac-a1b3-a061e03aa8f6",
+      "title": "Guest bath cabana",
+      "order": 11,
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
+      "createdAt": "2026-03-31T22:53:16.197Z",
+      "updatedAt": "2026-03-31T22:56:07.764Z"
+    },
+    {
+      "id": "5546d02c-dd35-4879-8c5a-83abeca9f060",
+      "scopeId": "dd286830-9ed0-48ac-a1b3-a061e03aa8f6",
+      "title": "Grout",
+      "order": 12,
+      "progress": 5,
+      "contractor": "",
+      "deadline": "",
+      "status": "in_progress",
+      "createdAt": "2026-03-31T22:53:39.314Z",
+      "updatedAt": "2026-03-31T22:56:22.612Z"
+    },
+    {
       "id": "585e4436-7e80-4274-ad9c-ecaf33bfe6ee",
       "scopeId": "b9848d70-e628-4848-a5c8-75a857742b50",
       "title": "Close slab opening (rebar/mesh + concrete patch)",
       "order": 4,
-      "progress": 0,
-      "status": "pending",
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
       "createdAt": "2026-03-04T23:46:54.286Z",
-      "updatedAt": "2026-03-04T23:46:54.286Z"
+      "updatedAt": "2026-03-26T02:40:32.280Z"
+    },
+    {
+      "id": "61e5918d-7632-4195-b1e3-6edc4da5171a",
+      "scopeId": "dd286830-9ed0-48ac-a1b3-a061e03aa8f6",
+      "title": "Laundry",
+      "order": 10,
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
+      "createdAt": "2026-03-31T22:52:50.987Z",
+      "updatedAt": "2026-03-31T22:55:55.321Z"
     },
     {
       "id": "64c73652-7870-402c-b924-8eca2129984a",
       "scopeId": "1b9465e6-aaa4-45f1-a7f2-3f1d6cc48c7f",
       "title": "Ceiling Prime",
       "order": 2,
-      "progress": 30,
+      "progress": 100,
       "contractor": "Xinita",
       "deadline": "2026-03-21",
-      "status": "in_progress",
+      "status": "completed",
       "createdAt": "2026-03-05T22:54:09.704Z",
-      "updatedAt": "2026-03-09T20:20:18.880Z"
+      "updatedAt": "2026-03-26T02:41:56.062Z"
     },
     {
       "id": "65a0b71b-305e-4a4c-99fa-ab143ae42cef",
@@ -388,20 +513,36 @@
       "scopeId": "ef7060ab-77b4-4cb9-955d-21b082875d8c",
       "title": "Install baseboards (mezzanine lounge)",
       "order": 1,
-      "progress": 0,
-      "status": "pending",
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
       "createdAt": "2026-03-04T23:46:54.286Z",
-      "updatedAt": "2026-03-04T23:46:54.286Z"
+      "updatedAt": "2026-03-26T02:43:23.371Z"
     },
     {
       "id": "68315128-a66d-47dc-8638-d862489f16dd",
       "scopeId": "b9848d70-e628-4848-a5c8-75a857742b50",
       "title": "Reroute wiring + prep 4 ceiling lights (kitchen)",
       "order": 2,
-      "progress": 0,
-      "status": "pending",
+      "progress": 90,
+      "contractor": "",
+      "deadline": "",
+      "status": "in_progress",
       "createdAt": "2026-03-04T23:46:54.286Z",
-      "updatedAt": "2026-03-04T23:46:54.286Z"
+      "updatedAt": "2026-03-26T02:40:48.128Z"
+    },
+    {
+      "id": "6b550823-9a2e-4e76-9901-b2bc2e863353",
+      "scopeId": "dd286830-9ed0-48ac-a1b3-a061e03aa8f6",
+      "title": "Office",
+      "order": 7,
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
+      "createdAt": "2026-03-31T22:51:47.724Z",
+      "updatedAt": "2026-03-31T22:55:26.886Z"
     },
     {
       "id": "738179fc-c9ff-4213-9f6c-8686bf5e55f5",
@@ -424,24 +565,40 @@
       "updatedAt": "2026-03-04T23:46:54.286Z"
     },
     {
+      "id": "811d7486-d1af-4b48-ac45-db07087740bc",
+      "scopeId": "dd286830-9ed0-48ac-a1b3-a061e03aa8f6",
+      "title": "Living Room",
+      "order": 1,
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
+      "createdAt": "2026-03-31T22:50:30.030Z",
+      "updatedAt": "2026-03-31T22:53:52.437Z"
+    },
+    {
       "id": "83996d7f-8c4d-42e1-b198-f875c94f98f1",
       "scopeId": "b9848d70-e628-4848-a5c8-75a857742b50",
       "title": "Cut slab + reroute floor receptacle (family)",
       "order": 3,
-      "progress": 0,
-      "status": "pending",
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
       "createdAt": "2026-03-04T23:46:54.286Z",
-      "updatedAt": "2026-03-04T23:46:54.286Z"
+      "updatedAt": "2026-03-26T02:40:36.963Z"
     },
     {
       "id": "90875815-a04e-4e08-8134-0c75b9529422",
       "scopeId": "19ab611f-f9bd-4958-8e95-30c145b72fb4",
       "title": "Sand and prep for finish",
       "order": 3,
-      "progress": 0,
-      "status": "pending",
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
       "createdAt": "2026-03-04T23:46:54.286Z",
-      "updatedAt": "2026-03-04T23:46:54.286Z"
+      "updatedAt": "2026-03-26T02:41:29.908Z"
     },
     {
       "id": "94f3b884-c681-49a8-98ab-cd900eec0d60",
@@ -460,86 +617,120 @@
       "scopeId": "19ab611f-f9bd-4958-8e95-30c145b72fb4",
       "title": "Touch-up repairs after electrical",
       "order": 4,
-      "progress": 0,
-      "status": "pending",
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
       "createdAt": "2026-03-04T23:46:54.286Z",
-      "updatedAt": "2026-03-04T23:46:54.286Z"
+      "updatedAt": "2026-03-31T22:48:46.008Z"
+    },
+    {
+      "id": "a13a3b7c-b6c7-49d2-97d8-fa75303eec0f",
+      "scopeId": "dd286830-9ed0-48ac-a1b3-a061e03aa8f6",
+      "title": "Guest bed",
+      "order": 9,
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
+      "createdAt": "2026-03-31T22:52:28.069Z",
+      "updatedAt": "2026-03-31T22:55:45.333Z"
     },
     {
       "id": "a6d149e9-5494-4fec-8104-8a957f5ff28f",
       "scopeId": "8fdc1f95-9d5f-4b19-be3d-a83133d676fe",
       "title": "Install LVP in mezzanine lounge",
       "order": 2,
-      "progress": 0,
-      "status": "pending",
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
       "createdAt": "2026-03-04T23:46:54.286Z",
-      "updatedAt": "2026-03-04T23:46:54.286Z"
+      "updatedAt": "2026-03-26T02:42:54.601Z"
+    },
+    {
+      "id": "ab639d7d-71bf-4d4a-b6be-05d4016da1df",
+      "scopeId": "dd286830-9ed0-48ac-a1b3-a061e03aa8f6",
+      "title": "Master Bedroom",
+      "order": 5,
+      "progress": 50,
+      "contractor": "",
+      "deadline": "",
+      "status": "in_progress",
+      "createdAt": "2026-03-31T22:51:24.822Z",
+      "updatedAt": "2026-03-31T22:55:09.434Z"
     },
     {
       "id": "af489790-24fc-496a-a355-c1e61be80012",
       "scopeId": "8fdc1f95-9d5f-4b19-be3d-a83133d676fe",
       "title": "Install LVP on stairs (treads/risers)",
       "order": 3,
-      "progress": 0,
-      "status": "pending",
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
       "createdAt": "2026-03-04T23:46:54.286Z",
-      "updatedAt": "2026-03-04T23:46:54.286Z"
+      "updatedAt": "2026-03-26T02:43:02.072Z"
     },
     {
       "id": "b01ca2fb-c85d-48a0-ac8a-08738f4a0d8c",
       "scopeId": "19ab611f-f9bd-4958-8e95-30c145b72fb4",
       "title": "Tape + mud (1st/2nd coat)",
       "order": 2,
-      "progress": 0,
-      "status": "pending",
+      "progress": 100,
+      "contractor": "Carlos",
+      "deadline": "",
+      "status": "completed",
       "createdAt": "2026-03-04T23:46:54.286Z",
-      "updatedAt": "2026-03-04T23:46:54.286Z"
+      "updatedAt": "2026-03-26T02:41:25.277Z"
     },
     {
       "id": "b7a5d2cb-f10d-4611-90ac-08b76a4f83ba",
       "scopeId": "b39a5149-50ea-4251-be4b-0017e0a4ac95",
       "title": "Adjust framing for lighting layout",
       "order": 2,
-      "progress": 0,
-      "status": "pending",
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
       "createdAt": "2026-03-04T23:46:54.286Z",
-      "updatedAt": "2026-03-04T23:46:54.286Z"
+      "updatedAt": "2026-03-26T02:40:59.194Z"
     },
     {
       "id": "b9e78385-b21e-4f44-82c5-e8c88b38b9ba",
       "scopeId": "1b9465e6-aaa4-45f1-a7f2-3f1d6cc48c7f",
       "title": "Upstairs doors and trims Painted",
       "order": 4,
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
+      "createdAt": "2026-03-05T22:54:52.059Z",
+      "updatedAt": "2026-03-31T22:48:54.460Z"
+    },
+    {
+      "id": "baa4c72a-dadf-4554-9a88-e9a687039227",
+      "scopeId": "dd286830-9ed0-48ac-a1b3-a061e03aa8f6",
+      "title": "Steps Living Room",
+      "order": 13,
       "progress": 0,
       "contractor": "",
       "deadline": "",
       "status": "pending",
-      "createdAt": "2026-03-05T22:54:52.059Z",
-      "updatedAt": "2026-03-05T22:54:52.059Z"
+      "createdAt": "2026-03-31T22:54:31.737Z",
+      "updatedAt": "2026-03-31T22:54:31.737Z"
     },
     {
       "id": "bad9258a-083b-445a-9dd6-40f00cb1f0c6",
       "scopeId": "05fdb8fe-97f4-4117-882e-f98b83ea999b",
       "title": "General jobsite setup",
       "order": 4,
-      "progress": 80,
+      "progress": 100,
       "contractor": "",
       "deadline": "",
-      "status": "in_progress",
+      "status": "completed",
       "createdAt": "2026-03-04T23:46:54.286Z",
-      "updatedAt": "2026-03-04T23:53:19.150Z"
-    },
-    {
-      "id": "bcdc9420-e596-4eba-8318-c23b534d2740",
-      "scopeId": "1b9465e6-aaa4-45f1-a7f2-3f1d6cc48c7f",
-      "title": "Prep of spray painting",
-      "order": 1,
-      "progress": 0,
-      "contractor": "",
-      "deadline": "",
-      "status": "pending",
-      "createdAt": "2026-03-05T22:53:55.471Z",
-      "updatedAt": "2026-03-05T22:53:55.471Z"
+      "updatedAt": "2026-03-14T19:23:58.017Z"
     },
     {
       "id": "bd8e9254-3681-49a3-bd9f-fc4c7b53b2d7",
@@ -566,14 +757,28 @@
       "updatedAt": "2026-03-05T22:49:37.013Z"
     },
     {
+      "id": "e3cf5473-0011-44bb-a43e-b9f2656d084d",
+      "scopeId": "dd286830-9ed0-48ac-a1b3-a061e03aa8f6",
+      "title": "Family room",
+      "order": 3,
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
+      "createdAt": "2026-03-31T22:51:02.174Z",
+      "updatedAt": "2026-03-31T22:54:05.162Z"
+    },
+    {
       "id": "e50f9177-910c-4981-a420-8f4e7249f9e9",
       "scopeId": "b39a5149-50ea-4251-be4b-0017e0a4ac95",
       "title": "Verify level and alignment",
       "order": 4,
-      "progress": 0,
-      "status": "pending",
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
       "createdAt": "2026-03-04T23:46:54.286Z",
-      "updatedAt": "2026-03-04T23:46:54.286Z"
+      "updatedAt": "2026-03-26T02:41:10.842Z"
     },
     {
       "id": "ed36b9be-1d5d-4564-8133-d57e4c2c5857",
@@ -614,25 +819,37 @@
       "scopeId": "aaa5c265-453e-44b2-a8d7-0a61d697ee2d",
       "title": "Forms + reinforcement for slab (4x16)",
       "order": 1,
-      "progress": 15,
-      "contractor": "Alex",
+      "progress": 100,
+      "contractor": "Jhon",
       "deadline": "2026-03-14",
-      "status": "in_progress",
+      "status": "completed",
       "createdAt": "2026-03-04T23:46:54.286Z",
-      "updatedAt": "2026-03-10T17:59:26.840Z"
+      "updatedAt": "2026-03-26T02:40:02.744Z"
     },
     {
       "id": "fc56feea-d798-44bb-b28e-8dad8453a354",
       "scopeId": "b9848d70-e628-4848-a5c8-75a857742b50",
       "title": "Remove/secure existing soffit wiring",
       "order": 1,
-      "progress": 50,
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
+      "createdAt": "2026-03-04T23:46:54.286Z",
+      "updatedAt": "2026-03-14T19:25:42.030Z"
+    },
+    {
+      "id": "ff7ea3ee-869d-45f3-a215-58677b78c09e",
+      "scopeId": "dd286830-9ed0-48ac-a1b3-a061e03aa8f6",
+      "title": "Powder Room",
+      "order": 8,
+      "progress": 10,
       "contractor": "",
       "deadline": "",
       "status": "in_progress",
-      "createdAt": "2026-03-04T23:46:54.286Z",
-      "updatedAt": "2026-03-05T22:50:30.751Z"
+      "createdAt": "2026-03-31T22:52:06.885Z",
+      "updatedAt": "2026-03-31T22:55:34.405Z"
     }
   ],
-  "updatedAt": "2026-03-11T00:21:56.592Z"
+  "updatedAt": "2026-03-31T22:56:43.963Z"
 }
