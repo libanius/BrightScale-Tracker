@@ -72,10 +72,10 @@
       "id": "4a2e4fcf-de61-4afe-92f5-328437292fc2",
       "unitId": "364cd9ac-06e9-46d3-978a-cd631b0e5ac0",
       "title": "Final Clean + Walkthrough",
-      "order": 10,
+      "order": 11,
       "weight": 0.02,
       "createdAt": "2026-03-04T23:46:54.286Z",
-      "updatedAt": "2026-03-04T23:46:54.286Z"
+      "updatedAt": "2026-03-31T23:04:13.502Z"
     },
     {
       "id": "8fdc1f95-9d5f-4b19-be3d-a83133d676fe",
@@ -126,10 +126,10 @@
       "id": "dd286830-9ed0-48ac-a1b3-a061e03aa8f6",
       "unitId": "364cd9ac-06e9-46d3-978a-cd631b0e5ac0",
       "title": "Tile flooring",
-      "order": 11,
+      "order": 10,
       "weight": 0.5,
       "createdAt": "2026-03-31T22:50:08.343Z",
-      "updatedAt": "2026-03-31T22:50:08.343Z"
+      "updatedAt": "2026-03-31T23:04:03.563Z"
     },
     {
       "id": "ef7060ab-77b4-4cb9-955d-21b082875d8c",
@@ -851,5 +851,5 @@
       "updatedAt": "2026-03-31T22:55:34.405Z"
     }
   ],
-  "updatedAt": "2026-03-31T22:56:43.963Z"
+  "updatedAt": "2026-03-31T23:05:20.835Z"
 }
