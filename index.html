@@ -874,13 +874,48 @@ function renderUnitDetail(main) {
 /* ═══════════════════════════════════════════
    GITHUB SYNC
 ═══════════════════════════════════════════ */
+var BRIGHTSCALE_GITHUB = {
+  user: 'libanius',
+  repo: 'BrightScale-Tracker',
+  tokenKey: 'brightscale_gh_token',
+  lastSyncKey: 'brightscale_last_sync'
+};
+
+function getBrightScaleGitHubConfig() {
+  var token = localStorage.getItem(BRIGHTSCALE_GITHUB.tokenKey) || '';
+
+  // One-time migration from the old shared keys, only when they point here.
+  if (!token) {
+    var oldUser = localStorage.getItem('gh_user') || '';
+    var oldRepo = localStorage.getItem('gh_repo') || '';
+    if (oldUser.toLowerCase() === BRIGHTSCALE_GITHUB.user.toLowerCase() &&
+        oldRepo.toLowerCase() === BRIGHTSCALE_GITHUB.repo.toLowerCase()) {
+      token = localStorage.getItem('gh_token') || '';
+      if (token) localStorage.setItem(BRIGHTSCALE_GITHUB.tokenKey, token);
+    }
+  }
+
+  return {
+    user: BRIGHTSCALE_GITHUB.user,
+    repo: BRIGHTSCALE_GITHUB.repo,
+    token: token
+  };
+}
+
+function decodeGitHubContent(content) {
+  var clean = (content || '').replace(/\n/g, '');
+  try { return decodeURIComponent(escape(atob(clean))); }
+  catch(e) { return atob(clean); }
+}
+
 function syncToGitHub(callback) {
-  var user = localStorage.getItem('gh_user');
-  var repo = localStorage.getItem('gh_repo');
-  var token = localStorage.getItem('gh_token');
+  var config = getBrightScaleGitHubConfig();
+  var user = config.user;
+  var repo = config.repo;
+  var token = config.token;
   
-  if (!user || !repo || !token) {
-    toast('Configure o GitHub em Ajustes primeiro', 'w', 4000);
+  if (!token) {
+    toast('Configure o token do BrightScale em Ajustes primeiro', 'w', 4000);
     if (callback) callback(false);
     return;
   }
@@ -939,11 +974,28 @@ function syncToGitHub(callback) {
         throw new Error(err.message || 'Upload failed');
       });
     }
+    return res.json().then(function() {
+      return fetch(apiUrl + '?verify=' + Date.now(), {
+        cache: 'no-store',
+        headers: {
+          'Authorization': 'token ' + token,
+          'Accept': 'application/vnd.github.v3+json'
+        }
+      });
+    });
+  })
+  .then(function(res) {
+    if (!res.ok) throw new Error('Não foi possível confirmar o backup no GitHub');
     return res.json();
   })
+  .then(function(remoteFile) {
+    if (!remoteFile.content || decodeGitHubContent(remoteFile.content) !== json) {
+      throw new Error('O backup remoto não corresponde aos dados locais');
+    }
+  })
   .then(function() {
-    localStorage.setItem('last_sync', new Date().toISOString());
-    toast('✅ Sincronizado com GitHub!');
+    localStorage.setItem(BRIGHTSCALE_GITHUB.lastSyncKey, new Date().toISOString());
+    toast('✅ Backup confirmado no GitHub!');
     if (callback) callback(true);
   })
   .catch(function(err) {
@@ -1087,7 +1139,7 @@ function renderReports(main) {
   
   syncCard.appendChild(syncBtn);
   
-  var lastSync = localStorage.getItem('last_sync');
+  var lastSync = localStorage.getItem(BRIGHTSCALE_GITHUB.lastSyncKey);
   if (lastSync) {
     var syncInfo = div('');
     syncInfo.style.cssText = 'font-size:11px;color:var(--mu);margin-top:8px;text-align:center;';
@@ -1415,8 +1467,8 @@ function renderSettings(main) {
   ghFg1.appendChild(mkLbl('GitHub Username'));
   var ghUserInp = el('input', '');
   ghUserInp.type = 'text';
-  ghUserInp.placeholder = 'seu-usuario';
-  ghUserInp.value = localStorage.getItem('gh_user') || '';
+  ghUserInp.value = BRIGHTSCALE_GITHUB.user;
+  ghUserInp.readOnly = true;
   ghFg1.appendChild(ghUserInp);
   ghCard.appendChild(ghFg1);
   
@@ -1424,8 +1476,8 @@ function renderSettings(main) {
   ghFg2.appendChild(mkLbl('Repository Name'));
   var ghRepoInp = el('input', '');
   ghRepoInp.type = 'text';
-  ghRepoInp.placeholder = 'BrightScale-Tracker';
-  ghRepoInp.value = localStorage.getItem('gh_repo') || 'BrightScale-Tracker';
+  ghRepoInp.value = BRIGHTSCALE_GITHUB.repo;
+  ghRepoInp.readOnly = true;
   ghFg2.appendChild(ghRepoInp);
   ghCard.appendChild(ghFg2);
   
@@ -1434,36 +1486,33 @@ function renderSettings(main) {
   var ghTokenInp = el('input', '');
   ghTokenInp.type = 'password';
   ghTokenInp.placeholder = 'ghp_xxxxxxxxxxxxxxxxxxxx';
-  ghTokenInp.value = localStorage.getItem('gh_token') || '';
+  ghTokenInp.value = getBrightScaleGitHubConfig().token;
   ghFg3.appendChild(ghTokenInp);
   ghCard.appendChild(ghFg3);
   
   var ghSaveBtn = btn('btn bp bfull', 'Salvar Configuração', function() {
-    var user = ghUserInp.value.trim();
-    var repo = ghRepoInp.value.trim();
     var token = ghTokenInp.value.trim();
     
-    if (!user || !repo || !token) {
-      toast('Preencha todos os campos', 'w');
+    if (!token) {
+      toast('Informe o token do GitHub', 'w');
       return;
     }
     
-    localStorage.setItem('gh_user', user);
-    localStorage.setItem('gh_repo', repo);
-    localStorage.setItem('gh_token', token);
+    localStorage.setItem(BRIGHTSCALE_GITHUB.tokenKey, token);
     
-    toast('Configuração salva!');
+    toast('Configuração do BrightScale salva!');
   });
   ghSaveBtn.style.marginTop = '4px';
   ghCard.appendChild(ghSaveBtn);
   
   var ghTestBtn = btn('btn bs bfull', 'Testar Conexão', function() {
-    var user = localStorage.getItem('gh_user');
-    var repo = localStorage.getItem('gh_repo');
-    var token = localStorage.getItem('gh_token');
+    var config = getBrightScaleGitHubConfig();
+    var user = config.user;
+    var repo = config.repo;
+    var token = config.token;
     
-    if (!user || !repo || !token) {
-      toast('Configure o GitHub primeiro', 'w');
+    if (!token) {
+      toast('Configure o token do BrightScale primeiro', 'w');
       return;
     }
     
@@ -1501,6 +1550,73 @@ function renderSettings(main) {
   ghCard.appendChild(ghTestBtn);
   
   main.appendChild(ghCard);
+
+  var reloadCard = div('card');
+  reloadCard.appendChild(div('ct', 'Recarregar App'));
+  reloadCard.appendChild(div('', '<div style="font-size:13px;color:var(--mu);margin-bottom:12px;line-height:1.6">' +
+    'Confirma o backup no repositório <b style="color:var(--tx)">libanius/BrightScale-Tracker</b>, ' +
+    'limpa o cache do app e abre a versão mais recente. Os dados locais do IndexedDB são mantidos.</div>'));
+  var reloadStatus = div('');
+  reloadStatus.style.cssText = 'display:none;font-size:12px;font-family:monospace;padding:8px 12px;border-radius:8px;background:var(--sf2);border:1px solid var(--bd);margin-bottom:10px;';
+  reloadCard.appendChild(reloadStatus);
+  var reloadAppBtn = btn('btn bp bfull', 'Recarregar App Agora', function() {
+    showConfirm({
+      title: 'Backup e recarregar',
+      msg: 'Confirmar o backup no GitHub, limpar o cache e abrir a versão mais recente do BrightScale?',
+      yesL: 'Backup e recarregar',
+      onYes: function() {
+        reloadAppBtn.disabled = true;
+        reloadAppBtn.textContent = 'Confirmando backup...';
+        reloadStatus.style.display = '';
+        reloadStatus.textContent = 'Enviando dados para o GitHub...';
+
+        syncToGitHub(function(success) {
+          if (!success) {
+            reloadAppBtn.disabled = false;
+            reloadAppBtn.textContent = 'Recarregar App Agora';
+            reloadStatus.textContent = 'Recarregamento cancelado: o backup não foi confirmado.';
+            return;
+          }
+
+          reloadStatus.textContent = 'Backup confirmado. Limpando cache...';
+          var chain = ('caches' in window)
+            ? caches.keys().then(function(keys) {
+                var ownKeys = keys.filter(function(key) {
+                  return key.toLowerCase().indexOf('brightscale') >= 0;
+                });
+                return Promise.all(ownKeys.map(function(key) { return caches.delete(key); }));
+              })
+            : Promise.resolve();
+
+          if ('serviceWorker' in navigator) {
+            chain = chain.then(function() {
+              return navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                var ownRegistrations = registrations.filter(function(registration) {
+                  return registration.scope.toLowerCase().indexOf('/brightscale-tracker/') >= 0;
+                });
+                return Promise.all(ownRegistrations.map(function(registration) {
+                  return registration.unregister();
+                }));
+              });
+            });
+          }
+
+          chain.then(function() {
+            reloadStatus.textContent = 'Cache limpo. Abrindo versão mais recente...';
+            var url = location.href.split('?')[0] + '?v=' + Date.now();
+            location.replace(url);
+          }).catch(function(err) {
+            reloadAppBtn.disabled = false;
+            reloadAppBtn.textContent = 'Recarregar App Agora';
+            reloadStatus.textContent = 'Falha ao limpar cache: ' + err.message;
+            toast('Erro ao limpar cache', 'e');
+          });
+        });
+      }
+    });
+  });
+  reloadCard.appendChild(reloadAppBtn);
+  main.appendChild(reloadCard);
   
   var pc = div('card');
   var ph = div('');

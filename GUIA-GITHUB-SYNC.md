@@ -29,11 +29,11 @@
 
 1. Abra o **BrightScale Tracker** no celular
 2. Vá em **Ajustes** (última aba)
-3. Na seção **"Sincronização GitHub"**, preencha:
+3. Na seção **"Sincronização GitHub"**, confirme o destino fixo e informe o token:
    
    ```
-   GitHub Username: libanius
-   Repository Name: BrightScale-Tracker
+   GitHub Username: libanius (fixo)
+   Repository Name: BrightScale-Tracker (fixo)
    GitHub Token: [cole o token que copiou]
    ```
 
