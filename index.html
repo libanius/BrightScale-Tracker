@@ -120,11 +120,9 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;background:var(--ac);
 .icon-btn{background:none;border:none;padding:6px;cursor:pointer;color:var(--mu);font-size:16px;line-height:1;}
 .icon-btn:active{opacity:.6;}
 .logo-img{width:48px;height:48px;margin-right:12px;vertical-align:middle;}
-.splash-screen{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;}
-.splash-logo{width:128px;height:128px;margin-bottom:24px;animation:pulse 2s ease-in-out infinite;}
+.splash-screen{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:24px;}
+.splash-logo{width:min(88vw,560px);height:auto;max-height:52vh;margin-bottom:26px;animation:pulse 2s ease-in-out infinite;}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.7;transform:scale(0.95);}}
-.splash-text{font-size:24px;font-weight:700;margin-bottom:8px;}
-.splash-subtitle{font-size:14px;color:var(--mu);margin-bottom:16px;}
 .spinner{width:40px;height:40px;border:4px solid var(--bd);border-top-color:var(--ac);border-radius:50%;animation:spin 1s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .dash-logo{width:80px;height:80px;margin:0 auto 16px;display:block;}
@@ -143,6 +141,10 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;background:var(--ac);
 var LOGO_HEADER = 'data:image/png;base64,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';
 
 /* Global error handlers */
+var SPLASH_LOGO = 'brightscale-splash-logo.svg';
+var SPLASH_MIN_MS = 2500;
+var splashStartedAt = Date.now();
+
 window.onerror = function(msg, url, line, col, error) {
   var el = document.getElementById('main');
   if (el) {
@@ -172,9 +174,7 @@ document.addEventListener('DOMContentLoaded', function() {
   var main = document.getElementById('main');
   if (main && !main.innerHTML) {
     main.innerHTML = '<div class="splash-screen">' +
-      '<img src="' + LOGO_HEADER + '" class="splash-logo" alt="BrightScale"/>' +
-      '<div class="splash-text">BrightScale Tracker</div>' +
-      '<div class="splash-subtitle">Construction Management</div>' +
+      '<img src="' + SPLASH_LOGO + '" class="splash-logo" alt="BrightScale Pro Construction"/>' +
       '<div class="spinner"></div></div>';
   }
 });
@@ -3330,7 +3330,10 @@ function openTaskEdit(task) {
 openDB().then(function() {
   F.date = today(); F.useNow = true;
   RS.period = 'today'; RS.df = today(); RS.dt = today();
-  return reload();
+  var remaining = Math.max(0, SPLASH_MIN_MS - (Date.now() - splashStartedAt));
+  return new Promise(function(resolve) {
+    setTimeout(resolve, remaining);
+  }).then(reload);
 }).catch(function(err) {
   document.getElementById('main').innerHTML =
     '<div class="empty"><div class="ei">⚠️</div>' +
