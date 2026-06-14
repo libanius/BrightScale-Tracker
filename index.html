@@ -287,7 +287,7 @@ var TEMPLATES = {
 var DB;
 function openDB() {
   return new Promise(function(res, rej) {
-    var r = indexedDB.open('brightscale_v1', 1);
+    var r = indexedDB.open('brightscale_v1', 2);
     r.onupgradeneeded = function(e) {
       var d = e.target.result;
       if (!d.objectStoreNames.contains('projects'))
@@ -298,6 +298,8 @@ function openDB() {
         d.createObjectStore('scopes', {keyPath: 'id'});
       if (!d.objectStoreNames.contains('tasks'))
         d.createObjectStore('tasks', {keyPath: 'id'});
+      if (!d.objectStoreNames.contains('documents'))
+        d.createObjectStore('documents', {keyPath: 'id'});
     };
     r.onsuccess = function(e) { DB = e.target.result; res(); };
     r.onerror = function(e) { rej(e.target.error); };
@@ -315,6 +317,14 @@ function dbPut(store, obj) {
   return new Promise(function(res, rej) {
     var t = DB.transaction(store, 'readwrite');
     var r = t.objectStore(store).put(obj);
+    r.onsuccess = function() { res(r.result); };
+    r.onerror = function() { rej(r.error); };
+  });
+}
+function dbGet(store, id) {
+  return new Promise(function(res, rej) {
+    var t = DB.transaction(store, 'readonly');
+    var r = t.objectStore(store).get(id);
     r.onsuccess = function() { res(r.result); };
     r.onerror = function() { rej(r.error); };
   });
@@ -548,6 +558,422 @@ function render() {
 }
 
 /* ═══════════════════════════════════════════
+   CONTRACT / ESTIMATE IMPORT
+═══════════════════════════════════════════ */
+function readFileAsArrayBuffer(file) {
+  if (file.arrayBuffer) return file.arrayBuffer();
+  return new Promise(function(resolve, reject) {
+    var reader = new FileReader();
+    reader.onload = function() { resolve(reader.result); };
+    reader.onerror = function() { reject(reader.error); };
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+function loadExternalScript(src, globalName) {
+  if (globalName && window[globalName]) return Promise.resolve(window[globalName]);
+  return new Promise(function(resolve, reject) {
+    var existing = document.querySelector('script[data-lib="' + src + '"]');
+    if (existing) {
+      existing.addEventListener('load', function() { resolve(globalName ? window[globalName] : true); });
+      existing.addEventListener('error', reject);
+      return;
+    }
+    var script = document.createElement('script');
+    script.src = src;
+    script.async = true;
+    script.setAttribute('data-lib', src);
+    script.onload = function() { resolve(globalName ? window[globalName] : true); };
+    script.onerror = function() { reject(new Error('Não foi possível carregar o leitor do documento')); };
+    document.head.appendChild(script);
+  });
+}
+
+function extractPdfText(file) {
+  return readFileAsArrayBuffer(file).then(function(buffer) {
+    return import('https://cdn.jsdelivr.net/npm/pdfjs-dist@6.0.227/legacy/build/pdf.mjs')
+      .then(function(pdfjs) {
+        pdfjs.GlobalWorkerOptions.workerSrc =
+          'https://cdn.jsdelivr.net/npm/pdfjs-dist@6.0.227/legacy/build/pdf.worker.mjs';
+        return pdfjs.getDocument({data: new Uint8Array(buffer)}).promise;
+      })
+      .then(function(pdf) {
+        var pages = [];
+        for (var pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+          pages.push(pdf.getPage(pageNumber).then(function(page) {
+            return page.getTextContent().then(function(content) {
+              var lines = [];
+              var current = '';
+              content.items.forEach(function(item) {
+                current += (current ? ' ' : '') + item.str;
+                if (item.hasEOL) {
+                  lines.push(current);
+                  current = '';
+                }
+              });
+              if (current) lines.push(current);
+              return lines.join('\n');
+            });
+          }));
+        }
+        return Promise.all(pages).then(function(textPages) { return textPages.join('\n'); });
+      });
+  });
+}
+
+function extractDocxText(file) {
+  return Promise.all([
+    readFileAsArrayBuffer(file),
+    loadExternalScript(
+      'https://cdn.jsdelivr.net/npm/mammoth@1.12.0/mammoth.browser.min.js',
+      'mammoth'
+    )
+  ]).then(function(result) {
+    return window.mammoth.extractRawText({arrayBuffer: result[0]});
+  }).then(function(result) {
+    return result.value || '';
+  });
+}
+
+function extractDocumentText(file) {
+  var name = file.name.toLowerCase();
+  if (file.type === 'application/pdf' || /\.pdf$/.test(name)) return extractPdfText(file);
+  if (/\.docx$/.test(name)) return extractDocxText(file);
+  if (/\.txt$|\.csv$|\.md$/.test(name) || /^text\//.test(file.type)) return file.text();
+  return Promise.reject(new Error('Formato não suportado. Use PDF com texto, DOCX ou TXT.'));
+}
+
+function cleanDocumentLine(line) {
+  return String(line || '').replace(/\s+/g, ' ').replace(/^[•·▪◦\-–—\s]+/, '').trim();
+}
+
+function findLabeledValue(lines, labels) {
+  var sortedLabels = labels.slice().sort(function(a, b) { return b.length - a.length; });
+  var labelSource = sortedLabels.join('|');
+  var inline = new RegExp('^(?:' + labelSource + ')\\s*[:#-]\\s*(.+)$', 'i');
+  for (var i = 0; i < lines.length; i++) {
+    var match = lines[i].match(inline);
+    if (match && match[1].trim()) return match[1].trim();
+    if (new RegExp('^(?:' + labelSource + ')\\s*[:#-]?$', 'i').test(lines[i]) && lines[i + 1]) {
+      return lines[i + 1];
+    }
+  }
+  return '';
+}
+
+function parseMoney(text) {
+  var matches = String(text || '').match(/\$\s*[\d,]+(?:\.\d{2})?/g);
+  if (!matches || !matches.length) return 0;
+  return Number(matches[matches.length - 1].replace(/[$,\s]/g, '')) || 0;
+}
+
+function categorizeWorkItem(text) {
+  var value = text.toLowerCase();
+  var categories = [
+    ['Demolition', /demo|demolition|remove|tear out|disposal|dumpster/],
+    ['Site Preparation', /permit|mobilization|protection|site prep|layout|engineering/],
+    ['Framing & Drywall', /framing|drywall|sheetrock|plaster|insulation/],
+    ['Electrical', /electric|outlet|switch|lighting|light fixture|panel|wiring/],
+    ['Plumbing', /plumb|faucet|toilet|sink|shower|tub|water heater|drain/],
+    ['HVAC', /hvac|air condition|duct|thermostat|ventilation/],
+    ['Flooring & Tile', /tile|floor|lvp|vinyl|laminate|hardwood|grout|backsplash/],
+    ['Painting', /paint|primer|sanding|wall finish|ceiling finish/],
+    ['Cabinets & Carpentry', /cabinet|carpentry|baseboard|trim|door|closet|countertop/],
+    ['Roofing & Exterior', /roof|stucco|siding|exterior|gutter|window/],
+    ['Fixtures & Appliances', /appliance|fixture|hardware|mirror|accessor/],
+    ['Final Phase', /final clean|cleaning|punch|inspection|walkthrough/]
+  ];
+  for (var i = 0; i < categories.length; i++) {
+    if (categories[i][1].test(value)) return categories[i][0];
+  }
+  return 'General Construction';
+}
+
+function buildScopesFromDocument(lines) {
+  var groups = {};
+  var seen = {};
+  var workWords = /demo|remove|install|replace|repair|paint|floor|tile|plumb|electric|drywall|framing|cabinet|roof|clean|permit|fixture|door|window|hvac|concrete|stucco|countertop/i;
+
+  lines.forEach(function(original) {
+    var line = cleanDocumentLine(original);
+    if (line.length < 4 || line.length > 180) return;
+    if (/^(grand\s+)?(sub)?total|contract amount|tax|deposit|balance|client|customer|address|phone|email|estimate|proposal|invoice|date|terms/i.test(line)) return;
+    var amount = parseMoney(line);
+    if (!amount && !workWords.test(line)) return;
+
+    var title = line.replace(/\$\s*[\d,]+(?:\.\d{2})?/g, '')
+      .replace(/\s{2,}/g, ' ')
+      .replace(/[|:;\-–—\s]+$/, '')
+      .trim();
+    if (title.length < 4 || /^\d+(?:\.\d+)?$/.test(title)) return;
+    var key = title.toLowerCase();
+    if (seen[key]) return;
+    seen[key] = true;
+
+    var category = categorizeWorkItem(title);
+    if (!groups[category]) groups[category] = {title: category, amount: 0, tasks: []};
+    groups[category].amount += amount;
+    groups[category].tasks.push({title: title, order: groups[category].tasks.length + 1});
+  });
+
+  var scopes = Object.keys(groups).map(function(key) { return groups[key]; });
+  if (!scopes.length) {
+    scopes = [{
+      title: 'Contract Scope',
+      amount: 0,
+      tasks: [{title: 'Review original contract and define work items', order: 1}]
+    }];
+  }
+  var totalAmount = scopes.reduce(function(sum, scope) { return sum + scope.amount; }, 0);
+  scopes.forEach(function(scope, index) {
+    scope.order = index + 1;
+    scope.weight = totalAmount ? scope.amount / totalAmount : 1 / scopes.length;
+    delete scope.amount;
+  });
+  return scopes;
+}
+
+function analyzeContractText(text, file) {
+  var lines = text.split(/\r?\n/).map(cleanDocumentLine).filter(Boolean);
+  if (lines.join('').length < 30) {
+    throw new Error('O documento não contém texto suficiente. Se for PDF escaneado, será necessário OCR.');
+  }
+
+  var client = findLabeledValue(lines, [
+    'client', 'customer', 'prepared for', 'proposal for', 'bill to', 'owner'
+  ]);
+  var address = findLabeledValue(lines, [
+    'project address', 'job address', 'service address', 'property address', 'address', 'job site'
+  ]);
+  if (!address) {
+    address = lines.filter(function(line) {
+      return /\d{1,6}\s+.+\b(st|street|ave|avenue|rd|road|blvd|boulevard|dr|drive|ln|lane|ct|court|way|pkwy|parkway)\b/i.test(line);
+    })[0] || '';
+  }
+
+  var total = 0;
+  for (var i = lines.length - 1; i >= 0; i--) {
+    if (/(grand total|contract amount|contract total|estimate total|proposal total|total due|^total\b)/i.test(lines[i])) {
+      total = parseMoney(lines[i]);
+      if (!total && lines[i + 1]) total = parseMoney(lines[i + 1]);
+      if (total) break;
+    }
+  }
+  var projectName = findLabeledValue(lines, ['project', 'project name', 'job name']);
+  if (!projectName) projectName = client || file.name.replace(/\.[^.]+$/, '');
+
+  var scopes = buildScopesFromDocument(lines);
+  var scopeNames = scopes.map(function(scope) { return scope.title; });
+  var summary = 'Documento "' + file.name + '" analisado com ' + scopes.length +
+    ' scope(s): ' + scopeNames.slice(0, 6).join(', ') + '.';
+
+  return {
+    projectName: projectName,
+    clientName: client,
+    address: address,
+    total: total,
+    summary: summary,
+    unitNumber: (address.match(/^\d+/) || ['Main'])[0],
+    scopes: scopes,
+    rawText: text
+  };
+}
+
+function openContractImport() {
+  var input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.pdf,.docx,.txt,.md,text/plain,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+  input.onchange = function() {
+    var file = input.files && input.files[0];
+    if (!file) return;
+    if (file.size > 20 * 1024 * 1024) {
+      toast('O arquivo deve ter no máximo 20 MB', 'w', 5000);
+      return;
+    }
+    toast('Lendo contrato...', '', 3000);
+    extractDocumentText(file)
+      .then(function(text) { return analyzeContractText(text, file); })
+      .then(function(analysis) { openContractReview(file, analysis); })
+      .catch(function(err) {
+        console.error('Contract import error:', err);
+        toast('Não foi possível ler: ' + err.message, 'e', 7000);
+      });
+  };
+  input.click();
+}
+
+function openContractReview(file, analysis) {
+  showModal(function(mo, close) {
+    mo.appendChild(div('mtit', 'Revisar contrato'));
+    mo.appendChild(div('', '<div style="font-size:12px;color:var(--mu);margin-bottom:14px;line-height:1.5">' +
+      'Revise os dados antes de criar o projeto. Arquivo: <b style="color:var(--tx)">' +
+      esc(file.name) + '</b></div>'));
+
+    function addField(label, value, type) {
+      var field = div('fg');
+      field.appendChild(mkLbl(label));
+      var input = el(type === 'textarea' ? 'textarea' : 'input', '');
+      if (type !== 'textarea') input.type = type || 'text';
+      input.value = value || '';
+      if (type === 'textarea') input.style.minHeight = '80px';
+      field.appendChild(input);
+      mo.appendChild(field);
+      return input;
+    }
+
+    var nameInput = addField('Nome do Projeto', analysis.projectName);
+    var clientInput = addField('Cliente', analysis.clientName);
+    var addressInput = addField('Endereço', analysis.address);
+    var totalInput = addField('Total do Projeto (US$)', analysis.total ? analysis.total.toFixed(2) : '', 'number');
+    var summaryInput = addField('Sumário', analysis.summary, 'textarea');
+    var unitInput = addField('Unit / Identificação', analysis.unitNumber);
+    var scopesInput = addField('Template gerado (JSON)', JSON.stringify(analysis.scopes, null, 2), 'textarea');
+    scopesInput.style.minHeight = '220px';
+
+    var row = div('brow');
+    var cancel = btn('btn bs', 'Cancelar', close);
+    cancel.style.flex = '1';
+    var create = btn('btn bp', 'Criar Projeto', function() {
+      var scopes;
+      try {
+        scopes = JSON.parse(scopesInput.value);
+        if (!Array.isArray(scopes) || !scopes.length) throw new Error();
+      } catch(e) {
+        toast('O template JSON de scopes é inválido', 'w');
+        return;
+      }
+      if (!nameInput.value.trim()) {
+        toast('Informe o nome do projeto', 'w');
+        return;
+      }
+      create.disabled = true;
+      create.textContent = 'Criando...';
+      createProjectFromContract(file, analysis.rawText, {
+        projectName: nameInput.value.trim(),
+        clientName: clientInput.value.trim(),
+        address: addressInput.value.trim(),
+        total: Number(totalInput.value) || 0,
+        summary: summaryInput.value.trim(),
+        unitNumber: unitInput.value.trim() || 'Main',
+        scopes: scopes
+      }).then(function(projectId) {
+        close();
+        S.currentProjectId = projectId;
+        S.currentUnitId = null;
+        return reload();
+      }).then(function() {
+        toast('Projeto criado a partir do contrato!');
+      }).catch(function(err) {
+        create.disabled = false;
+        create.textContent = 'Criar Projeto';
+        toast('Erro ao criar projeto: ' + err.message, 'e', 6000);
+      });
+    });
+    create.style.flex = '1';
+    row.appendChild(cancel);
+    row.appendChild(create);
+    mo.appendChild(row);
+  });
+}
+
+function createProjectFromContract(file, rawText, data) {
+  var now = new Date().toISOString();
+  var projectId = uid();
+  var unitId = uid();
+  var documentId = uid();
+  var promises = [
+    dbPut('documents', {
+      id: documentId,
+      projectId: projectId,
+      name: file.name,
+      type: file.type || 'application/octet-stream',
+      size: file.size,
+      file: file,
+      extractedText: rawText,
+      createdAt: now
+    }),
+    dbPut('projects', {
+      id: projectId,
+      name: data.projectName,
+      address: data.address,
+      client: {name: data.clientName, contact: ''},
+      contractTotal: data.total,
+      contractSummary: data.summary,
+      documentId: documentId,
+      createdAt: now,
+      updatedAt: now
+    }),
+    dbPut('units', {
+      id: unitId,
+      projectId: projectId,
+      unitNumber: data.unitNumber,
+      bdBa: '',
+      invoice: file.name.replace(/\.[^.]+$/, ''),
+      startDate: today(),
+      deadline: '',
+      supervisors: {demo:'', painter:'', tile:'', assembler:''},
+      createdAt: now,
+      updatedAt: now
+    })
+  ];
+
+  data.scopes.forEach(function(scopeTpl, scopeIndex) {
+    var scopeId = uid();
+    promises.push(dbPut('scopes', {
+      id: scopeId,
+      unitId: unitId,
+      title: scopeTpl.title || ('Scope ' + (scopeIndex + 1)),
+      order: scopeTpl.order || scopeIndex + 1,
+      weight: Number(scopeTpl.weight) || (1 / data.scopes.length),
+      createdAt: now,
+      updatedAt: now
+    }));
+    (scopeTpl.tasks || []).forEach(function(taskTpl, taskIndex) {
+      promises.push(dbPut('tasks', {
+        id: uid(),
+        scopeId: scopeId,
+        title: taskTpl.title || ('Task ' + (taskIndex + 1)),
+        order: taskTpl.order || taskIndex + 1,
+        progress: 0,
+        contractor: '',
+        deadline: '',
+        status: 'pending',
+        createdAt: now,
+        updatedAt: now
+      }));
+    });
+  });
+  return Promise.all(promises).then(function() { return projectId; });
+}
+
+function formatUsd(value) {
+  return Number(value || 0).toLocaleString('en-US', {
+    style: 'currency',
+    currency: 'USD'
+  });
+}
+
+function downloadProjectDocument(project) {
+  if (!project.documentId) {
+    toast('Este projeto não possui documento original', 'w');
+    return;
+  }
+  dbGet('documents', project.documentId).then(function(documentRecord) {
+    if (!documentRecord || !documentRecord.file) throw new Error('Documento não encontrado neste aparelho');
+    var url = URL.createObjectURL(documentRecord.file);
+    var anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = documentRecord.name || 'contract';
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+  }).catch(function(err) {
+    toast(err.message, 'e', 5000);
+  });
+}
+
+/* ═══════════════════════════════════════════
    PROJECTS TAB
 ═══════════════════════════════════════════ */
 function renderProjects(main) {
@@ -573,6 +999,15 @@ function renderProjects(main) {
     openProjectForm(null);
   }));
   main.appendChild(hdr);
+
+  var importCard = div('card');
+  importCard.appendChild(div('ct', 'Criar por Contrato ou Estimate'));
+  importCard.appendChild(div('', '<div style="font-size:13px;color:var(--mu);line-height:1.6;margin-bottom:12px">' +
+    'Envie PDF com texto, DOCX ou TXT. O app identifica cliente, endereço, total e itens de trabalho, ' +
+    'gera um template de scopes e permite revisar tudo antes de criar.<br>' +
+    '<span style="font-size:11px">O arquivo original fica somente neste aparelho e não é enviado ao dashboard público.</span></div>'));
+  importCard.appendChild(btn('btn bp bfull', 'Upload de Contrato / Estimate', openContractImport));
+  main.appendChild(importCard);
 
   if (!S.projects.length) {
     main.appendChild(div('empty',
@@ -601,7 +1036,8 @@ function renderProjects(main) {
     var info = div('pinfo');
     info.innerHTML = '<div class="pname">' + esc(proj.name) + '</div>' +
       '<div class="prate">' + units.length + ' units • ' +
-      activeUnits.length + ' ativas</div>';
+      activeUnits.length + ' ativas' +
+      (proj.contractTotal ? ' • ' + esc(formatUsd(proj.contractTotal)) : '') + '</div>';
     
     var stats = div('pstats');
     stats.innerHTML = '<div class="pprog">' + prog + '%</div>' +
@@ -631,8 +1067,30 @@ function renderProjectDetail(main) {
   var titleCard = div('card');
   titleCard.innerHTML = '<div style="font-size:20px;font-weight:700;margin-bottom:6px">' +
     esc(proj.name) + '</div>' +
-    '<div style="font-size:13px;color:var(--mu)">' + esc(proj.address || '') + '</div>';
+    '<div style="font-size:13px;color:var(--mu)">' + esc(proj.address || '') + '</div>' +
+    (proj.client && proj.client.name
+      ? '<div style="font-size:13px;color:var(--mu);margin-top:4px">Cliente: ' + esc(proj.client.name) + '</div>'
+      : '') +
+    (proj.contractTotal
+      ? '<div style="font-size:18px;color:var(--ac);font-weight:700;margin-top:10px">' +
+        esc(formatUsd(proj.contractTotal)) + '</div>'
+      : '');
   main.appendChild(titleCard);
+
+  if (proj.contractSummary || proj.documentId) {
+    var contractCard = div('card');
+    contractCard.appendChild(div('ct', 'Contrato / Estimate'));
+    if (proj.contractSummary) {
+      contractCard.appendChild(div('', '<div style="font-size:13px;color:var(--mu);line-height:1.6;margin-bottom:12px">' +
+        esc(proj.contractSummary) + '</div>'));
+    }
+    if (proj.documentId) {
+      contractCard.appendChild(btn('btn bs bfull', 'Baixar Arquivo Original', function() {
+        downloadProjectDocument(proj);
+      }));
+    }
+    main.appendChild(contractCard);
+  }
   
   var units = S.units.filter(function(u) { return u.projectId === proj.id; });
   
@@ -1671,6 +2129,9 @@ function renderSettings(main) {
                   .map(function(t) { return t.id; });
                 return Promise.all(taskIds.map(function(id) { return dbDel('tasks', id); }));
               })
+              .then(function() {
+                return p.documentId ? dbDel('documents', p.documentId) : null;
+              })
               .then(reload)
               .then(function() { toast('Projeto excluído'); });
           }
@@ -1770,18 +2231,20 @@ function renderSettings(main) {
           msg: 'Tem CERTEZA ABSOLUTA? Todos os dados serão perdidos para sempre!',
           yesL: 'Sim, apagar tudo',
           onYes: function() {
-            Promise.all([dbAll('projects'), dbAll('units'), dbAll('scopes'), dbAll('tasks')])
+            Promise.all([dbAll('projects'), dbAll('units'), dbAll('scopes'), dbAll('tasks'), dbAll('documents')])
               .then(function(r) {
                 var projectIds = r[0].map(function(p) { return p.id; });
                 var unitIds = r[1].map(function(u) { return u.id; });
                 var scopeIds = r[2].map(function(s) { return s.id; });
                 var taskIds = r[3].map(function(t) { return t.id; });
+                var documentIds = r[4].map(function(d) { return d.id; });
                 
                 return Promise.all(
                   projectIds.map(function(id) { return dbDel('projects', id); })
                     .concat(unitIds.map(function(id) { return dbDel('units', id); }))
                     .concat(scopeIds.map(function(id) { return dbDel('scopes', id); }))
                     .concat(taskIds.map(function(id) { return dbDel('tasks', id); }))
+                    .concat(documentIds.map(function(id) { return dbDel('documents', id); }))
                 );
               })
               .then(function() {
@@ -1841,7 +2304,7 @@ function renderSettings(main) {
   main.appendChild(div('card',
     '<div class="ct">Sobre</div>' +
     '<div style="font-size:13px;color:var(--mu);line-height:1.9">' +
-    '<b style="color:var(--tx)">BrightScale Tracker v7.4</b><br>' +
+    '<b style="color:var(--tx)">BrightScale Tracker v7.5</b><br>' +
     'Gerencie projetos de construção com progresso hierárquico.<br>' +
     'Dados armazenados localmente no seu dispositivo.<br><br>' +
     '<span style="font-family:monospace;font-size:11px">IndexedDB · PWA · Offline-first</span></div>'
@@ -1913,6 +2376,9 @@ function openProjectForm(proj) {
           name: ci.value.trim(),
           contact: cti.value.trim()
         },
+        contractTotal: proj ? (proj.contractTotal || 0) : 0,
+        contractSummary: proj ? (proj.contractSummary || '') : '',
+        documentId: proj ? (proj.documentId || '') : '',
         createdAt: proj ? proj.createdAt : now,
         updatedAt: now
       }).then(reload).then(function() {
