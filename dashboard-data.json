@@ -1,7 +1,231 @@
 {
-  "projects": [],
-  "units": [],
-  "scopes": [],
-  "tasks": [],
-  "updatedAt": "2026-06-14T21:35:18.355Z"
+  "projects": [
+    {
+      "id": "3db2664f-4027-46db-970b-f7c354e37fad",
+      "name": "Rami Smidi",
+      "address": "641 NW 132nd Terr, Plantation FL 33325",
+      "client": {
+        "name": "Rami Smidi",
+        "contact": ""
+      },
+      "contractTotal": 9000,
+      "contractSummary": "Documento \"Estimate_8070_from_The_Captains_Contractors.pdf\" analisado com 5 scope(s): Framing & Drywall, Plumbing, Electrical, Cabinets & Carpentry, General Construction.",
+      "documentId": "8cf9badc-f9f0-4ce6-88a6-ebbe23e395e4",
+      "createdAt": "2026-06-14T21:53:43.297Z",
+      "updatedAt": "2026-06-14T21:53:43.297Z"
+    }
+  ],
+  "units": [
+    {
+      "id": "7cdd0873-9d3f-4c3c-8212-cc853f2db2af",
+      "projectId": "3db2664f-4027-46db-970b-f7c354e37fad",
+      "unitNumber": "641",
+      "bdBa": "",
+      "invoice": "Estimate_8070_from_The_Captains_Contractors",
+      "startDate": "2026-06-14",
+      "deadline": "",
+      "supervisors": {
+        "demo": "",
+        "painter": "",
+        "tile": "",
+        "assembler": ""
+      },
+      "createdAt": "2026-06-14T21:53:43.297Z",
+      "updatedAt": "2026-06-14T21:53:43.297Z"
+    }
+  ],
+  "scopes": [
+    {
+      "id": "08ea42c8-5212-4f70-82b6-f98e9e06495f",
+      "unitId": "7cdd0873-9d3f-4c3c-8212-cc853f2db2af",
+      "title": "Framing & Drywall",
+      "order": 1,
+      "weight": 0.2,
+      "createdAt": "2026-06-14T21:53:43.297Z",
+      "updatedAt": "2026-06-14T21:53:43.297Z"
+    },
+    {
+      "id": "3a78d511-951e-485e-abaa-9fa188dafcd1",
+      "unitId": "7cdd0873-9d3f-4c3c-8212-cc853f2db2af",
+      "title": "General Construction",
+      "order": 5,
+      "weight": 0.2,
+      "createdAt": "2026-06-14T21:53:43.297Z",
+      "updatedAt": "2026-06-14T21:53:43.297Z"
+    },
+    {
+      "id": "6285ebea-8eac-49b2-bd9e-43f4cb0e7b06",
+      "unitId": "7cdd0873-9d3f-4c3c-8212-cc853f2db2af",
+      "title": "Plumbing",
+      "order": 2,
+      "weight": 0.2,
+      "createdAt": "2026-06-14T21:53:43.297Z",
+      "updatedAt": "2026-06-14T21:53:43.297Z"
+    },
+    {
+      "id": "ad164760-5e83-47c0-9222-f4e751c20168",
+      "unitId": "7cdd0873-9d3f-4c3c-8212-cc853f2db2af",
+      "title": "Electrical",
+      "order": 3,
+      "weight": 0.2,
+      "createdAt": "2026-06-14T21:53:43.297Z",
+      "updatedAt": "2026-06-14T21:53:43.297Z"
+    },
+    {
+      "id": "fe09f0f5-445a-4dfe-9d14-bbb92cc5f5b2",
+      "unitId": "7cdd0873-9d3f-4c3c-8212-cc853f2db2af",
+      "title": "Cabinets & Carpentry",
+      "order": 4,
+      "weight": 0.2,
+      "createdAt": "2026-06-14T21:53:43.297Z",
+      "updatedAt": "2026-06-14T21:53:43.297Z"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "08f83eca-040e-4968-b5dc-d47a3db03112",
+      "scopeId": "6285ebea-8eac-49b2-bd9e-43f4cb0e7b06",
+      "title": "Shower Prep & Tile Labor",
+      "order": 1,
+      "progress": 10,
+      "contractor": "",
+      "deadline": "",
+      "status": "in_progress",
+      "createdAt": "2026-06-14T21:53:43.297Z",
+      "updatedAt": "2026-06-14T21:54:07.037Z"
+    },
+    {
+      "id": "3eb8b990-5273-4611-b02a-125290aa1f00",
+      "scopeId": "3a78d511-951e-485e-abaa-9fa188dafcd1",
+      "title": "Design Rendering & Selections",
+      "order": 3,
+      "progress": 0,
+      "contractor": "",
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-06-14T21:53:43.297Z",
+      "updatedAt": "2026-06-14T21:53:43.297Z"
+    },
+    {
+      "id": "5a24dd2d-623f-476e-829e-96284f07d470",
+      "scopeId": "fe09f0f5-445a-4dfe-9d14-bbb92cc5f5b2",
+      "title": "Carpentry & Finish Hardware",
+      "order": 1,
+      "progress": 0,
+      "contractor": "",
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-06-14T21:53:43.297Z",
+      "updatedAt": "2026-06-14T21:53:43.297Z"
+    },
+    {
+      "id": "6145df42-ee58-4406-b32f-554001b82cfa",
+      "scopeId": "6285ebea-8eac-49b2-bd9e-43f4cb0e7b06",
+      "title": "Rough-In Plumbing Swap",
+      "order": 3,
+      "progress": 0,
+      "contractor": "",
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-06-14T21:53:43.297Z",
+      "updatedAt": "2026-06-14T21:53:43.297Z"
+    },
+    {
+      "id": "657c8e3b-e219-4421-b537-cda97297811d",
+      "scopeId": "ad164760-5e83-47c0-9222-f4e751c20168",
+      "title": "Electrical Labor (Light)",
+      "order": 1,
+      "progress": 0,
+      "contractor": "",
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-06-14T21:53:43.297Z",
+      "updatedAt": "2026-06-14T21:53:43.297Z"
+    },
+    {
+      "id": "6afcf149-e4cb-45c9-9dcd-09b1209925e2",
+      "scopeId": "3a78d511-951e-485e-abaa-9fa188dafcd1",
+      "title": "Wallpaper Installation",
+      "order": 2,
+      "progress": 0,
+      "contractor": "",
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-06-14T21:53:43.297Z",
+      "updatedAt": "2026-06-14T21:53:43.297Z"
+    },
+    {
+      "id": "7f54c7d9-5154-4069-9ba1-0df81b393238",
+      "scopeId": "3a78d511-951e-485e-abaa-9fa188dafcd1",
+      "title": "Built-In Wall Niche",
+      "order": 1,
+      "progress": 0,
+      "contractor": "",
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-06-14T21:53:43.297Z",
+      "updatedAt": "2026-06-14T21:53:43.297Z"
+    },
+    {
+      "id": "860d0e31-d31f-4d22-9f88-a9cc35ab8ebc",
+      "scopeId": "6285ebea-8eac-49b2-bd9e-43f4cb0e7b06",
+      "title": "Plumbing Labor (Light)",
+      "order": 2,
+      "progress": 0,
+      "contractor": "",
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-06-14T21:53:43.297Z",
+      "updatedAt": "2026-06-14T21:53:43.297Z"
+    },
+    {
+      "id": "945a278f-bb8d-4277-8d93-d1b185f94290",
+      "scopeId": "08ea42c8-5212-4f70-82b6-f98e9e06495f",
+      "title": "Drywall Repair & Finishing",
+      "order": 1,
+      "progress": 0,
+      "contractor": "",
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-06-14T21:53:43.297Z",
+      "updatedAt": "2026-06-14T21:53:43.297Z"
+    },
+    {
+      "id": "9f73ea5b-e55f-4a39-8848-3d609be7110d",
+      "scopeId": "3a78d511-951e-485e-abaa-9fa188dafcd1",
+      "title": "Change Order: Unforeseen Conditions & Additional Services",
+      "order": 4,
+      "progress": 0,
+      "contractor": "",
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-06-14T21:53:43.297Z",
+      "updatedAt": "2026-06-14T21:53:43.297Z"
+    },
+    {
+      "id": "bc01ddd9-4f88-4a40-946c-a4ded7a4cc53",
+      "scopeId": "fe09f0f5-445a-4dfe-9d14-bbb92cc5f5b2",
+      "title": "Frameless Glass Door",
+      "order": 2,
+      "progress": 0,
+      "contractor": "",
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-06-14T21:53:43.297Z",
+      "updatedAt": "2026-06-14T21:53:43.297Z"
+    },
+    {
+      "id": "f5f43528-e88d-431b-9a54-49380d81e2eb",
+      "scopeId": "ad164760-5e83-47c0-9222-f4e751c20168",
+      "title": "Electrical Redesign",
+      "order": 2,
+      "progress": 0,
+      "contractor": "",
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-06-14T21:53:43.297Z",
+      "updatedAt": "2026-06-14T21:53:43.297Z"
+    }
+  ],
+  "updatedAt": "2026-06-14T22:03:26.224Z"
 }
