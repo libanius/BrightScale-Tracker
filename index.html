@@ -353,7 +353,8 @@ var S = {
   scopes: [],
   tasks: [],
   currentProjectId: null,
-  currentUnitId: null
+  currentUnitId: null,
+  openScopeIds: {}
 };
 var F = {date: '', useNow: true};
 var RS = {period: 'today', df: '', dt: ''};
@@ -510,6 +511,15 @@ function calcProjectProgress(projectId) {
   return Math.round(sum / units.length);
 }
 
+function clearOpenScopes() {
+  S.openScopeIds = {};
+}
+
+function setScopeOpen(scopeId, isOpen) {
+  if (isOpen) S.openScopeIds[scopeId] = true;
+  else delete S.openScopeIds[scopeId];
+}
+
 /* ═══════════════════════════════════════════
    NAVIGATION
 ═══════════════════════════════════════════ */
@@ -527,7 +537,10 @@ function renderNav() {
     b.innerHTML = svgI(t.d) + t.l;
     b.onclick = function() {
       S.tab = t.id;
-      if (t.id === 'projects') { S.currentUnitId = null; }
+      if (t.id === 'projects') {
+        S.currentUnitId = null;
+        clearOpenScopes();
+      }
       render();
     };
     tabs.appendChild(b);
@@ -1155,6 +1168,7 @@ function renderProjectDetail(main) {
     var pi = div('pi');
     pi.onclick = function() {
       console.log('Clicou na unit:', unit.id, unit.unitNumber);
+      clearOpenScopes();
       S.currentUnitId = unit.id;
       console.log('S.currentUnitId setado para:', S.currentUnitId);
       render();
@@ -1191,6 +1205,7 @@ function renderUnitDetail(main) {
   var hdr = div('hdr');
   var back = btn('btn bs bsm', '← Units', function() {
     S.currentUnitId = null;
+    clearOpenScopes();
     render();
   });
   hdr.appendChild(back);
@@ -1277,20 +1292,23 @@ function renderUnitDetail(main) {
       if (tasksDiv.classList.contains('open')) {
         tasksDiv.classList.remove('open');
         arrow.classList.remove('open');
+        setScopeOpen(scope.id, false);
       } else {
         tasksDiv.classList.add('open');
         arrow.classList.add('open');
+        setScopeOpen(scope.id, true);
       }
     };
     
     var title = div('scope-title');
-    title.innerHTML = '<span class="scope-arrow">▶</span>' + esc(scope.title);
+    title.innerHTML = '<span class="scope-arrow' +
+      (S.openScopeIds[scope.id] ? ' open' : '') + '">▶</span>' + esc(scope.title);
     var progDiv = div('scope-prog', scopeProg + '%');
     hdrDiv.appendChild(title);
     hdrDiv.appendChild(progDiv);
     scopeDiv.appendChild(hdrDiv);
     
-    var tasksDiv = div('scope-tasks');
+    var tasksDiv = div('scope-tasks' + (S.openScopeIds[scope.id] ? ' open' : ''));
     
     tasks.forEach(function(task) {
       var taskRow = div('task-row');
@@ -1350,6 +1368,7 @@ function renderUnitDetail(main) {
             .map(function(t) { return t.id; });
           dbDel('scopes', scope.id)
             .then(function() {
+              setScopeOpen(scope.id, false);
               return Promise.all(taskIds.map(function(id) { return dbDel('tasks', id); }));
             })
             .then(reload)
@@ -3107,7 +3126,10 @@ function openScopeForm(unitId, scope) {
         weight: weight,
         createdAt: scope ? scope.createdAt : now,
         updatedAt: now
-      }).then(reload).then(function() {
+      }).then(function(savedScopeId) {
+        setScopeOpen(scope ? scope.id : savedScopeId, true);
+        return reload();
+      }).then(function() {
         close();
         toast(scope ? 'Scope atualizado' : 'Scope criado');
       });
@@ -3202,7 +3224,10 @@ function openTaskForm(scopeId, task) {
         status: status,
         createdAt: task ? task.createdAt : now,
         updatedAt: now
-      }).then(reload).then(function() {
+      }).then(function() {
+        setScopeOpen(scopeId, true);
+        return reload();
+      }).then(function() {
         close();
         toast(task ? 'Task atualizada' : 'Task criada');
       });
@@ -3283,7 +3308,10 @@ function openTaskEdit(task) {
         status: status,
         createdAt: task.createdAt,
         updatedAt: new Date().toISOString()
-      }).then(reload).then(function() {
+      }).then(function() {
+        setScopeOpen(task.scopeId, true);
+        return reload();
+      }).then(function() {
         close();
         toast('Progresso atualizado!');
       });
