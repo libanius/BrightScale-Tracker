@@ -337,6 +337,14 @@ function dbDel(store, id) {
     r.onerror = function() { rej(r.error); };
   });
 }
+function dbClear(store) {
+  return new Promise(function(res, rej) {
+    var t = DB.transaction(store, 'readwrite');
+    var r = t.objectStore(store).clear();
+    r.onsuccess = function() { res(); };
+    r.onerror = function() { rej(r.error); };
+  });
+}
 
 function uid() {
   return crypto.randomUUID ? crypto.randomUUID() :
@@ -1426,6 +1434,76 @@ function decodeGitHubContent(content) {
   catch(e) { return atob(clean); }
 }
 
+function countBackupRecords(data) {
+  return ['projects', 'units', 'scopes', 'tasks'].reduce(function(total, key) {
+    return total + (Array.isArray(data[key]) ? data[key].length : 0);
+  }, 0);
+}
+
+function getLocalSyncData() {
+  return {
+    projects: S.projects.slice(),
+    units: S.units.slice(),
+    scopes: S.scopes.slice(),
+    tasks: S.tasks.slice()
+  };
+}
+
+function fetchGitHubBackup() {
+  var config = getBrightScaleGitHubConfig();
+  if (!config.token) return Promise.reject(new Error('Configure o token do BrightScale em Ajustes primeiro'));
+  var apiUrl = 'https://api.github.com/repos/' + config.user + '/' + config.repo +
+    '/contents/dashboard-data.json?read=' + Date.now();
+
+  return fetch(apiUrl, {
+    cache: 'no-store',
+    headers: {
+      'Authorization': 'token ' + config.token,
+      'Accept': 'application/vnd.github.v3+json'
+    }
+  }).then(function(res) {
+    if (res.status === 404) throw new Error('Backup dashboard-data.json não encontrado no GitHub');
+    if (!res.ok) throw new Error('GitHub API error: ' + res.status);
+    return res.json();
+  }).then(function(fileData) {
+    if (!fileData.content) throw new Error('Backup remoto sem conteúdo');
+    var data = JSON.parse(decodeGitHubContent(fileData.content));
+    if (!Array.isArray(data.projects) || !Array.isArray(data.units) ||
+        !Array.isArray(data.scopes) || !Array.isArray(data.tasks)) {
+      throw new Error('O arquivo remoto não é um backup válido do BrightScale');
+    }
+    data._sha = fileData.sha || '';
+    return data;
+  });
+}
+
+function replaceLocalDataFromGitHub(data) {
+  return Promise.all([
+    dbClear('projects'),
+    dbClear('units'),
+    dbClear('scopes'),
+    dbClear('tasks'),
+    dbClear('documents')
+  ]).then(function() {
+    return Promise.all(
+      data.projects.map(function(item) {
+        var project = Object.assign({}, item);
+        project.documentId = '';
+        return dbPut('projects', project);
+      })
+        .concat(data.units.map(function(item) { return dbPut('units', item); }))
+        .concat(data.scopes.map(function(item) { return dbPut('scopes', item); }))
+        .concat(data.tasks.map(function(item) { return dbPut('tasks', item); }))
+    );
+  }).then(function() {
+    localStorage.setItem('brightscale_last_restore', new Date().toISOString());
+    S.currentProjectId = null;
+    S.currentUnitId = null;
+    clearOpenScopes();
+    return reload();
+  });
+}
+
 function syncToGitHub(callback) {
   var config = getBrightScaleGitHubConfig();
   var user = config.user;
@@ -1438,11 +1516,18 @@ function syncToGitHub(callback) {
     return;
   }
   
+  var localData = getLocalSyncData();
+  if (countBackupRecords(localData) === 0) {
+    toast('⛔ Upload bloqueado: este aparelho não possui dados. Restaure do GitHub primeiro.', 'e', 7000);
+    if (callback) callback(false);
+    return;
+  }
+
   var data = {
-    projects: S.projects,
-    units: S.units,
-    scopes: S.scopes,
-    tasks: S.tasks,
+    projects: localData.projects,
+    units: localData.units,
+    scopes: localData.scopes,
+    tasks: localData.tasks,
     updatedAt: new Date().toISOString()
   };
   
@@ -2069,66 +2154,117 @@ function renderSettings(main) {
   
   main.appendChild(ghCard);
 
+  var deviceDataCard = div('card');
+  deviceDataCard.appendChild(div('ct', 'Dados entre Dispositivos'));
+  deviceDataCard.appendChild(div('', '<div style="font-size:13px;color:var(--mu);margin-bottom:12px;line-height:1.6">' +
+    'Este aparelho possui <b style="color:var(--tx)">' + S.projects.length + ' projeto(s)</b>. ' +
+    'Use restaurar em um aparelho novo ou vazio. A restauração baixa os dados do GitHub e nunca envia o estado vazio.</div>'));
+  var deviceStatus = div('');
+  deviceStatus.style.cssText = 'display:none;font-size:12px;font-family:monospace;padding:8px 12px;border-radius:8px;background:var(--sf2);border:1px solid var(--bd);margin-bottom:10px;line-height:1.5;';
+  deviceDataCard.appendChild(deviceStatus);
+
+  var restoreBtn = btn('btn bp bfull', '⬇️ Restaurar Backup do GitHub', function() {
+    restoreBtn.disabled = true;
+    restoreBtn.textContent = 'Buscando backup...';
+    deviceStatus.style.display = '';
+    deviceStatus.textContent = 'Lendo dashboard-data.json no GitHub...';
+
+    fetchGitHubBackup().then(function(remoteData) {
+      restoreBtn.disabled = false;
+      restoreBtn.textContent = '⬇️ Restaurar Backup do GitHub';
+      var remoteProjects = remoteData.projects.length;
+      var remoteUnits = remoteData.units.length;
+      var localHasData = countBackupRecords(getLocalSyncData()) > 0;
+      deviceStatus.innerHTML = '<span style="color:var(--ac)">Backup encontrado:</span> ' +
+        remoteProjects + ' projeto(s), ' + remoteUnits + ' unit(s)' +
+        (remoteData.updatedAt ? '<br>Atualizado: ' + esc(new Date(remoteData.updatedAt).toLocaleString('pt-BR')) : '');
+
+      showConfirm({
+        title: 'Restaurar do GitHub',
+        msg: (localHasData
+          ? 'ATENÇÃO: os dados deste aparelho serão substituídos pelo backup do GitHub. '
+          : 'Este aparelho está vazio. ') +
+          'Restaurar ' + remoteProjects + ' projeto(s) e ' + remoteUnits + ' unit(s)? ' +
+          'Arquivos PDF originais não fazem parte do backup remoto.',
+        yesL: 'Restaurar backup',
+        onYes: function() {
+          restoreBtn.disabled = true;
+          restoreBtn.textContent = 'Restaurando...';
+          deviceStatus.textContent = 'Substituindo dados locais pelo backup confirmado...';
+          replaceLocalDataFromGitHub(remoteData)
+            .then(function() {
+              deviceStatus.innerHTML = '<span style="color:var(--ac)">✓ Backup restaurado neste aparelho.</span>';
+              toast('Backup do GitHub restaurado! ✓');
+            })
+            .catch(function(err) {
+              deviceStatus.innerHTML = '<span style="color:var(--ac3)">Erro: ' + esc(err.message) + '</span>';
+              toast('Erro ao restaurar: ' + err.message, 'e', 7000);
+            })
+            .finally(function() {
+              restoreBtn.disabled = false;
+              restoreBtn.textContent = '⬇️ Restaurar Backup do GitHub';
+            });
+        }
+      });
+    }).catch(function(err) {
+      restoreBtn.disabled = false;
+      restoreBtn.textContent = '⬇️ Restaurar Backup do GitHub';
+      deviceStatus.innerHTML = '<span style="color:var(--ac3)">Erro: ' + esc(err.message) + '</span>';
+      toast('Erro ao buscar backup: ' + err.message, 'e', 7000);
+    });
+  });
+  deviceDataCard.appendChild(restoreBtn);
+  main.appendChild(deviceDataCard);
+
   var reloadCard = div('card');
-  reloadCard.appendChild(div('ct', 'Recarregar App'));
+  reloadCard.appendChild(div('ct', 'Atualizar App'));
   reloadCard.appendChild(div('', '<div style="font-size:13px;color:var(--mu);margin-bottom:12px;line-height:1.6">' +
-    'Confirma o backup no repositório <b style="color:var(--tx)">libanius/BrightScale-Tracker</b>, ' +
-    'limpa o cache do app e abre a versão mais recente. Os dados locais do IndexedDB são mantidos.</div>'));
+    'Limpa somente o cache do BrightScale e abre a versão mais recente. ' +
+    '<b style="color:var(--tx)">Não envia nem restaura dados do GitHub.</b> Os dados locais são mantidos.</div>'));
   var reloadStatus = div('');
   reloadStatus.style.cssText = 'display:none;font-size:12px;font-family:monospace;padding:8px 12px;border-radius:8px;background:var(--sf2);border:1px solid var(--bd);margin-bottom:10px;';
   reloadCard.appendChild(reloadStatus);
-  var reloadAppBtn = btn('btn bp bfull', 'Recarregar App Agora', function() {
+  var reloadAppBtn = btn('btn bp bfull', 'Atualizar App Agora', function() {
     showConfirm({
-      title: 'Backup e recarregar',
-      msg: 'Confirmar o backup no GitHub, limpar o cache e abrir a versão mais recente do BrightScale?',
-      yesL: 'Backup e recarregar',
+      title: 'Atualizar App',
+      msg: 'Limpar o cache e abrir a versão mais recente? Nenhum dado será enviado ao GitHub.',
+      yesL: 'Atualizar app',
       onYes: function() {
         reloadAppBtn.disabled = true;
-        reloadAppBtn.textContent = 'Confirmando backup...';
+        reloadAppBtn.textContent = 'Limpando cache...';
         reloadStatus.style.display = '';
-        reloadStatus.textContent = 'Enviando dados para o GitHub...';
-
-        syncToGitHub(function(success) {
-          if (!success) {
-            reloadAppBtn.disabled = false;
-            reloadAppBtn.textContent = 'Recarregar App Agora';
-            reloadStatus.textContent = 'Recarregamento cancelado: o backup não foi confirmado.';
-            return;
-          }
-
-          reloadStatus.textContent = 'Backup confirmado. Limpando cache...';
-          var chain = ('caches' in window)
-            ? caches.keys().then(function(keys) {
-                var ownKeys = keys.filter(function(key) {
-                  return key.toLowerCase().indexOf('brightscale') >= 0;
-                });
-                return Promise.all(ownKeys.map(function(key) { return caches.delete(key); }));
-              })
-            : Promise.resolve();
-
-          if ('serviceWorker' in navigator) {
-            chain = chain.then(function() {
-              return navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                var ownRegistrations = registrations.filter(function(registration) {
-                  return registration.scope.toLowerCase().indexOf('/brightscale-tracker/') >= 0;
-                });
-                return Promise.all(ownRegistrations.map(function(registration) {
-                  return registration.unregister();
-                }));
+        reloadStatus.textContent = 'Limpando somente o cache do app...';
+        var chain = ('caches' in window)
+          ? caches.keys().then(function(keys) {
+              var ownKeys = keys.filter(function(key) {
+                return key.toLowerCase().indexOf('brightscale') >= 0;
               });
-            });
-          }
+              return Promise.all(ownKeys.map(function(key) { return caches.delete(key); }));
+            })
+          : Promise.resolve();
 
-          chain.then(function() {
-            reloadStatus.textContent = 'Cache limpo. Abrindo versão mais recente...';
-            var url = location.href.split('?')[0] + '?v=' + Date.now();
-            location.replace(url);
-          }).catch(function(err) {
-            reloadAppBtn.disabled = false;
-            reloadAppBtn.textContent = 'Recarregar App Agora';
-            reloadStatus.textContent = 'Falha ao limpar cache: ' + err.message;
-            toast('Erro ao limpar cache', 'e');
+        if ('serviceWorker' in navigator) {
+          chain = chain.then(function() {
+            return navigator.serviceWorker.getRegistrations().then(function(registrations) {
+              var ownRegistrations = registrations.filter(function(registration) {
+                return registration.scope.toLowerCase().indexOf('/brightscale-tracker/') >= 0;
+              });
+              return Promise.all(ownRegistrations.map(function(registration) {
+                return registration.unregister();
+              }));
+            });
           });
+        }
+
+        chain.then(function() {
+          reloadStatus.textContent = 'Cache limpo. Abrindo versão mais recente...';
+          var url = location.href.split('?')[0] + '?v=' + Date.now();
+          location.replace(url);
+        }).catch(function(err) {
+          reloadAppBtn.disabled = false;
+          reloadAppBtn.textContent = 'Atualizar App Agora';
+          reloadStatus.textContent = 'Falha ao limpar cache: ' + err.message;
+          toast('Erro ao limpar cache', 'e');
         });
       }
     });
