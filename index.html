@@ -3244,7 +3244,16 @@ function openTaskForm(scopeId, task) {
 
 function openTaskEdit(task) {
   showModal(function(mo, close) {
-    mo.appendChild(div('mtit', 'Editar: ' + task.title));
+    mo.appendChild(div('mtit', 'Editar Task'));
+
+    var nameField = div('fg');
+    nameField.appendChild(mkLbl('Nome da Task'));
+    var nameInput = el('input', '');
+    nameInput.type = 'text';
+    nameInput.placeholder = 'Nome ou título da task';
+    nameInput.value = task.title || '';
+    nameField.appendChild(nameInput);
+    mo.appendChild(nameField);
     
     var rw = div('range-wrap');
     var rv = div('range-val', (task.progress || 0) + '%');
@@ -3294,13 +3303,19 @@ function openTaskEdit(task) {
     cb.style.flex = '1';
     
     var sb = btn('btn bp', 'Salvar', function() {
+      var title = nameInput.value.trim();
+      if (!title) {
+        toast('Nome da task é obrigatório', 'w');
+        nameInput.focus();
+        return;
+      }
       var prog = parseInt(ri.value);
       var status = prog === 0 ? 'pending' : prog === 100 ? 'completed' : 'in_progress';
       
       dbPut('tasks', {
         id: task.id,
         scopeId: task.scopeId,
-        title: task.title,
+        title: title,
         order: task.order,
         progress: prog,
         contractor: ci.value.trim(),
@@ -3313,7 +3328,7 @@ function openTaskEdit(task) {
         return reload();
       }).then(function() {
         close();
-        toast('Progresso atualizado!');
+        toast('Task atualizada!');
       });
     });
     sb.style.flex = '1';
@@ -3321,6 +3336,11 @@ function openTaskEdit(task) {
     row.appendChild(cb);
     row.appendChild(sb);
     mo.appendChild(row);
+
+    setTimeout(function() {
+      nameInput.focus();
+      nameInput.select();
+    }, 200);
   });
 }
 
