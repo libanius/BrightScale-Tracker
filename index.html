@@ -644,7 +644,8 @@ function extractDocumentText(file) {
 }
 
 function cleanDocumentLine(line) {
-  return String(line || '').replace(/\s+/g, ' ').replace(/^[•·▪◦\-–—\s]+/, '').trim();
+  return String(line || '').replace(/\u0000/g, '').replace(/\s+/g, ' ')
+    .replace(/^[•·▪◦\-–—\s]+/, '').trim();
 }
 
 function findLabeledValue(lines, labels) {
@@ -693,6 +694,36 @@ function buildScopesFromDocument(lines) {
   var groups = {};
   var seen = {};
   var workWords = /demo|remove|install|replace|repair|paint|floor|tile|plumb|electric|drywall|framing|cabinet|roof|clean|permit|fixture|door|window|hvac|concrete|stucco|countertop/i;
+  var structuredItems = [];
+
+  lines.forEach(function(line, index) {
+    if (!lines[index + 1] || !/^quantity\s*:/i.test(lines[index + 1])) return;
+    var title = cleanDocumentLine(line)
+      .replace(/^\d+\.\s*/, '')
+      .replace(/^(?:bathroom renovation|options?\s*\/\s*alternate)\s+/i, '')
+      .replace(/^add-on\s*:\s*/i, '')
+      .trim();
+    if (title && !/^(?:quantity|description|total price|rate)$/i.test(title)) {
+      structuredItems.push(title);
+    }
+  });
+
+  if (structuredItems.length >= 2) {
+    structuredItems.forEach(function(title) {
+      var key = title.toLowerCase();
+      if (seen[key]) return;
+      seen[key] = true;
+      var category = categorizeWorkItem(title);
+      if (!groups[category]) groups[category] = {title: category, tasks: []};
+      groups[category].tasks.push({title: title, order: groups[category].tasks.length + 1});
+    });
+    var structuredScopes = Object.keys(groups).map(function(key) { return groups[key]; });
+    structuredScopes.forEach(function(scope, index) {
+      scope.order = index + 1;
+      scope.weight = 1 / structuredScopes.length;
+    });
+    return structuredScopes;
+  }
 
   lines.forEach(function(original) {
     var line = cleanDocumentLine(original);
@@ -724,10 +755,12 @@ function buildScopesFromDocument(lines) {
       tasks: [{title: 'Review original contract and define work items', order: 1}]
     }];
   }
+  var pricedScopes = scopes.filter(function(scope) { return scope.amount > 0; }).length;
   var totalAmount = scopes.reduce(function(sum, scope) { return sum + scope.amount; }, 0);
+  var useAmounts = totalAmount > 0 && pricedScopes >= Math.ceil(scopes.length / 2);
   scopes.forEach(function(scope, index) {
     scope.order = index + 1;
-    scope.weight = totalAmount ? scope.amount / totalAmount : 1 / scopes.length;
+    scope.weight = useAmounts ? scope.amount / totalAmount : 1 / scopes.length;
     delete scope.amount;
   });
   return scopes;
@@ -743,7 +776,7 @@ function analyzeContractText(text, file) {
     'client', 'customer', 'prepared for', 'proposal for', 'bill to', 'owner'
   ]);
   var address = findLabeledValue(lines, [
-    'project address', 'job address', 'service address', 'property address', 'address', 'job site'
+    'project address', 'job address', 'service address', 'property address', 'ship to', 'address', 'job site'
   ]);
   if (!address) {
     address = lines.filter(function(line) {
@@ -881,6 +914,11 @@ function createProjectFromContract(file, rawText, data) {
   var projectId = uid();
   var unitId = uid();
   var documentId = uid();
+  var rawWeights = data.scopes.map(function(scope) {
+    var value = Number(scope.weight);
+    return isFinite(value) && value >= 0 ? value : 0;
+  });
+  var weightTotal = rawWeights.reduce(function(sum, value) { return sum + value; }, 0);
   var promises = [
     dbPut('documents', {
       id: documentId,
@@ -919,12 +957,15 @@ function createProjectFromContract(file, rawText, data) {
 
   data.scopes.forEach(function(scopeTpl, scopeIndex) {
     var scopeId = uid();
+    var normalizedWeight = weightTotal
+      ? rawWeights[scopeIndex] / weightTotal
+      : 1 / data.scopes.length;
     promises.push(dbPut('scopes', {
       id: scopeId,
       unitId: unitId,
       title: scopeTpl.title || ('Scope ' + (scopeIndex + 1)),
       order: scopeTpl.order || scopeIndex + 1,
-      weight: Number(scopeTpl.weight) || (1 / data.scopes.length),
+      weight: normalizedWeight,
       createdAt: now,
       updatedAt: now
     }));
