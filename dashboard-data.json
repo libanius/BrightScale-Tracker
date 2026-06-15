@@ -78,17 +78,12 @@
       "title": "Framing & Drywall",
       "order": 1,
       "weight": 0.2,
+      "personId": "f69b6f5b-f1f8-4f61-b9f7-15c42fde6287",
+      "subcontractorName": "Vilson",
+      "subcontractAmount": 0,
+      "subcontractPaid": 0,
       "createdAt": "2026-06-14T21:53:43.297Z",
-      "updatedAt": "2026-06-14T21:53:43.297Z"
-    },
-    {
-      "id": "3a78d511-951e-485e-abaa-9fa188dafcd1",
-      "unitId": "7cdd0873-9d3f-4c3c-8212-cc853f2db2af",
-      "title": "General Construction",
-      "order": 5,
-      "weight": 0.2,
-      "createdAt": "2026-06-14T21:53:43.297Z",
-      "updatedAt": "2026-06-14T21:53:43.297Z"
+      "updatedAt": "2026-06-15T04:24:12.485Z"
     },
     {
       "id": "6285ebea-8eac-49b2-bd9e-43f4cb0e7b06",
@@ -96,8 +91,12 @@
       "title": "Plumbing",
       "order": 2,
       "weight": 0.2,
+      "personId": "14dbf4fe-b359-4dbd-9730-14b841e49a60",
+      "subcontractorName": "Paulo Libanio",
+      "subcontractAmount": 250,
+      "subcontractPaid": 0,
       "createdAt": "2026-06-14T21:53:43.297Z",
-      "updatedAt": "2026-06-14T21:53:43.297Z"
+      "updatedAt": "2026-06-15T04:24:42.480Z"
     },
     {
       "id": "77625b84-d9fd-4025-8034-13a39f91521f",
@@ -105,8 +104,12 @@
       "title": "Tile Work",
       "order": 6,
       "weight": 0.1,
+      "personId": "cd4b7f72-a65d-462c-a320-d23eb2c90265",
+      "subcontractorName": "Madson",
+      "subcontractAmount": 1400,
+      "subcontractPaid": 0,
       "createdAt": "2026-06-14T22:16:00.000Z",
-      "updatedAt": "2026-06-14T22:16:00.000Z"
+      "updatedAt": "2026-06-15T04:25:27.123Z"
     },
     {
       "id": "91f5386e-a6b8-46ad-9d0a-52afbb9bee28",
@@ -127,8 +130,12 @@
       "title": "Electrical",
       "order": 3,
       "weight": 0.2,
+      "personId": "",
+      "subcontractorName": "",
+      "subcontractAmount": 250,
+      "subcontractPaid": 0,
       "createdAt": "2026-06-14T21:53:43.297Z",
-      "updatedAt": "2026-06-14T21:53:43.297Z"
+      "updatedAt": "2026-06-15T04:26:57.674Z"
     },
     {
       "id": "fe09f0f5-445a-4dfe-9d14-bbb92cc5f5b2",
@@ -146,11 +153,11 @@
       "scopeId": "6285ebea-8eac-49b2-bd9e-43f4cb0e7b06",
       "title": "Shower Valve",
       "order": 1,
-      "progress": 10,
+      "progress": 0,
       "deadline": "2026-06-15",
-      "status": "in_progress",
+      "status": "pending",
       "createdAt": "2026-06-14T21:53:43.297Z",
-      "updatedAt": "2026-06-14T22:12:38.405Z"
+      "updatedAt": "2026-06-15T04:25:57.055Z"
     },
     {
       "id": "24988086-df02-44f6-9161-bea67b0afda6",
@@ -162,6 +169,28 @@
       "status": "pending",
       "createdAt": "2026-06-14T22:16:24.705Z",
       "updatedAt": "2026-06-14T22:17:13.434Z"
+    },
+    {
+      "id": "42cf09cb-89b9-4943-bb97-3901276e4174",
+      "scopeId": "ad164760-5e83-47c0-9222-f4e751c20168",
+      "title": "Mirror Installation",
+      "order": 2,
+      "progress": 0,
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-06-15T04:25:07.310Z",
+      "updatedAt": "2026-06-15T04:25:07.310Z"
+    },
+    {
+      "id": "58c6ecad-abba-4349-936a-f1b31b90be29",
+      "scopeId": "08ea42c8-5212-4f70-82b6-f98e9e06495f",
+      "title": "Painting",
+      "order": 2,
+      "progress": 0,
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-06-15T04:22:51.628Z",
+      "updatedAt": "2026-06-15T04:22:51.628Z"
     },
     {
       "id": "5a24dd2d-623f-476e-829e-96284f07d470",
@@ -252,17 +281,6 @@
       "updatedAt": "2026-06-14T21:53:43.297Z"
     },
     {
-      "id": "9f73ea5b-e55f-4a39-8848-3d609be7110d",
-      "scopeId": "3a78d511-951e-485e-abaa-9fa188dafcd1",
-      "title": "Change Order: Unforeseen Conditions & Additional Services",
-      "order": 4,
-      "progress": 0,
-      "deadline": "",
-      "status": "pending",
-      "createdAt": "2026-06-14T21:53:43.297Z",
-      "updatedAt": "2026-06-14T21:53:43.297Z"
-    },
-    {
       "id": "bc01ddd9-4f88-4a40-946c-a4ded7a4cc53",
       "scopeId": "fe09f0f5-445a-4dfe-9d14-bbb92cc5f5b2",
       "title": "Frameless Glass Door",
@@ -332,6 +350,15 @@
   "expenses": [],
   "people": [
     {
+      "id": "cd4b7f72-a65d-462c-a320-d23eb2c90265",
+      "name": "Madson",
+      "company": "Madson LLC",
+      "email": "madson@gmail.com",
+      "active": true,
+      "createdAt": "2026-06-15T04:21:46.170Z",
+      "updatedAt": "2026-06-15T04:21:46.170Z"
+    },
+    {
       "id": "14dbf4fe-b359-4dbd-9730-14b841e49a60",
       "name": "Paulo Libanio",
       "company": "BrightScale Group LLC",
@@ -339,7 +366,16 @@
       "createdAt": "2026-06-15T03:52:19.147Z",
       "updatedAt": "2026-06-15T04:18:49.345Z",
       "active": true
+    },
+    {
+      "id": "f69b6f5b-f1f8-4f61-b9f7-15c42fde6287",
+      "name": "Vilson",
+      "company": "Renaissance LLC",
+      "email": "",
+      "active": true,
+      "createdAt": "2026-06-15T04:23:34.675Z",
+      "updatedAt": "2026-06-15T04:23:34.675Z"
     }
   ],
-  "updatedAt": "2026-06-15T04:20:42.795Z"
+  "updatedAt": "2026-06-15T04:27:06.338Z"
 }
