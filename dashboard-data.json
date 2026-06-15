@@ -109,26 +109,17 @@
       "updatedAt": "2026-06-14T22:16:00.000Z"
     },
     {
-      "id": "7f06c74e-f165-4564-87f9-be8cf973983b",
+      "id": "91f5386e-a6b8-46ad-9d0a-52afbb9bee28",
       "unitId": "a275da81-2605-417c-9e33-90c9b5b6b944",
-      "title": "Garage Floor",
-      "order": 1,
+      "title": "Change Orders",
+      "order": 2,
       "weight": 0.3333333333333333,
       "personId": "14dbf4fe-b359-4dbd-9730-14b841e49a60",
       "subcontractorName": "Paulo Libanio",
       "subcontractAmount": 250,
       "subcontractPaid": 0,
       "createdAt": "2026-06-15T02:37:56.235Z",
-      "updatedAt": "2026-06-15T03:52:19.147Z"
-    },
-    {
-      "id": "91f5386e-a6b8-46ad-9d0a-52afbb9bee28",
-      "unitId": "a275da81-2605-417c-9e33-90c9b5b6b944",
-      "title": "Change Orders",
-      "order": 2,
-      "weight": 0.3333333333333333,
-      "createdAt": "2026-06-15T02:37:56.235Z",
-      "updatedAt": "2026-06-15T02:42:24.390Z"
+      "updatedAt": "2026-06-15T04:20:10.521Z"
     },
     {
       "id": "ad164760-5e83-47c0-9222-f4e751c20168",
@@ -160,17 +151,6 @@
       "status": "in_progress",
       "createdAt": "2026-06-14T21:53:43.297Z",
       "updatedAt": "2026-06-14T22:12:38.405Z"
-    },
-    {
-      "id": "094a49e7-8e45-46b1-bfcd-d5f5004c440c",
-      "scopeId": "7f06c74e-f165-4564-87f9-be8cf973983b",
-      "title": "Garage Painting",
-      "order": 2,
-      "progress": 100,
-      "deadline": "",
-      "status": "completed",
-      "createdAt": "2026-06-15T02:39:38.462Z",
-      "updatedAt": "2026-06-15T02:42:04.094Z"
     },
     {
       "id": "24988086-df02-44f6-9161-bea67b0afda6",
@@ -236,7 +216,7 @@
       "deadline": "",
       "status": "pending",
       "createdAt": "2026-06-15T02:37:56.235Z",
-      "updatedAt": "2026-06-15T02:37:56.235Z"
+      "updatedAt": "2026-06-15T04:20:32.186Z"
     },
     {
       "id": "860d0e31-d31f-4d22-9f88-a9cc35ab8ebc",
@@ -305,17 +285,6 @@
       "updatedAt": "2026-06-15T02:37:56.235Z"
     },
     {
-      "id": "ce418cea-f930-4ca4-808b-b0be5e17e727",
-      "scopeId": "7f06c74e-f165-4564-87f9-be8cf973983b",
-      "title": "Epoxy Flooring Full Flake",
-      "order": 1,
-      "progress": 100,
-      "deadline": "",
-      "status": "completed",
-      "createdAt": "2026-06-15T02:37:56.235Z",
-      "updatedAt": "2026-06-15T02:41:57.424Z"
-    },
-    {
       "id": "d76d8ec3-47de-409a-80da-73a83138eef0",
       "scopeId": "91f5386e-a6b8-46ad-9d0a-52afbb9bee28",
       "title": "Replace weather stripping / door seals on entry door",
@@ -368,8 +337,9 @@
       "company": "BrightScale Group LLC",
       "email": "contact@brightscalegroup.com",
       "createdAt": "2026-06-15T03:52:19.147Z",
-      "updatedAt": "2026-06-15T03:52:19.147Z"
+      "updatedAt": "2026-06-15T04:18:49.345Z",
+      "active": true
     }
   ],
-  "updatedAt": "2026-06-15T03:53:16.891Z"
+  "updatedAt": "2026-06-15T04:20:42.795Z"
 }
