@@ -20,6 +20,9 @@ body{background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSyst
 .project-name{font-size:24px;font-weight:700;}
 .project-meta{font-size:13px;color:var(--mu);margin-top:4px;}
 .project-progress{font-size:36px;font-weight:700;color:var(--ac);font-family:monospace;}
+.project-actions{display:flex;justify-content:flex-end;margin:-4px 0 18px;}
+.share-project{padding:10px 14px;border:1px solid var(--ac);border-radius:9px;background:rgba(0,229,160,.1);color:var(--ac);font:inherit;font-size:12px;font-weight:700;cursor:pointer;}
+.share-project:active{opacity:.75;}
 .units-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
 .unit-card{background:var(--sf2);border:1px solid var(--bd);border-radius:12px;padding:16px;position:relative;overflow:hidden;}
 .unit-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--ac),var(--ac2));}
@@ -73,7 +76,7 @@ body{background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSyst
     BrightScale Tracker &copy; 2025 &middot; Real-time Project Management
   </div>
   
-  <div class="version-badge">v7.4</div>
+  <div class="version-badge">v7.5</div>
 </div>
 
 <script>
@@ -84,17 +87,33 @@ function esc(s) {
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
+var dashboardData = null;
+var isClientView = false;
+
+function decodeDashboardData(value) {
+  var base64 = value.replace(/-/g, '+').replace(/_/g, '/');
+  while (base64.length % 4) base64 += '=';
+  var binary = atob(base64);
+  var bytes = Uint8Array.from(binary, function(char) { return char.charCodeAt(0); });
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
+
 function loadData() {
   var params = new URLSearchParams(window.location.search);
   var dataParam = params.get('data');
+  var projectId = params.get('project');
   
-  // Try to load from URL parameter first (legacy support)
   if (dataParam) {
     try {
-      var decoded = atob(dataParam);
-      return Promise.resolve(JSON.parse(decoded));
+      isClientView = true;
+      return Promise.resolve(decodeDashboardData(dataParam));
     } catch(e) {
-      console.error('Error parsing URL data:', e);
+      try {
+        isClientView = true;
+        return Promise.resolve(JSON.parse(atob(dataParam)));
+      } catch(legacyError) {
+        console.error('Error parsing client dashboard data:', legacyError);
+      }
     }
   }
   
@@ -106,10 +125,71 @@ function loadData() {
       if (!res.ok) throw new Error('Failed to load data');
       return res.json();
     })
+    .then(function(data) {
+      if (!projectId) return data;
+      isClientView = true;
+      var project = (data.projects || []).filter(function(item) {
+        return item.id === projectId;
+      })[0];
+      if (!project) return {
+        projects: [],
+        units: [],
+        scopes: [],
+        tasks: [],
+        updatedAt: data.updatedAt,
+        clientView: true
+      };
+      var units = (data.units || []).filter(function(unit) {
+        return unit.projectId === projectId;
+      });
+      var unitIds = units.map(function(unit) { return unit.id; });
+      var scopes = (data.scopes || []).filter(function(scope) {
+        return unitIds.indexOf(scope.unitId) >= 0;
+      });
+      var scopeIds = scopes.map(function(scope) { return scope.id; });
+      return {
+        projects: [project],
+        units: units,
+        scopes: scopes,
+        tasks: (data.tasks || []).filter(function(task) {
+          return scopeIds.indexOf(task.scopeId) >= 0;
+        }),
+        updatedAt: data.updatedAt,
+        clientView: true
+      };
+    })
     .catch(function(err) {
       console.error('Error loading dashboard data:', err);
       return null;
     });
+}
+
+function shareProjectDashboard(projectId) {
+  var project = dashboardData.projects.filter(function(item) {
+    return item.id === projectId;
+  })[0];
+  if (!project) return;
+  var baseUrl = window.location.origin + window.location.pathname;
+  var url = baseUrl + '?project=' + encodeURIComponent(projectId);
+  var shareData = {
+    title: 'BrightScale - ' + project.name,
+    text: 'Acompanhe o progresso do seu projeto:',
+    url: url
+  };
+
+  if (navigator.share) {
+    navigator.share(shareData).catch(function() {});
+    return;
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(function() {
+      alert('Link do projeto copiado. Envie-o ao cliente.');
+    }).catch(function() {
+      window.prompt('Copie o link do projeto:', url);
+    });
+    return;
+  }
+  window.prompt('Copie o link do projeto:', url);
 }
 
 function calcScopeProgress(scopes, tasks, scopeId) {
@@ -224,6 +304,10 @@ function render(data) {
     html += '</div>';
     html += '<div class="project-progress">' + projectProgress + '%</div>';
     html += '</div>';
+    if (!isClientView) {
+      html += '<div class="project-actions"><button class="share-project" data-project-id="' +
+        esc(project.id) + '">Compartilhar Dashboard com Cliente</button></div>';
+    }
     
     // Progress Chart
     if (projectUnits.length > 0) {
@@ -344,10 +428,17 @@ function render(data) {
   });
   
   content.innerHTML = html;
+  Array.from(content.querySelectorAll('.share-project')).forEach(function(button) {
+    button.addEventListener('click', function() {
+      shareProjectDashboard(button.getAttribute('data-project-id'));
+    });
+  });
 }
 
 // Boot
 loadData().then(function(data) {
+  dashboardData = data;
+  if (data && data.clientView) isClientView = true;
   render(data);
 });
 </script>

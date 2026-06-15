@@ -1850,90 +1850,13 @@ function renderReports(main) {
   
   // Dashboard Link Card
   var dashCard = div('card');
-  dashCard.appendChild(div('ct', 'Dashboard Público'));
+  dashCard.appendChild(div('ct', 'Dashboard da Equipe'));
   dashCard.appendChild(div('', '<div style="font-size:13px;color:var(--mu);margin-bottom:12px">' +
-    'Gere um link compartilhável para visualização pública do progresso dos projetos.</div>'));
+    'Abra a visão geral de todos os projetos. Dentro de cada projeto, use o botão para compartilhar somente aquele projeto com o cliente.</div>'));
   
-  var genDashBtn = btn('btn bp bfull', '🔗 Gerar Link do Dashboard', function() {
-    var data = {
-      projects: S.projects,
-      units: S.units,
-      scopes: S.scopes,
-      tasks: S.tasks,
-      updatedAt: new Date().toISOString()
-    };
-    
-    var json = JSON.stringify(data);
-    var encoded = btoa(json);
+  var genDashBtn = btn('btn bp bfull', 'Abrir Dashboard Geral', function() {
     var baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
-    var dashUrl = baseUrl + 'dashboard.html?data=' + encoded;
-    
-    showModal(function(mo, close) {
-      mo.appendChild(div('mtit', 'Link do Dashboard'));
-      mo.appendChild(div('', '<div style="font-size:13px;color:var(--mu);margin-bottom:12px">' +
-        'Compartilhe este link com clientes ou equipe para visualização do progresso:</div>'));
-      
-      var urlBox = document.createElement('textarea');
-      urlBox.value = dashUrl;
-      urlBox.readOnly = true;
-      urlBox.style.cssText = 'width:100%;height:120px;background:var(--sf2);border:1px solid var(--bd);' +
-        'border-radius:10px;color:var(--tx);font-size:11px;font-family:monospace;padding:12px;' +
-        'outline:none;resize:none;margin-bottom:12px;';
-      mo.appendChild(urlBox);
-      
-      var row = div('brow');
-      var copyBtn = btn('btn bp', '📋 Copiar Link', function() {
-        urlBox.select();
-        if (navigator.clipboard) {
-          navigator.clipboard.writeText(dashUrl).then(function() {
-            toast('Link copiado!');
-            close();
-          }).catch(function() {
-            try {
-              document.execCommand('copy');
-              toast('Link copiado!');
-              close();
-            } catch(e) {
-              toast('Selecione e copie manualmente', 'w', 4000);
-            }
-          });
-        } else {
-          try {
-            document.execCommand('copy');
-            toast('Link copiado!');
-            close();
-          } catch(e) {
-            toast('Selecione e copie manualmente', 'w', 4000);
-          }
-        }
-      });
-      copyBtn.style.flex = '1';
-      
-      var shareBtn = btn('btn bs', '📤 Compartilhar', function() {
-        if (navigator.share) {
-          navigator.share({
-            title: 'BrightScale Dashboard',
-            text: 'Visualize o progresso dos projetos',
-            url: dashUrl
-          }).then(function() {
-            close();
-          }).catch(function() {});
-        } else {
-          toast('Compartilhamento não disponível neste navegador', 'w');
-        }
-      });
-      shareBtn.style.flex = '1';
-      
-      var closeBtn = btn('btn bs', 'Fechar', close);
-      closeBtn.style.flex = '1';
-      
-      row.appendChild(copyBtn);
-      row.appendChild(shareBtn);
-      row.appendChild(closeBtn);
-      mo.appendChild(row);
-      
-      setTimeout(function() { urlBox.select(); }, 200);
-    });
+    window.open(baseUrl + 'dashboard.html', '_blank');
   });
   
   dashCard.appendChild(genDashBtn);

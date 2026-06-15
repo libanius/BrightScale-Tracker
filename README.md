@@ -33,4 +33,12 @@ imutável com data e hora. `Escolher e Restaurar Backup` lista o histórico do
 GitHub para restauração. O app bloqueia uploads de aparelhos baseados em uma
 versão remota antiga, evitando sobrescrever mudanças feitas em outro aparelho.
 
+## Dashboard por cliente
+
+O dashboard geral mostra todos os projetos para a equipe. Cada card possui
+`Compartilhar Dashboard com Cliente`, que gera um link atualizado mostrando
+somente o projeto selecionado. Como solução de MVP, o link não possui login:
+qualquer pessoa que receber ou encaminhar o endereço poderá visualizar aquele
+projeto.
+
 Pwa Project manager tracker app
