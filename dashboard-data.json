@@ -10,10 +10,8 @@
       },
       "contractTotal": 1050,
       "contractSummary": "Documento \"Majore Estimate 8068_CO_01.pdf\" analisado com 3 scope(s): Flooring & Tile, Cabinets & Carpentry, General Construction.",
-      "documentId": "057d0175-2fb7-490f-a695-9c95e87e0e5f",
-      "documentIds": [
-        "057d0175-2fb7-490f-a695-9c95e87e0e5f"
-      ],
+      "documentId": "",
+      "documentIds": [],
       "createdAt": "2026-06-15T02:37:56.235Z",
       "updatedAt": "2026-06-15T02:37:56.235Z"
     },
@@ -27,9 +25,10 @@
       },
       "contractTotal": 9000,
       "contractSummary": "Documento \"Estimate_8070_from_The_Captains_Contractors.pdf\" analisado com 5 scope(s): Framing & Drywall, Plumbing, Electrical, Cabinets & Carpentry, General Construction.",
-      "documentId": "8cf9badc-f9f0-4ce6-88a6-ebbe23e395e4",
+      "documentId": "",
       "createdAt": "2026-06-14T21:53:43.297Z",
-      "updatedAt": "2026-06-14T21:53:43.297Z"
+      "updatedAt": "2026-06-14T21:53:43.297Z",
+      "documentIds": []
     }
   ],
   "units": [
@@ -48,7 +47,8 @@
         "assembler": ""
       },
       "createdAt": "2026-06-14T21:53:43.297Z",
-      "updatedAt": "2026-06-14T21:53:43.297Z"
+      "updatedAt": "2026-06-14T21:53:43.297Z",
+      "documentId": ""
     },
     {
       "id": "a275da81-2605-417c-9e33-90c9b5b6b944",
@@ -58,7 +58,7 @@
       "invoice": "Majore Estimate 8068_CO_01",
       "estimateTotal": 1050,
       "contractSummary": "Documento \"Majore Estimate 8068_CO_01.pdf\" analisado com 3 scope(s): Flooring & Tile, Cabinets & Carpentry, General Construction.",
-      "documentId": "057d0175-2fb7-490f-a695-9c95e87e0e5f",
+      "documentId": "",
       "startDate": "2026-06-14",
       "deadline": "",
       "supervisors": {
@@ -377,5 +377,5 @@
       "updatedAt": "2026-06-15T04:23:34.675Z"
     }
   ],
-  "updatedAt": "2026-06-15T04:27:06.338Z"
+  "updatedAt": "2026-06-15T23:05:37.142Z"
 }
