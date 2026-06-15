@@ -41,4 +41,16 @@ somente o projeto selecionado. Como solução de MVP, o link não possui login:
 qualquer pessoa que receber ou encaminhar o endereço poderá visualizar aquele
 projeto.
 
+## Financeiro de projetos
+
+Cada projeto possui um extrato com receita do contrato, compromissos com
+subcontractors, despesas de material e saldo projetado. No scope é possível
+informar responsável, valor acordado e valor já pago. O crédito produzido é
+calculado automaticamente pelo progresso do scope:
+
+`crédito produzido = valor acordado × progresso do scope`
+
+As despesas financeiras fazem parte dos backups locais e versionados no
+GitHub.
+
 Pwa Project manager tracker app

@@ -112,6 +112,16 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;background:var(--ac);
 .unit-stat:last-child{border-bottom:none;}
 .stat-lbl{font-size:13px;color:var(--mu);}
 .stat-val{font-size:14px;font-weight:700;}
+.finance-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:12px;}
+.finance-stat{background:var(--sf2);border:1px solid var(--bd);border-radius:10px;padding:12px;}
+.finance-label{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;}
+.finance-value{font-size:18px;font-weight:700;font-family:monospace;color:var(--tx);}
+.finance-value.good{color:var(--ac);}
+.finance-value.warn{color:#ffb93c;}
+.finance-line{padding:12px 0;border-bottom:1px solid var(--bd);}
+.finance-line:last-child{border-bottom:none;}
+.finance-line-title{font-size:14px;font-weight:700;margin-bottom:4px;}
+.finance-line-meta{font-size:12px;color:var(--mu);line-height:1.6;}
 .countdown{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;}
 .countdown.ok{background:rgba(0,229,160,.12);color:var(--ac);}
 .countdown.warn{background:rgba(255,185,60,.12);color:#ffb93c;}
@@ -291,7 +301,7 @@ var TEMPLATES = {
 var DB;
 function openDB() {
   return new Promise(function(res, rej) {
-    var r = indexedDB.open('brightscale_v1', 2);
+    var r = indexedDB.open('brightscale_v1', 3);
     r.onupgradeneeded = function(e) {
       var d = e.target.result;
       if (!d.objectStoreNames.contains('projects'))
@@ -304,6 +314,8 @@ function openDB() {
         d.createObjectStore('tasks', {keyPath: 'id'});
       if (!d.objectStoreNames.contains('documents'))
         d.createObjectStore('documents', {keyPath: 'id'});
+      if (!d.objectStoreNames.contains('expenses'))
+        d.createObjectStore('expenses', {keyPath: 'id'});
     };
     r.onsuccess = function(e) { DB = e.target.result; res(); };
     r.onerror = function(e) { rej(e.target.error); };
@@ -364,6 +376,7 @@ var S = {
   units: [],
   scopes: [],
   tasks: [],
+  expenses: [],
   currentProjectId: null,
   currentUnitId: null,
   openScopeIds: {}
@@ -483,12 +496,14 @@ function reload() {
     dbAll('projects'),
     dbAll('units'),
     dbAll('scopes'),
-    dbAll('tasks')
+    dbAll('tasks'),
+    dbAll('expenses')
   ]).then(function(r) {
     S.projects = r[0].sort(function(a, b) { return a.name.localeCompare(b.name); });
     S.units = r[1];
     S.scopes = r[2];
     S.tasks = r[3];
+    S.expenses = r[4];
     console.log('Reload completo. Projects:', S.projects.length, 'Units:', S.units.length, 'Scopes:', S.scopes.length, 'Tasks:', S.tasks.length);
     render();
   });
@@ -521,6 +536,52 @@ function calcProjectProgress(projectId) {
   if (!units.length) return 0;
   var sum = units.reduce(function(a, u) { return a + calcUnitProgress(u.id); }, 0);
   return Math.round(sum / units.length);
+}
+
+function getProjectScopes(projectId) {
+  var unitIds = S.units.filter(function(unit) {
+    return unit.projectId === projectId;
+  }).map(function(unit) { return unit.id; });
+  return S.scopes.filter(function(scope) {
+    return unitIds.indexOf(scope.unitId) >= 0;
+  });
+}
+
+function calcProjectFinancials(projectId) {
+  var project = S.projects.filter(function(item) { return item.id === projectId; })[0];
+  var scopes = getProjectScopes(projectId);
+  var subcontractScopes = scopes.filter(function(scope) {
+    return scope.subcontractorName || Number(scope.subcontractAmount || 0) > 0;
+  });
+  var subcontractCommitted = subcontractScopes.reduce(function(sum, scope) {
+    return sum + Number(scope.subcontractAmount || 0);
+  }, 0);
+  var subcontractEarned = subcontractScopes.reduce(function(sum, scope) {
+    return sum + Number(scope.subcontractAmount || 0) * calcScopeProgress(scope.id) / 100;
+  }, 0);
+  var subcontractPaid = subcontractScopes.reduce(function(sum, scope) {
+    return sum + Number(scope.subcontractPaid || 0);
+  }, 0);
+  var materials = S.expenses.filter(function(expense) {
+    return expense.projectId === projectId && expense.type === 'material';
+  });
+  var materialTotal = materials.reduce(function(sum, expense) {
+    return sum + Number(expense.amount || 0);
+  }, 0);
+  var revenue = Number(project && project.contractTotal || 0);
+  return {
+    revenue: revenue,
+    subcontractScopes: subcontractScopes,
+    subcontractCommitted: subcontractCommitted,
+    subcontractEarned: subcontractEarned,
+    subcontractPaid: subcontractPaid,
+    subcontractPayable: Math.max(0, subcontractEarned - subcontractPaid),
+    materialExpenses: materials,
+    materialTotal: materialTotal,
+    projectedBalance: revenue - subcontractCommitted - materialTotal,
+    cashBalance: revenue - subcontractPaid - materialTotal,
+    currentProductionBalance: revenue - subcontractEarned - materialTotal
+  };
 }
 
 function clearOpenScopes() {
@@ -1080,6 +1141,196 @@ function formatUsd(value) {
   });
 }
 
+function appendFinanceStat(container, label, value, className) {
+  var stat = div('finance-stat');
+  stat.appendChild(div('finance-label', label));
+  stat.appendChild(div('finance-value' + (className ? ' ' + className : ''), formatUsd(value)));
+  container.appendChild(stat);
+}
+
+function openMaterialExpenseForm(projectId, expense, onSaved) {
+  showModal(function(mo, close) {
+    mo.appendChild(div('mtit', expense ? 'Editar Material' : 'Nova Despesa de Material'));
+
+    var f1 = div('fg');
+    f1.appendChild(mkLbl('Descrição'));
+    var description = el('input', '');
+    description.placeholder = 'ex: Baseboards e acabamento';
+    description.value = expense ? (expense.description || '') : '';
+    f1.appendChild(description);
+    mo.appendChild(f1);
+
+    var f2 = div('fg');
+    f2.appendChild(mkLbl('Fornecedor (opcional)'));
+    var vendor = el('input', '');
+    vendor.placeholder = 'ex: Home Depot';
+    vendor.value = expense ? (expense.vendor || '') : '';
+    f2.appendChild(vendor);
+    mo.appendChild(f2);
+
+    var f3 = div('fg');
+    f3.appendChild(mkLbl('Valor (US$)'));
+    var amount = el('input', '');
+    amount.type = 'number';
+    amount.min = '0';
+    amount.step = '0.01';
+    amount.value = expense ? Number(expense.amount || 0) : '';
+    f3.appendChild(amount);
+    mo.appendChild(f3);
+
+    var f4 = div('fg');
+    f4.appendChild(mkLbl('Data'));
+    var date = el('input', '');
+    date.type = 'date';
+    date.value = expense && expense.date ? expense.date : today();
+    f4.appendChild(date);
+    mo.appendChild(f4);
+
+    var row = div('brow');
+    var cancel = btn('btn bs', 'Cancelar', close);
+    cancel.style.flex = '1';
+    var save = btn('btn bp', 'Salvar', function() {
+      var value = Number(amount.value || 0);
+      if (!description.value.trim() || value <= 0) {
+        toast('Informe a descrição e um valor maior que zero', 'w');
+        return;
+      }
+      var now = new Date().toISOString();
+      dbPut('expenses', {
+        id: expense ? expense.id : uid(),
+        projectId: projectId,
+        type: 'material',
+        description: description.value.trim(),
+        vendor: vendor.value.trim(),
+        amount: value,
+        date: date.value || today(),
+        createdAt: expense ? expense.createdAt : now,
+        updatedAt: now
+      }).then(reload).then(function() {
+        close();
+        toast(expense ? 'Despesa atualizada' : 'Material adicionado');
+        if (onSaved) onSaved();
+      });
+    });
+    save.style.flex = '1';
+    row.appendChild(cancel);
+    row.appendChild(save);
+    mo.appendChild(row);
+  });
+}
+
+function openProjectFinance(projectId) {
+  var project = S.projects.filter(function(item) { return item.id === projectId; })[0];
+  if (!project) return;
+  var financial = calcProjectFinancials(projectId);
+
+  showModal(function(mo, close) {
+    mo.appendChild(div('mtit', 'Financeiro - ' + project.name));
+    var grid = div('finance-grid');
+    appendFinanceStat(grid, 'Contrato', financial.revenue);
+    appendFinanceStat(grid, 'Subcontracts', financial.subcontractCommitted);
+    appendFinanceStat(grid, 'Materiais', financial.materialTotal);
+    appendFinanceStat(grid, 'Saldo Projetado', financial.projectedBalance,
+      financial.projectedBalance >= 0 ? 'good' : 'warn');
+    appendFinanceStat(grid, 'Produzido por Subs', financial.subcontractEarned);
+    appendFinanceStat(grid, 'A Pagar Agora', financial.subcontractPayable, 'warn');
+    appendFinanceStat(grid, 'Saldo de Caixa', financial.cashBalance,
+      financial.cashBalance >= 0 ? 'good' : 'warn');
+    mo.appendChild(grid);
+
+    var addMaterial = btn('btn bp bfull', '+ Adicionar Material', function() {
+      close();
+      openMaterialExpenseForm(projectId, null, function() {
+        openProjectFinance(projectId);
+      });
+    });
+    mo.appendChild(addMaterial);
+
+    var subcontractTitle = div('ct', 'Ficha dos Subcontractors');
+    subcontractTitle.style.marginTop = '18px';
+    mo.appendChild(subcontractTitle);
+    var grouped = {};
+    financial.subcontractScopes.forEach(function(scope) {
+      var name = scope.subcontractorName || 'Sem responsável';
+      if (!grouped[name]) grouped[name] = {committed:0, earned:0, paid:0, scopes:[]};
+      var progress = calcScopeProgress(scope.id);
+      var amount = Number(scope.subcontractAmount || 0);
+      grouped[name].committed += amount;
+      grouped[name].earned += amount * progress / 100;
+      grouped[name].paid += Number(scope.subcontractPaid || 0);
+      grouped[name].scopes.push(scope.title + ' (' + progress + '%)');
+    });
+    var names = Object.keys(grouped).sort();
+    if (!names.length) {
+      mo.appendChild(div('', '<div style="font-size:13px;color:var(--mu);margin-bottom:16px">' +
+        'Nenhum subcontractor vinculado. Edite um scope para informar responsável e valor acordado.</div>'));
+    }
+    names.forEach(function(name) {
+      var account = grouped[name];
+      var line = div('finance-line');
+      var contractorTitle = div('finance-line-title');
+      contractorTitle.textContent = name;
+      line.appendChild(contractorTitle);
+      line.appendChild(div('finance-line-meta',
+        'Scopes: ' + account.scopes.map(esc).join(', ') + '<br>' +
+        'Contrato: <b style="color:var(--tx)">' + formatUsd(account.committed) + '</b> · ' +
+        'Crédito produzido: <b style="color:var(--ac)">' + formatUsd(account.earned) + '</b><br>' +
+        'Pago: ' + formatUsd(account.paid) + ' · ' +
+        'A pagar: <b style="color:#ffb93c">' + formatUsd(Math.max(0, account.earned - account.paid)) + '</b>'));
+      mo.appendChild(line);
+    });
+
+    var materialTitle = div('ct', 'Extrato de Materiais');
+    materialTitle.style.marginTop = '18px';
+    mo.appendChild(materialTitle);
+    if (!financial.materialExpenses.length) {
+      mo.appendChild(div('', '<div style="font-size:13px;color:var(--mu);margin-bottom:16px">Nenhum material lançado.</div>'));
+    }
+    financial.materialExpenses
+      .slice()
+      .sort(function(a, b) { return (b.date || '').localeCompare(a.date || ''); })
+      .forEach(function(expense) {
+        var line = div('finance-line');
+        var top = div('');
+        top.style.cssText = 'display:flex;justify-content:space-between;gap:10px;align-items:flex-start;';
+        var info = div('');
+        var expenseTitle = div('finance-line-title');
+        expenseTitle.textContent = expense.description;
+        info.appendChild(expenseTitle);
+        info.appendChild(div('finance-line-meta',
+          (expense.date ? fDate(expense.date) : '') +
+          (expense.vendor ? ' · ' + esc(expense.vendor) : '')));
+        top.appendChild(info);
+        top.appendChild(div('finance-value warn', formatUsd(expense.amount)));
+        line.appendChild(top);
+        var actions = div('brow');
+        actions.appendChild(btn('btn bs bsm', 'Editar', function() {
+          close();
+          openMaterialExpenseForm(projectId, expense, function() {
+            openProjectFinance(projectId);
+          });
+        }));
+        actions.appendChild(btn('btn br bsm', 'Excluir', function() {
+          showConfirm({
+            title: 'Excluir material',
+            msg: 'Excluir "' + expense.description + '" do extrato?',
+            yesL: 'Excluir',
+            onYes: function() {
+              dbDel('expenses', expense.id).then(reload).then(function() {
+                close();
+                openProjectFinance(projectId);
+              });
+            }
+          });
+        }));
+        line.appendChild(actions);
+        mo.appendChild(line);
+      });
+
+    mo.appendChild(btn('btn bs bfull', 'Fechar', close));
+  });
+}
+
 function downloadProjectDocumentById(documentId) {
   if (!documentId) {
     toast('Este projeto não possui documento original', 'w');
@@ -1213,6 +1464,22 @@ function renderProjectDetail(main) {
         esc(formatUsd(proj.contractTotal)) + '</div>'
       : '');
   main.appendChild(titleCard);
+
+  var financial = calcProjectFinancials(proj.id);
+  var financeCard = div('card');
+  financeCard.appendChild(div('ct', 'Financeiro do Projeto'));
+  var financeGrid = div('finance-grid');
+  appendFinanceStat(financeGrid, 'Contrato', financial.revenue);
+  appendFinanceStat(financeGrid, 'Custos Projetados',
+    financial.subcontractCommitted + financial.materialTotal);
+  appendFinanceStat(financeGrid, 'Crédito Produzido', financial.subcontractEarned);
+  appendFinanceStat(financeGrid, 'Saldo Projetado', financial.projectedBalance,
+    financial.projectedBalance >= 0 ? 'good' : 'warn');
+  financeCard.appendChild(financeGrid);
+  financeCard.appendChild(btn('btn bp bfull', 'Abrir Extrato Financeiro', function() {
+    openProjectFinance(proj.id);
+  }));
+  main.appendChild(financeCard);
 
   var documentUnits = units.filter(function(unit) { return !!unit.documentId; });
   if (proj.contractSummary || proj.documentId || documentUnits.length) {
@@ -1396,6 +1663,16 @@ function renderUnitDetail(main) {
     hdrDiv.appendChild(title);
     hdrDiv.appendChild(progDiv);
     scopeDiv.appendChild(hdrDiv);
+    if (scope.subcontractorName || Number(scope.subcontractAmount || 0) > 0) {
+      var earned = Number(scope.subcontractAmount || 0) * scopeProg / 100;
+      var financeMeta = div('');
+      financeMeta.style.cssText = 'padding:0 16px 12px;font-size:11px;color:var(--mu);line-height:1.5;';
+      financeMeta.innerHTML = 'Responsável: <b style="color:var(--tx)">' +
+        esc(scope.subcontractorName || 'Não informado') + '</b> · Acordado: ' +
+        formatUsd(scope.subcontractAmount) + ' · Produzido: <b style="color:var(--ac)">' +
+        formatUsd(earned) + '</b>';
+      scopeDiv.appendChild(financeMeta);
+    }
     
     var tasksDiv = div('scope-tasks' + (S.openScopeIds[scope.id] ? ' open' : ''));
     
@@ -1518,7 +1795,7 @@ function decodeGitHubContent(content) {
 }
 
 function countBackupRecords(data) {
-  return ['projects', 'units', 'scopes', 'tasks'].reduce(function(total, key) {
+  return ['projects', 'units', 'scopes', 'tasks', 'expenses'].reduce(function(total, key) {
     return total + (Array.isArray(data[key]) ? data[key].length : 0);
   }, 0);
 }
@@ -1528,7 +1805,8 @@ function getLocalSyncData() {
     projects: S.projects.slice(),
     units: S.units.slice(),
     scopes: S.scopes.slice(),
-    tasks: S.tasks.slice()
+    tasks: S.tasks.slice(),
+    expenses: S.expenses.slice()
   };
 }
 
@@ -1537,6 +1815,7 @@ function validateGitHubBackup(data) {
       !Array.isArray(data.scopes) || !Array.isArray(data.tasks)) {
     throw new Error('O arquivo remoto não é um backup válido do BrightScale');
   }
+  if (!Array.isArray(data.expenses)) data.expenses = [];
   return data;
 }
 
@@ -1637,6 +1916,7 @@ function replaceLocalDataFromGitHub(data) {
     dbClear('units'),
     dbClear('scopes'),
     dbClear('tasks'),
+    dbClear('expenses'),
     dbClear('documents')
   ]).then(function() {
     return Promise.all(
@@ -1653,6 +1933,7 @@ function replaceLocalDataFromGitHub(data) {
         }))
         .concat(data.scopes.map(function(item) { return dbPut('scopes', item); }))
         .concat(data.tasks.map(function(item) { return dbPut('tasks', item); }))
+        .concat((data.expenses || []).map(function(item) { return dbPut('expenses', item); }))
     );
   }).then(function() {
     localStorage.setItem('brightscale_last_restore', new Date().toISOString());
@@ -1690,6 +1971,7 @@ function syncToGitHub(callback) {
     units: localData.units,
     scopes: localData.scopes,
     tasks: localData.tasks,
+    expenses: localData.expenses,
     updatedAt: updatedAt
   };
   
@@ -1715,7 +1997,8 @@ function syncToGitHub(callback) {
           projects: remoteData.projects,
           units: remoteData.units,
           scopes: remoteData.scopes,
-          tasks: remoteData.tasks
+          tasks: remoteData.tasks,
+          expenses: remoteData.expenses || []
         });
         var localRecords = JSON.stringify(localData);
         if (remoteRecords !== localRecords) {
@@ -1750,6 +2033,7 @@ function syncToGitHub(callback) {
       units: remoteBackup.units,
       scopes: remoteBackup.scopes,
       tasks: remoteBackup.tasks,
+      expenses: remoteBackup.expenses || [],
       updatedAt: remoteBackup.updatedAt
     }, null, 2);
     if (remoteJson !== json) {
@@ -1928,6 +2212,13 @@ function renderReports(main) {
       txt += 'PROJETO: ' + proj.name + '\n';
       if (proj.address) txt += 'Endereço: ' + proj.address + '\n';
       txt += 'Progresso Geral: ' + calcProjectProgress(proj.id) + '%\n\n';
+      var projectFinance = calcProjectFinancials(proj.id);
+      txt += '  FINANCEIRO\n';
+      txt += '  Contrato: ' + formatUsd(projectFinance.revenue) + '\n';
+      txt += '  Subcontracts acordados: ' + formatUsd(projectFinance.subcontractCommitted) + '\n';
+      txt += '  Materiais: ' + formatUsd(projectFinance.materialTotal) + '\n';
+      txt += '  Crédito produzido: ' + formatUsd(projectFinance.subcontractEarned) + '\n';
+      txt += '  Saldo projetado: ' + formatUsd(projectFinance.projectedBalance) + '\n\n';
       
       var units = S.units.filter(function(u) { return u.projectId === proj.id; });
       units.forEach(function(unit) {
@@ -1994,14 +2285,16 @@ function renderReports(main) {
       dbAll('projects'),
       dbAll('units'),
       dbAll('scopes'),
-      dbAll('tasks')
+      dbAll('tasks'),
+      dbAll('expenses')
     ]).then(function(r) {
       var json = JSON.stringify({
         projects: r[0],
         units: r[1],
         scopes: r[2],
         tasks: r[3],
-        v: 1,
+        expenses: r[4],
+        v: 2,
         at: new Date().toISOString()
       }, null, 2);
       
@@ -2096,6 +2389,9 @@ function renderReports(main) {
             .then(function() {
               return Promise.all(data.tasks.map(function(t) { return dbPut('tasks', t); }));
             })
+            .then(function() {
+              return Promise.all((data.expenses || []).map(function(e) { return dbPut('expenses', e); }));
+            })
             .then(reload)
             .then(function() {
               close();
@@ -2127,14 +2423,16 @@ function renderReports(main) {
       dbAll('projects'),
       dbAll('units'),
       dbAll('scopes'),
-      dbAll('tasks')
+      dbAll('tasks'),
+      dbAll('expenses')
     ]).then(function(r) {
       var json = JSON.stringify({
         projects: r[0],
         units: r[1],
         scopes: r[2],
         tasks: r[3],
-        v: 1,
+        expenses: r[4],
+        v: 2,
         at: new Date().toISOString()
       }, null, 2);
       
@@ -2188,6 +2486,9 @@ function renderReports(main) {
                 })
                 .then(function() {
                   return Promise.all(data.tasks.map(function(t) { return dbPut('tasks', t); }));
+                })
+                .then(function() {
+                  return Promise.all((data.expenses || []).map(function(e) { return dbPut('expenses', e); }));
                 })
                 .then(reload)
                 .then(function() {
@@ -2475,6 +2776,11 @@ function renderSettings(main) {
                     }));
                 });
               })
+              .then(function() {
+                return Promise.all(S.expenses
+                  .filter(function(expense) { return expense.projectId === p.id; })
+                  .map(function(expense) { return dbDel('expenses', expense.id); }));
+              })
               .then(reload)
               .then(function() { toast('Projeto excluído'); });
           }
@@ -2574,13 +2880,14 @@ function renderSettings(main) {
           msg: 'Tem CERTEZA ABSOLUTA? Todos os dados serão perdidos para sempre!',
           yesL: 'Sim, apagar tudo',
           onYes: function() {
-            Promise.all([dbAll('projects'), dbAll('units'), dbAll('scopes'), dbAll('tasks'), dbAll('documents')])
+            Promise.all([dbAll('projects'), dbAll('units'), dbAll('scopes'), dbAll('tasks'), dbAll('documents'), dbAll('expenses')])
               .then(function(r) {
                 var projectIds = r[0].map(function(p) { return p.id; });
                 var unitIds = r[1].map(function(u) { return u.id; });
                 var scopeIds = r[2].map(function(s) { return s.id; });
                 var taskIds = r[3].map(function(t) { return t.id; });
                 var documentIds = r[4].map(function(d) { return d.id; });
+                var expenseIds = r[5].map(function(e) { return e.id; });
                 
                 return Promise.all(
                   projectIds.map(function(id) { return dbDel('projects', id); })
@@ -2588,6 +2895,7 @@ function renderSettings(main) {
                     .concat(scopeIds.map(function(id) { return dbDel('scopes', id); }))
                     .concat(taskIds.map(function(id) { return dbDel('tasks', id); }))
                     .concat(documentIds.map(function(id) { return dbDel('documents', id); }))
+                    .concat(expenseIds.map(function(id) { return dbDel('expenses', id); }))
                 );
               })
               .then(function() {
@@ -2680,6 +2988,17 @@ function openProjectForm(proj) {
     if (proj) ai.value = proj.address || '';
     f2.appendChild(ai);
     mo.appendChild(f2);
+
+    var ft = div('fg');
+    ft.appendChild(mkLbl('Valor Total do Contrato (US$)'));
+    var contractInput = el('input', '');
+    contractInput.type = 'number';
+    contractInput.min = '0';
+    contractInput.step = '0.01';
+    contractInput.placeholder = 'ex: 9000.00';
+    contractInput.value = proj ? Number(proj.contractTotal || 0) || '' : '';
+    ft.appendChild(contractInput);
+    mo.appendChild(ft);
     
     var f3 = div('fg');
     f3.appendChild(mkLbl('Cliente (opcional)'));
@@ -2719,7 +3038,7 @@ function openProjectForm(proj) {
           name: ci.value.trim(),
           contact: cti.value.trim()
         },
-        contractTotal: proj ? (proj.contractTotal || 0) : 0,
+        contractTotal: Number(contractInput.value || 0),
         contractSummary: proj ? (proj.contractSummary || '') : '',
         documentId: proj ? (proj.documentId || '') : '',
         documentIds: proj && Array.isArray(proj.documentIds) ? proj.documentIds.slice() : [],
@@ -3377,6 +3696,37 @@ function openScopeForm(unitId, scope) {
     }
     f3.appendChild(oi);
     mo.appendChild(f3);
+
+    var f4 = div('fg');
+    f4.appendChild(mkLbl('Subcontractor Responsável (opcional)'));
+    var sci = el('input', '');
+    sci.type = 'text';
+    sci.placeholder = 'ex: João / DC ProMaster';
+    if (scope) sci.value = scope.subcontractorName || '';
+    f4.appendChild(sci);
+    mo.appendChild(f4);
+
+    var f5 = div('fg');
+    f5.appendChild(mkLbl('Valor Acordado com Subcontractor (US$)'));
+    var sai = el('input', '');
+    sai.type = 'number';
+    sai.min = '0';
+    sai.step = '0.01';
+    sai.placeholder = 'ex: 1000.00';
+    if (scope) sai.value = Number(scope.subcontractAmount || 0) || '';
+    f5.appendChild(sai);
+    mo.appendChild(f5);
+
+    var f6 = div('fg');
+    f6.appendChild(mkLbl('Valor já Pago (US$)'));
+    var spi = el('input', '');
+    spi.type = 'number';
+    spi.min = '0';
+    spi.step = '0.01';
+    spi.placeholder = 'ex: 500.00';
+    if (scope) spi.value = Number(scope.subcontractPaid || 0) || '';
+    f6.appendChild(spi);
+    mo.appendChild(f6);
     
     var row = div('brow');
     var cb = btn('btn bs', 'Cancelar', close);
@@ -3400,6 +3750,12 @@ function openScopeForm(unitId, scope) {
         toast('Ordem inválida', 'w');
         return;
       }
+      var subcontractAmount = Number(sai.value || 0);
+      var subcontractPaid = Number(spi.value || 0);
+      if (subcontractAmount < 0 || subcontractPaid < 0) {
+        toast('Valores financeiros não podem ser negativos', 'w');
+        return;
+      }
       
       var now = new Date().toISOString();
       dbPut('scopes', {
@@ -3408,6 +3764,9 @@ function openScopeForm(unitId, scope) {
         title: title,
         order: order,
         weight: weight,
+        subcontractorName: sci.value.trim(),
+        subcontractAmount: subcontractAmount,
+        subcontractPaid: subcontractPaid,
         createdAt: scope ? scope.createdAt : now,
         updatedAt: now
       }).then(function(savedScopeId) {
