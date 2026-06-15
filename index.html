@@ -301,7 +301,7 @@ var TEMPLATES = {
 var DB;
 function openDB() {
   return new Promise(function(res, rej) {
-    var r = indexedDB.open('brightscale_v1', 3);
+    var r = indexedDB.open('brightscale_v1', 4);
     r.onupgradeneeded = function(e) {
       var d = e.target.result;
       if (!d.objectStoreNames.contains('projects'))
@@ -316,6 +316,8 @@ function openDB() {
         d.createObjectStore('documents', {keyPath: 'id'});
       if (!d.objectStoreNames.contains('expenses'))
         d.createObjectStore('expenses', {keyPath: 'id'});
+      if (!d.objectStoreNames.contains('people'))
+        d.createObjectStore('people', {keyPath: 'id'});
     };
     r.onsuccess = function(e) { DB = e.target.result; res(); };
     r.onerror = function(e) { rej(e.target.error); };
@@ -362,6 +364,50 @@ function dbClear(store) {
   });
 }
 
+function migrateResponsibilityData() {
+  return Promise.all([dbAll('scopes'), dbAll('tasks'), dbAll('people')]).then(function(result) {
+    var scopes = result[0];
+    var tasks = result[1];
+    var people = result[2];
+    var peopleByName = {};
+    people.forEach(function(person) {
+      peopleByName[(person.name || '').trim().toLowerCase()] = person;
+    });
+    var promises = [];
+    scopes.forEach(function(scope) {
+      var legacyName = (scope.subcontractorName || '').trim();
+      if (!scope.personId && legacyName) {
+        var key = legacyName.toLowerCase();
+        var person = peopleByName[key];
+        if (!person) {
+          var now = new Date().toISOString();
+          person = {
+            id: uid(),
+            name: legacyName,
+            company: '',
+            email: '',
+            createdAt: now,
+            updatedAt: now
+          };
+          peopleByName[key] = person;
+          promises.push(dbPut('people', person));
+        }
+        promises.push(dbPut('scopes', Object.assign({}, scope, {
+          personId: person.id
+        })));
+      }
+    });
+    tasks.forEach(function(task) {
+      if (Object.prototype.hasOwnProperty.call(task, 'contractor')) {
+        var cleanTask = Object.assign({}, task);
+        delete cleanTask.contractor;
+        promises.push(dbPut('tasks', cleanTask));
+      }
+    });
+    return Promise.all(promises);
+  });
+}
+
 function uid() {
   return crypto.randomUUID ? crypto.randomUUID() :
     Date.now().toString(36) + Math.random().toString(36).substr(2);
@@ -377,6 +423,7 @@ var S = {
   scopes: [],
   tasks: [],
   expenses: [],
+  people: [],
   currentProjectId: null,
   currentUnitId: null,
   openScopeIds: {}
@@ -497,13 +544,15 @@ function reload() {
     dbAll('units'),
     dbAll('scopes'),
     dbAll('tasks'),
-    dbAll('expenses')
+    dbAll('expenses'),
+    dbAll('people')
   ]).then(function(r) {
     S.projects = r[0].sort(function(a, b) { return a.name.localeCompare(b.name); });
     S.units = r[1];
     S.scopes = r[2];
     S.tasks = r[3];
     S.expenses = r[4];
+    S.people = r[5].sort(function(a, b) { return a.name.localeCompare(b.name); });
     console.log('Reload completo. Projects:', S.projects.length, 'Units:', S.units.length, 'Scopes:', S.scopes.length, 'Tasks:', S.tasks.length);
     render();
   });
@@ -547,11 +596,35 @@ function getProjectScopes(projectId) {
   });
 }
 
+function getPersonById(personId) {
+  return S.people.filter(function(person) { return person.id === personId; })[0] || null;
+}
+
+function getScopePerson(scope) {
+  var person = getPersonById(scope.personId);
+  if (person) return person;
+  if (scope.subcontractorName) {
+    return {
+      id: '',
+      name: scope.subcontractorName,
+      company: '',
+      email: '',
+      legacy: true
+    };
+  }
+  return null;
+}
+
+function getScopePersonName(scope) {
+  var person = getScopePerson(scope);
+  return person ? person.name : '';
+}
+
 function calcProjectFinancials(projectId) {
   var project = S.projects.filter(function(item) { return item.id === projectId; })[0];
   var scopes = getProjectScopes(projectId);
   var subcontractScopes = scopes.filter(function(scope) {
-    return scope.subcontractorName || Number(scope.subcontractAmount || 0) > 0;
+    return scope.personId || scope.subcontractorName || Number(scope.subcontractAmount || 0) > 0;
   });
   var subcontractCommitted = subcontractScopes.reduce(function(sum, scope) {
     return sum + Number(scope.subcontractAmount || 0);
@@ -1119,7 +1192,6 @@ function importContractToProject(file, rawText, data, targetProjectId) {
         title: taskTpl.title || ('Task ' + (taskIndex + 1)),
         order: taskTpl.order || taskIndex + 1,
         progress: 0,
-        contractor: '',
         deadline: '',
         status: 'pending',
         createdAt: now,
@@ -1146,6 +1218,166 @@ function appendFinanceStat(container, label, value, className) {
   stat.appendChild(div('finance-label', label));
   stat.appendChild(div('finance-value' + (className ? ' ' + className : ''), formatUsd(value)));
   container.appendChild(stat);
+}
+
+function calcPersonFinancials(personId) {
+  var person = getPersonById(personId);
+  var scopes = S.scopes.filter(function(scope) { return scope.personId === personId; });
+  var entries = scopes.map(function(scope) {
+    var unit = S.units.filter(function(item) { return item.id === scope.unitId; })[0];
+    var project = unit
+      ? S.projects.filter(function(item) { return item.id === unit.projectId; })[0]
+      : null;
+    var progress = calcScopeProgress(scope.id);
+    var committed = Number(scope.subcontractAmount || 0);
+    var earned = committed * progress / 100;
+    var paid = Number(scope.subcontractPaid || 0);
+    return {
+      scope: scope,
+      unit: unit,
+      project: project,
+      progress: progress,
+      committed: committed,
+      earned: earned,
+      paid: paid,
+      payable: Math.max(0, earned - paid)
+    };
+  });
+  return {
+    person: person,
+    entries: entries,
+    committed: entries.reduce(function(sum, entry) { return sum + entry.committed; }, 0),
+    earned: entries.reduce(function(sum, entry) { return sum + entry.earned; }, 0),
+    paid: entries.reduce(function(sum, entry) { return sum + entry.paid; }, 0),
+    payable: entries.reduce(function(sum, entry) { return sum + entry.payable; }, 0)
+  };
+}
+
+function openPersonForm(person, onSaved) {
+  showModal(function(mo, close) {
+    mo.appendChild(div('mtit', person ? 'Editar Responsável' : 'Cadastrar Responsável'));
+
+    function addInput(label, value, type, placeholder) {
+      var field = div('fg');
+      field.appendChild(mkLbl(label));
+      var input = el('input', '');
+      input.type = type || 'text';
+      input.value = value || '';
+      input.placeholder = placeholder || '';
+      field.appendChild(input);
+      mo.appendChild(field);
+      return input;
+    }
+
+    var nameInput = addInput('Nome', person && person.name, 'text', 'ex: Carlos Silva');
+    var companyInput = addInput('Empresa', person && person.company, 'text', 'ex: CS Finish Carpentry');
+    var emailInput = addInput('E-mail', person && person.email, 'email', 'ex: carlos@empresa.com');
+    var row = div('brow');
+    var cancel = btn('btn bs', 'Cancelar', close);
+    cancel.style.flex = '1';
+    var save = btn('btn bp', 'Salvar', function() {
+      var name = nameInput.value.trim();
+      if (!name) {
+        toast('Informe o nome do responsável', 'w');
+        return;
+      }
+      var now = new Date().toISOString();
+      var record = {
+        id: person ? person.id : uid(),
+        name: name,
+        company: companyInput.value.trim(),
+        email: emailInput.value.trim(),
+        createdAt: person ? person.createdAt : now,
+        updatedAt: now
+      };
+      dbPut('people', record).then(reload).then(function() {
+        close();
+        toast(person ? 'Responsável atualizado' : 'Responsável cadastrado');
+        if (onSaved) onSaved(record);
+      });
+    });
+    save.style.flex = '1';
+    row.appendChild(cancel);
+    row.appendChild(save);
+    mo.appendChild(row);
+  });
+}
+
+function openPersonFinancialCard(personId) {
+  var financial = calcPersonFinancials(personId);
+  var person = financial.person;
+  if (!person) return;
+  showModal(function(mo, close) {
+    mo.appendChild(div('mtit', 'Ficha Financeira - ' + person.name));
+    mo.appendChild(div('', '<div style="font-size:13px;color:var(--mu);line-height:1.6;margin-bottom:14px">' +
+      (person.company ? '<b style="color:var(--tx)">' + esc(person.company) + '</b><br>' : '') +
+      (person.email ? esc(person.email) : 'E-mail não informado') + '</div>'));
+    var grid = div('finance-grid');
+    appendFinanceStat(grid, 'Contratos', financial.committed);
+    appendFinanceStat(grid, 'Produzido', financial.earned, 'good');
+    appendFinanceStat(grid, 'Pago', financial.paid);
+    appendFinanceStat(grid, 'A Pagar', financial.payable, 'warn');
+    mo.appendChild(grid);
+
+    var title = div('ct', 'Scopes Vinculados');
+    title.style.marginTop = '18px';
+    mo.appendChild(title);
+    if (!financial.entries.length) {
+      mo.appendChild(div('', '<div style="font-size:13px;color:var(--mu);margin-bottom:16px">Nenhum scope vinculado.</div>'));
+    }
+    financial.entries.forEach(function(entry) {
+      var line = div('finance-line');
+      var heading = div('finance-line-title');
+      heading.textContent = entry.scope.title;
+      line.appendChild(heading);
+      line.appendChild(div('finance-line-meta',
+        'Projeto: ' + esc(entry.project ? entry.project.name : 'Não encontrado') +
+        (entry.unit ? ' · Unit ' + esc(entry.unit.unitNumber) : '') + '<br>' +
+        'Progresso: ' + entry.progress + '% · Acordado: ' + formatUsd(entry.committed) + '<br>' +
+        'Produzido: <b style="color:var(--ac)">' + formatUsd(entry.earned) + '</b> · ' +
+        'Pago: ' + formatUsd(entry.paid) + ' · ' +
+        'A pagar: <b style="color:#ffb93c">' + formatUsd(entry.payable) + '</b>'));
+      mo.appendChild(line);
+    });
+    mo.appendChild(btn('btn bs bfull', 'Fechar', close));
+  });
+}
+
+function openPeopleDirectory() {
+  showModal(function(mo, close) {
+    mo.appendChild(div('mtit', 'Responsáveis'));
+    mo.appendChild(btn('btn bp bfull', '+ Cadastrar Responsável', function() {
+      close();
+      openPersonForm(null, openPeopleDirectory);
+    }));
+    var title = div('ct', 'Cadastros');
+    title.style.marginTop = '18px';
+    mo.appendChild(title);
+    if (!S.people.length) {
+      mo.appendChild(div('', '<div style="font-size:13px;color:var(--mu);margin-bottom:16px">Nenhum responsável cadastrado.</div>'));
+    }
+    S.people.forEach(function(person) {
+      var line = div('finance-line');
+      var heading = div('finance-line-title');
+      heading.textContent = person.name;
+      line.appendChild(heading);
+      line.appendChild(div('finance-line-meta',
+        (person.company ? esc(person.company) : 'Empresa não informada') +
+        (person.email ? '<br>' + esc(person.email) : '')));
+      var actions = div('brow');
+      actions.appendChild(btn('btn bp bsm', 'Ficha Financeira', function() {
+        close();
+        openPersonFinancialCard(person.id);
+      }));
+      actions.appendChild(btn('btn bs bsm', 'Editar', function() {
+        close();
+        openPersonForm(person, openPeopleDirectory);
+      }));
+      line.appendChild(actions);
+      mo.appendChild(line);
+    });
+    mo.appendChild(btn('btn bs bfull', 'Fechar', close));
+  });
 }
 
 function openMaterialExpenseForm(projectId, expense, onSaved) {
@@ -1251,25 +1483,38 @@ function openProjectFinance(projectId) {
     mo.appendChild(subcontractTitle);
     var grouped = {};
     financial.subcontractScopes.forEach(function(scope) {
-      var name = scope.subcontractorName || 'Sem responsável';
-      if (!grouped[name]) grouped[name] = {committed:0, earned:0, paid:0, scopes:[]};
+      var person = getScopePerson(scope);
+      var key = person && person.id ? person.id : 'legacy:' + (person ? person.name : 'Sem responsável');
+      var name = person ? person.name : 'Sem responsável';
+      if (!grouped[key]) grouped[key] = {
+        personId: person && person.id,
+        name: name,
+        company: person && person.company,
+        committed:0,
+        earned:0,
+        paid:0,
+        scopes:[]
+      };
       var progress = calcScopeProgress(scope.id);
       var amount = Number(scope.subcontractAmount || 0);
-      grouped[name].committed += amount;
-      grouped[name].earned += amount * progress / 100;
-      grouped[name].paid += Number(scope.subcontractPaid || 0);
-      grouped[name].scopes.push(scope.title + ' (' + progress + '%)');
+      grouped[key].committed += amount;
+      grouped[key].earned += amount * progress / 100;
+      grouped[key].paid += Number(scope.subcontractPaid || 0);
+      grouped[key].scopes.push(scope.title + ' (' + progress + '%)');
     });
-    var names = Object.keys(grouped).sort();
-    if (!names.length) {
+    var personKeys = Object.keys(grouped).sort(function(a, b) {
+      return grouped[a].name.localeCompare(grouped[b].name);
+    });
+    if (!personKeys.length) {
       mo.appendChild(div('', '<div style="font-size:13px;color:var(--mu);margin-bottom:16px">' +
         'Nenhum subcontractor vinculado. Edite um scope para informar responsável e valor acordado.</div>'));
     }
-    names.forEach(function(name) {
-      var account = grouped[name];
+    personKeys.forEach(function(key) {
+      var account = grouped[key];
       var line = div('finance-line');
       var contractorTitle = div('finance-line-title');
-      contractorTitle.textContent = name;
+      contractorTitle.textContent = account.name +
+        (account.company ? ' · ' + account.company : '');
       line.appendChild(contractorTitle);
       line.appendChild(div('finance-line-meta',
         'Scopes: ' + account.scopes.map(esc).join(', ') + '<br>' +
@@ -1277,6 +1522,12 @@ function openProjectFinance(projectId) {
         'Crédito produzido: <b style="color:var(--ac)">' + formatUsd(account.earned) + '</b><br>' +
         'Pago: ' + formatUsd(account.paid) + ' · ' +
         'A pagar: <b style="color:#ffb93c">' + formatUsd(Math.max(0, account.earned - account.paid)) + '</b>'));
+      if (account.personId) {
+        line.appendChild(btn('btn bs bsm', 'Abrir Ficha Completa', function() {
+          close();
+          openPersonFinancialCard(account.personId);
+        }));
+      }
       mo.appendChild(line);
     });
 
@@ -1663,12 +1914,12 @@ function renderUnitDetail(main) {
     hdrDiv.appendChild(title);
     hdrDiv.appendChild(progDiv);
     scopeDiv.appendChild(hdrDiv);
-    if (scope.subcontractorName || Number(scope.subcontractAmount || 0) > 0) {
+    if (scope.personId || scope.subcontractorName || Number(scope.subcontractAmount || 0) > 0) {
       var earned = Number(scope.subcontractAmount || 0) * scopeProg / 100;
       var financeMeta = div('');
       financeMeta.style.cssText = 'padding:0 16px 12px;font-size:11px;color:var(--mu);line-height:1.5;';
       financeMeta.innerHTML = 'Responsável: <b style="color:var(--tx)">' +
-        esc(scope.subcontractorName || 'Não informado') + '</b> · Acordado: ' +
+        esc(getScopePersonName(scope) || 'Não informado') + '</b> · Acordado: ' +
         formatUsd(scope.subcontractAmount) + ' · Produzido: <b style="color:var(--ac)">' +
         formatUsd(earned) + '</b>';
       scopeDiv.appendChild(financeMeta);
@@ -1795,7 +2046,7 @@ function decodeGitHubContent(content) {
 }
 
 function countBackupRecords(data) {
-  return ['projects', 'units', 'scopes', 'tasks', 'expenses'].reduce(function(total, key) {
+  return ['projects', 'units', 'scopes', 'tasks', 'expenses', 'people'].reduce(function(total, key) {
     return total + (Array.isArray(data[key]) ? data[key].length : 0);
   }, 0);
 }
@@ -1806,7 +2057,8 @@ function getLocalSyncData() {
     units: S.units.slice(),
     scopes: S.scopes.slice(),
     tasks: S.tasks.slice(),
-    expenses: S.expenses.slice()
+    expenses: S.expenses.slice(),
+    people: S.people.slice()
   };
 }
 
@@ -1816,6 +2068,7 @@ function validateGitHubBackup(data) {
     throw new Error('O arquivo remoto não é um backup válido do BrightScale');
   }
   if (!Array.isArray(data.expenses)) data.expenses = [];
+  if (!Array.isArray(data.people)) data.people = [];
   return data;
 }
 
@@ -1917,6 +2170,7 @@ function replaceLocalDataFromGitHub(data) {
     dbClear('scopes'),
     dbClear('tasks'),
     dbClear('expenses'),
+    dbClear('people'),
     dbClear('documents')
   ]).then(function() {
     return Promise.all(
@@ -1934,6 +2188,7 @@ function replaceLocalDataFromGitHub(data) {
         .concat(data.scopes.map(function(item) { return dbPut('scopes', item); }))
         .concat(data.tasks.map(function(item) { return dbPut('tasks', item); }))
         .concat((data.expenses || []).map(function(item) { return dbPut('expenses', item); }))
+        .concat((data.people || []).map(function(item) { return dbPut('people', item); }))
     );
   }).then(function() {
     localStorage.setItem('brightscale_last_restore', new Date().toISOString());
@@ -1944,7 +2199,7 @@ function replaceLocalDataFromGitHub(data) {
     S.currentProjectId = null;
     S.currentUnitId = null;
     clearOpenScopes();
-    return reload();
+    return migrateResponsibilityData().then(reload);
   });
 }
 
@@ -1972,6 +2227,7 @@ function syncToGitHub(callback) {
     scopes: localData.scopes,
     tasks: localData.tasks,
     expenses: localData.expenses,
+    people: localData.people,
     updatedAt: updatedAt
   };
   
@@ -1998,7 +2254,8 @@ function syncToGitHub(callback) {
           units: remoteData.units,
           scopes: remoteData.scopes,
           tasks: remoteData.tasks,
-          expenses: remoteData.expenses || []
+          expenses: remoteData.expenses || [],
+          people: remoteData.people || []
         });
         var localRecords = JSON.stringify(localData);
         if (remoteRecords !== localRecords) {
@@ -2034,6 +2291,7 @@ function syncToGitHub(callback) {
       scopes: remoteBackup.scopes,
       tasks: remoteBackup.tasks,
       expenses: remoteBackup.expenses || [],
+      people: remoteBackup.people || [],
       updatedAt: remoteBackup.updatedAt
     }, null, 2);
     if (remoteJson !== json) {
@@ -2286,7 +2544,8 @@ function renderReports(main) {
       dbAll('units'),
       dbAll('scopes'),
       dbAll('tasks'),
-      dbAll('expenses')
+      dbAll('expenses'),
+      dbAll('people')
     ]).then(function(r) {
       var json = JSON.stringify({
         projects: r[0],
@@ -2294,7 +2553,8 @@ function renderReports(main) {
         scopes: r[2],
         tasks: r[3],
         expenses: r[4],
-        v: 2,
+        people: r[5],
+        v: 3,
         at: new Date().toISOString()
       }, null, 2);
       
@@ -2392,6 +2652,10 @@ function renderReports(main) {
             .then(function() {
               return Promise.all((data.expenses || []).map(function(e) { return dbPut('expenses', e); }));
             })
+            .then(function() {
+              return Promise.all((data.people || []).map(function(p) { return dbPut('people', p); }));
+            })
+            .then(migrateResponsibilityData)
             .then(reload)
             .then(function() {
               close();
@@ -2424,7 +2688,8 @@ function renderReports(main) {
       dbAll('units'),
       dbAll('scopes'),
       dbAll('tasks'),
-      dbAll('expenses')
+      dbAll('expenses'),
+      dbAll('people')
     ]).then(function(r) {
       var json = JSON.stringify({
         projects: r[0],
@@ -2432,7 +2697,8 @@ function renderReports(main) {
         scopes: r[2],
         tasks: r[3],
         expenses: r[4],
-        v: 2,
+        people: r[5],
+        v: 3,
         at: new Date().toISOString()
       }, null, 2);
       
@@ -2490,6 +2756,10 @@ function renderReports(main) {
                 .then(function() {
                   return Promise.all((data.expenses || []).map(function(e) { return dbPut('expenses', e); }));
                 })
+                .then(function() {
+                  return Promise.all((data.people || []).map(function(p) { return dbPut('people', p); }));
+                })
+                .then(migrateResponsibilityData)
                 .then(reload)
                 .then(function() {
                   toast('Backup importado: ' + file.name);
@@ -2794,6 +3064,13 @@ function renderSettings(main) {
     });
   }
   main.appendChild(pc);
+
+  var peopleCard = div('card');
+  peopleCard.appendChild(div('ct', 'Responsáveis / Subcontractors'));
+  peopleCard.appendChild(div('', '<div style="font-size:13px;color:var(--mu);line-height:1.6;margin-bottom:12px">' +
+    S.people.length + ' responsável(is) cadastrado(s). Consulte contatos e fichas financeiras consolidadas.</div>'));
+  peopleCard.appendChild(btn('btn bp bfull', 'Abrir Cadastro de Responsáveis', openPeopleDirectory));
+  main.appendChild(peopleCard);
   
   var dataCard = div('card');
   dataCard.appendChild(div('ct', 'Gerenciamento de Dados'));
@@ -2880,7 +3157,7 @@ function renderSettings(main) {
           msg: 'Tem CERTEZA ABSOLUTA? Todos os dados serão perdidos para sempre!',
           yesL: 'Sim, apagar tudo',
           onYes: function() {
-            Promise.all([dbAll('projects'), dbAll('units'), dbAll('scopes'), dbAll('tasks'), dbAll('documents'), dbAll('expenses')])
+            Promise.all([dbAll('projects'), dbAll('units'), dbAll('scopes'), dbAll('tasks'), dbAll('documents'), dbAll('expenses'), dbAll('people')])
               .then(function(r) {
                 var projectIds = r[0].map(function(p) { return p.id; });
                 var unitIds = r[1].map(function(u) { return u.id; });
@@ -2888,6 +3165,7 @@ function renderSettings(main) {
                 var taskIds = r[3].map(function(t) { return t.id; });
                 var documentIds = r[4].map(function(d) { return d.id; });
                 var expenseIds = r[5].map(function(e) { return e.id; });
+                var personIds = r[6].map(function(p) { return p.id; });
                 
                 return Promise.all(
                   projectIds.map(function(id) { return dbDel('projects', id); })
@@ -2896,6 +3174,7 @@ function renderSettings(main) {
                     .concat(taskIds.map(function(id) { return dbDel('tasks', id); }))
                     .concat(documentIds.map(function(id) { return dbDel('documents', id); }))
                     .concat(expenseIds.map(function(id) { return dbDel('expenses', id); }))
+                    .concat(personIds.map(function(id) { return dbDel('people', id); }))
                 );
               })
               .then(function() {
@@ -3698,13 +3977,47 @@ function openScopeForm(unitId, scope) {
     mo.appendChild(f3);
 
     var f4 = div('fg');
-    f4.appendChild(mkLbl('Subcontractor Responsável (opcional)'));
-    var sci = el('input', '');
-    sci.type = 'text';
-    sci.placeholder = 'ex: João / DC ProMaster';
-    if (scope) sci.value = scope.subcontractorName || '';
-    f4.appendChild(sci);
+    f4.appendChild(mkLbl('Responsável pelo Scope (opcional)'));
+    var personSelect = el('select', '');
+    personSelect.innerHTML = '<option value="">Sem responsável</option>';
+    S.people.forEach(function(person) {
+      var option = document.createElement('option');
+      option.value = person.id;
+      option.textContent = person.name + (person.company ? ' · ' + person.company : '');
+      personSelect.appendChild(option);
+    });
+    if (scope && scope.personId) personSelect.value = scope.personId;
+    f4.appendChild(personSelect);
+    var addPersonButton = btn('btn bs bfull', '+ Cadastrar Novo Responsável', function() {
+      newPersonFields.style.display = newPersonFields.style.display === 'none' ? '' : 'none';
+      if (newPersonFields.style.display !== 'none') newPersonName.focus();
+    });
+    addPersonButton.style.marginTop = '8px';
+    f4.appendChild(addPersonButton);
     mo.appendChild(f4);
+
+    var newPersonFields = div('');
+    newPersonFields.style.display = 'none';
+    var np1 = div('fg');
+    np1.appendChild(mkLbl('Nome'));
+    var newPersonName = el('input', '');
+    newPersonName.placeholder = 'ex: Carlos Silva';
+    np1.appendChild(newPersonName);
+    newPersonFields.appendChild(np1);
+    var np2 = div('fg');
+    np2.appendChild(mkLbl('Empresa'));
+    var newPersonCompany = el('input', '');
+    newPersonCompany.placeholder = 'ex: CS Finish Carpentry';
+    np2.appendChild(newPersonCompany);
+    newPersonFields.appendChild(np2);
+    var np3 = div('fg');
+    np3.appendChild(mkLbl('E-mail'));
+    var newPersonEmail = el('input', '');
+    newPersonEmail.type = 'email';
+    newPersonEmail.placeholder = 'ex: carlos@empresa.com';
+    np3.appendChild(newPersonEmail);
+    newPersonFields.appendChild(np3);
+    mo.appendChild(newPersonFields);
 
     var f5 = div('fg');
     f5.appendChild(mkLbl('Valor Acordado com Subcontractor (US$)'));
@@ -3758,17 +4071,45 @@ function openScopeForm(unitId, scope) {
       }
       
       var now = new Date().toISOString();
-      dbPut('scopes', {
+      var personPromise = Promise.resolve(personSelect.value);
+      if (newPersonFields.style.display !== 'none') {
+        var newName = newPersonName.value.trim();
+        if (!newName) {
+          toast('Informe o nome do novo responsável', 'w');
+          return;
+        }
+        var personRecord = {
+          id: uid(),
+          name: newName,
+          company: newPersonCompany.value.trim(),
+          email: newPersonEmail.value.trim(),
+          createdAt: now,
+          updatedAt: now
+        };
+        personPromise = dbPut('people', personRecord).then(function() {
+          return personRecord.id;
+        });
+      }
+      personPromise.then(function(personId) {
+        var selectedPerson = getPersonById(personId);
+        if (!selectedPerson && newPersonFields.style.display !== 'none') {
+          selectedPerson = {
+            name: newPersonName.value.trim()
+          };
+        }
+        return dbPut('scopes', {
         id: scope ? scope.id : uid(),
         unitId: unitId,
         title: title,
         order: order,
         weight: weight,
-        subcontractorName: sci.value.trim(),
+        personId: personId || '',
+        subcontractorName: selectedPerson ? selectedPerson.name : '',
         subcontractAmount: subcontractAmount,
         subcontractPaid: subcontractPaid,
         createdAt: scope ? scope.createdAt : now,
         updatedAt: now
+        });
       }).then(function(savedScopeId) {
         setScopeOpen(scope ? scope.id : savedScopeId, true);
         return reload();
@@ -3862,7 +4203,6 @@ function openTaskForm(scopeId, task) {
         title: name,
         order: order,
         progress: progress,
-        contractor: task ? task.contractor : '',
         deadline: task ? task.deadline : '',
         status: status,
         createdAt: task ? task.createdAt : now,
@@ -3924,15 +4264,6 @@ function openTaskEdit(task) {
       pf.style.width = ri.value + '%';
     };
     
-    var f1 = div('fg');
-    f1.appendChild(mkLbl('Responsável (opcional)'));
-    var ci = el('input', '');
-    ci.type = 'text';
-    ci.placeholder = 'ex: ANGELO';
-    if (task.contractor) ci.value = task.contractor;
-    f1.appendChild(ci);
-    mo.appendChild(f1);
-    
     var f2 = div('fg');
     f2.appendChild(mkLbl('Deadline (opcional)'));
     var di = el('input', '');
@@ -3961,7 +4292,6 @@ function openTaskEdit(task) {
         title: title,
         order: task.order,
         progress: prog,
-        contractor: ci.value.trim(),
         deadline: di.value,
         status: status,
         createdAt: task.createdAt,
@@ -3993,6 +4323,8 @@ function openTaskEdit(task) {
 openDB().then(function() {
   F.date = today(); F.useNow = true;
   RS.period = 'today'; RS.df = today(); RS.dt = today();
+  return migrateResponsibilityData();
+}).then(function() {
   var remaining = Math.max(0, SPLASH_MIN_MS - (Date.now() - splashStartedAt));
   return new Promise(function(resolve) {
     setTimeout(resolve, remaining);
