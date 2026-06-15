@@ -1,6 +1,23 @@
 {
   "projects": [
     {
+      "id": "aba2a76a-e157-4f9a-a88c-9c73f0dfb8ab",
+      "name": "Marjory Horwin",
+      "address": "Marjory Horwin",
+      "client": {
+        "name": "Marjory Horwin",
+        "contact": ""
+      },
+      "contractTotal": 1050,
+      "contractSummary": "Documento \"Majore Estimate 8068_CO_01.pdf\" analisado com 3 scope(s): Flooring & Tile, Cabinets & Carpentry, General Construction.",
+      "documentId": "057d0175-2fb7-490f-a695-9c95e87e0e5f",
+      "documentIds": [
+        "057d0175-2fb7-490f-a695-9c95e87e0e5f"
+      ],
+      "createdAt": "2026-06-15T02:37:56.235Z",
+      "updatedAt": "2026-06-15T02:37:56.235Z"
+    },
+    {
       "id": "3db2664f-4027-46db-970b-f7c354e37fad",
       "name": "Rami Smidi",
       "address": "641 NW 132nd Terr, Plantation FL 33325",
@@ -32,6 +49,26 @@
       },
       "createdAt": "2026-06-14T21:53:43.297Z",
       "updatedAt": "2026-06-14T21:53:43.297Z"
+    },
+    {
+      "id": "a275da81-2605-417c-9e33-90c9b5b6b944",
+      "projectId": "aba2a76a-e157-4f9a-a88c-9c73f0dfb8ab",
+      "unitNumber": "Main",
+      "bdBa": "",
+      "invoice": "Majore Estimate 8068_CO_01",
+      "estimateTotal": 1050,
+      "contractSummary": "Documento \"Majore Estimate 8068_CO_01.pdf\" analisado com 3 scope(s): Flooring & Tile, Cabinets & Carpentry, General Construction.",
+      "documentId": "057d0175-2fb7-490f-a695-9c95e87e0e5f",
+      "startDate": "2026-06-14",
+      "deadline": "",
+      "supervisors": {
+        "demo": "",
+        "painter": "",
+        "tile": "",
+        "assembler": ""
+      },
+      "createdAt": "2026-06-15T02:37:56.235Z",
+      "updatedAt": "2026-06-15T02:37:56.235Z"
     }
   ],
   "scopes": [
@@ -72,6 +109,24 @@
       "updatedAt": "2026-06-14T22:16:00.000Z"
     },
     {
+      "id": "7f06c74e-f165-4564-87f9-be8cf973983b",
+      "unitId": "a275da81-2605-417c-9e33-90c9b5b6b944",
+      "title": "Garage Floor",
+      "order": 1,
+      "weight": 0.3333333333333333,
+      "createdAt": "2026-06-15T02:37:56.235Z",
+      "updatedAt": "2026-06-15T02:38:54.249Z"
+    },
+    {
+      "id": "91f5386e-a6b8-46ad-9d0a-52afbb9bee28",
+      "unitId": "a275da81-2605-417c-9e33-90c9b5b6b944",
+      "title": "Change Orders",
+      "order": 2,
+      "weight": 0.3333333333333333,
+      "createdAt": "2026-06-15T02:37:56.235Z",
+      "updatedAt": "2026-06-15T02:42:24.390Z"
+    },
+    {
       "id": "ad164760-5e83-47c0-9222-f4e751c20168",
       "unitId": "7cdd0873-9d3f-4c3c-8212-cc853f2db2af",
       "title": "Electrical",
@@ -102,6 +157,18 @@
       "status": "in_progress",
       "createdAt": "2026-06-14T21:53:43.297Z",
       "updatedAt": "2026-06-14T22:12:38.405Z"
+    },
+    {
+      "id": "094a49e7-8e45-46b1-bfcd-d5f5004c440c",
+      "scopeId": "7f06c74e-f165-4564-87f9-be8cf973983b",
+      "title": "Garage Painting",
+      "order": 2,
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
+      "createdAt": "2026-06-15T02:39:38.462Z",
+      "updatedAt": "2026-06-15T02:42:04.094Z"
     },
     {
       "id": "24988086-df02-44f6-9161-bea67b0afda6",
@@ -164,6 +231,18 @@
       "updatedAt": "2026-06-14T22:14:12.284Z"
     },
     {
+      "id": "6f3845ea-522f-4a30-9d4a-5b15f992e6ac",
+      "scopeId": "91f5386e-a6b8-46ad-9d0a-52afbb9bee28",
+      "title": "Install pet door on existing door",
+      "order": 1,
+      "progress": 0,
+      "contractor": "",
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-06-15T02:37:56.235Z",
+      "updatedAt": "2026-06-15T02:37:56.235Z"
+    },
+    {
       "id": "860d0e31-d31f-4d22-9f88-a9cc35ab8ebc",
       "scopeId": "6285ebea-8eac-49b2-bd9e-43f4cb0e7b06",
       "title": "Shower Pan Drain",
@@ -224,6 +303,42 @@
       "updatedAt": "2026-06-14T21:53:43.297Z"
     },
     {
+      "id": "bc3f5987-3a4a-468d-bce6-1a0949f425e3",
+      "scopeId": "91f5386e-a6b8-46ad-9d0a-52afbb9bee28",
+      "title": "Install approximately 16 LF of baseboard",
+      "order": 4,
+      "progress": 0,
+      "contractor": "",
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-06-15T02:37:56.235Z",
+      "updatedAt": "2026-06-15T02:37:56.235Z"
+    },
+    {
+      "id": "ce418cea-f930-4ca4-808b-b0be5e17e727",
+      "scopeId": "7f06c74e-f165-4564-87f9-be8cf973983b",
+      "title": "Epoxy Flooring Full Flake",
+      "order": 1,
+      "progress": 100,
+      "contractor": "",
+      "deadline": "",
+      "status": "completed",
+      "createdAt": "2026-06-15T02:37:56.235Z",
+      "updatedAt": "2026-06-15T02:41:57.424Z"
+    },
+    {
+      "id": "d76d8ec3-47de-409a-80da-73a83138eef0",
+      "scopeId": "91f5386e-a6b8-46ad-9d0a-52afbb9bee28",
+      "title": "Replace weather stripping / door seals on entry door",
+      "order": 2,
+      "progress": 0,
+      "contractor": "",
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-06-15T02:37:56.235Z",
+      "updatedAt": "2026-06-15T02:37:56.235Z"
+    },
+    {
       "id": "e1d04ba0-59ed-424d-aed7-e95e0e1cde19",
       "scopeId": "77625b84-d9fd-4025-8034-13a39f91521f",
       "title": "Marble curb Installation",
@@ -234,6 +349,18 @@
       "status": "pending",
       "createdAt": "2026-06-14T22:16:54.768Z",
       "updatedAt": "2026-06-14T22:17:20.953Z"
+    },
+    {
+      "id": "e35abc7b-c674-4570-a643-eae59b93645d",
+      "scopeId": "91f5386e-a6b8-46ad-9d0a-52afbb9bee28",
+      "title": "Replace weather seals on double garage door",
+      "order": 3,
+      "progress": 0,
+      "contractor": "",
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-06-15T02:37:56.235Z",
+      "updatedAt": "2026-06-15T02:37:56.235Z"
     },
     {
       "id": "f02fab30-7bbb-40a0-ae80-dbbc9bc14267",
@@ -248,5 +375,5 @@
       "updatedAt": "2026-06-14T22:17:23.666Z"
     }
   ],
-  "updatedAt": "2026-06-14T22:17:35.743Z"
+  "updatedAt": "2026-06-15T02:55:10.144Z"
 }
