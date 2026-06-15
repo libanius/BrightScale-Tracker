@@ -860,7 +860,7 @@ function openContractReview(file, analysis) {
   showModal(function(mo, close) {
     mo.appendChild(div('mtit', 'Revisar contrato'));
     mo.appendChild(div('', '<div style="font-size:12px;color:var(--mu);margin-bottom:14px;line-height:1.5">' +
-      'Revise os dados antes de criar o projeto. Arquivo: <b style="color:var(--tx)">' +
+      'Revise os dados e escolha o destino. Arquivo: <b style="color:var(--tx)">' +
       esc(file.name) + '</b></div>'));
 
     function addField(label, value, type) {
@@ -875,6 +875,23 @@ function openContractReview(file, analysis) {
       return input;
     }
 
+    var destinationField = div('fg');
+    destinationField.appendChild(mkLbl('Destino do Estimate / Contrato'));
+    var destinationSelect = el('select', '');
+    destinationSelect.innerHTML = '<option value="">Criar um novo projeto</option>';
+    S.projects.forEach(function(project) {
+      var option = document.createElement('option');
+      option.value = project.id;
+      option.textContent = 'Adicionar ao projeto existente: ' + project.name;
+      destinationSelect.appendChild(option);
+    });
+    destinationField.appendChild(destinationSelect);
+    if (S.projects.length) {
+      destinationField.appendChild(div('', '<div style="font-size:11px;color:var(--mu);margin-top:6px;line-height:1.5">' +
+        'Ao escolher um projeto existente, o app cria uma nova unit, anexa o arquivo e soma o valor ao total do projeto.</div>'));
+    }
+    mo.appendChild(destinationField);
+
     var nameInput = addField('Nome do Projeto', analysis.projectName);
     var clientInput = addField('Cliente', analysis.clientName);
     var addressInput = addField('Endereço', analysis.address);
@@ -887,6 +904,16 @@ function openContractReview(file, analysis) {
     var row = div('brow');
     var cancel = btn('btn bs', 'Cancelar', close);
     cancel.style.flex = '1';
+    function updateDestinationUi() {
+      var existingProject = S.projects.filter(function(project) {
+        return project.id === destinationSelect.value;
+      })[0];
+      nameInput.disabled = !!existingProject;
+      clientInput.disabled = !!existingProject;
+      addressInput.disabled = !!existingProject;
+      create.textContent = existingProject ? 'Adicionar ao Projeto' : 'Criar Projeto';
+    }
+
     var create = btn('btn bp', 'Criar Projeto', function() {
       var scopes;
       try {
@@ -896,13 +923,14 @@ function openContractReview(file, analysis) {
         toast('O template JSON de scopes é inválido', 'w');
         return;
       }
-      if (!nameInput.value.trim()) {
+      var targetProjectId = destinationSelect.value;
+      if (!targetProjectId && !nameInput.value.trim()) {
         toast('Informe o nome do projeto', 'w');
         return;
       }
       create.disabled = true;
-      create.textContent = 'Criando...';
-      createProjectFromContract(file, analysis.rawText, {
+      create.textContent = targetProjectId ? 'Adicionando...' : 'Criando...';
+      importContractToProject(file, analysis.rawText, {
         projectName: nameInput.value.trim(),
         clientName: clientInput.value.trim(),
         address: addressInput.value.trim(),
@@ -910,29 +938,39 @@ function openContractReview(file, analysis) {
         summary: summaryInput.value.trim(),
         unitNumber: unitInput.value.trim() || 'Main',
         scopes: scopes
-      }).then(function(projectId) {
+      }, targetProjectId).then(function(projectId) {
         close();
         S.currentProjectId = projectId;
         S.currentUnitId = null;
         return reload();
       }).then(function() {
-        toast('Projeto criado a partir do contrato!');
+        toast(targetProjectId
+          ? 'Estimate adicionado ao projeto existente!'
+          : 'Projeto criado a partir do contrato!');
       }).catch(function(err) {
         create.disabled = false;
-        create.textContent = 'Criar Projeto';
-        toast('Erro ao criar projeto: ' + err.message, 'e', 6000);
+        updateDestinationUi();
+        toast('Erro ao importar documento: ' + err.message, 'e', 6000);
       });
     });
+    destinationSelect.onchange = updateDestinationUi;
     create.style.flex = '1';
     row.appendChild(cancel);
     row.appendChild(create);
     mo.appendChild(row);
+    updateDestinationUi();
   });
 }
 
-function createProjectFromContract(file, rawText, data) {
+function importContractToProject(file, rawText, data, targetProjectId) {
   var now = new Date().toISOString();
-  var projectId = uid();
+  var existingProject = targetProjectId ? S.projects.filter(function(project) {
+    return project.id === targetProjectId;
+  })[0] : null;
+  if (targetProjectId && !existingProject) {
+    return Promise.reject(new Error('Projeto selecionado não foi encontrado'));
+  }
+  var projectId = existingProject ? existingProject.id : uid();
   var unitId = uid();
   var documentId = uid();
   var rawWeights = data.scopes.map(function(scope) {
@@ -951,23 +989,15 @@ function createProjectFromContract(file, rawText, data) {
       extractedText: rawText,
       createdAt: now
     }),
-    dbPut('projects', {
-      id: projectId,
-      name: data.projectName,
-      address: data.address,
-      client: {name: data.clientName, contact: ''},
-      contractTotal: data.total,
-      contractSummary: data.summary,
-      documentId: documentId,
-      createdAt: now,
-      updatedAt: now
-    }),
     dbPut('units', {
       id: unitId,
       projectId: projectId,
       unitNumber: data.unitNumber,
       bdBa: '',
       invoice: file.name.replace(/\.[^.]+$/, ''),
+      estimateTotal: data.total,
+      contractSummary: data.summary,
+      documentId: documentId,
       startDate: today(),
       deadline: '',
       supervisors: {demo:'', painter:'', tile:'', assembler:''},
@@ -975,6 +1005,33 @@ function createProjectFromContract(file, rawText, data) {
       updatedAt: now
     })
   ];
+
+  if (existingProject) {
+    var documentIds = Array.isArray(existingProject.documentIds)
+      ? existingProject.documentIds.slice()
+      : (existingProject.documentId ? [existingProject.documentId] : []);
+    if (documentIds.indexOf(documentId) < 0) documentIds.push(documentId);
+    promises.push(dbPut('projects', Object.assign({}, existingProject, {
+      contractTotal: Number(existingProject.contractTotal || 0) + Number(data.total || 0),
+      contractSummary: [existingProject.contractSummary, data.summary].filter(Boolean).join('\n\n'),
+      documentId: existingProject.documentId || documentId,
+      documentIds: documentIds,
+      updatedAt: now
+    })));
+  } else {
+    promises.push(dbPut('projects', {
+      id: projectId,
+      name: data.projectName,
+      address: data.address,
+      client: {name: data.clientName, contact: ''},
+      contractTotal: data.total,
+      contractSummary: data.summary,
+      documentId: documentId,
+      documentIds: [documentId],
+      createdAt: now,
+      updatedAt: now
+    }));
+  }
 
   data.scopes.forEach(function(scopeTpl, scopeIndex) {
     var scopeId = uid();
@@ -1008,6 +1065,10 @@ function createProjectFromContract(file, rawText, data) {
   return Promise.all(promises).then(function() { return projectId; });
 }
 
+function createProjectFromContract(file, rawText, data) {
+  return importContractToProject(file, rawText, data, '');
+}
+
 function formatUsd(value) {
   return Number(value || 0).toLocaleString('en-US', {
     style: 'currency',
@@ -1015,12 +1076,12 @@ function formatUsd(value) {
   });
 }
 
-function downloadProjectDocument(project) {
-  if (!project.documentId) {
+function downloadProjectDocumentById(documentId) {
+  if (!documentId) {
     toast('Este projeto não possui documento original', 'w');
     return;
   }
-  dbGet('documents', project.documentId).then(function(documentRecord) {
+  dbGet('documents', documentId).then(function(documentRecord) {
     if (!documentRecord || !documentRecord.file) throw new Error('Documento não encontrado neste aparelho');
     var url = URL.createObjectURL(documentRecord.file);
     var anchor = document.createElement('a');
@@ -1033,6 +1094,10 @@ function downloadProjectDocument(project) {
   }).catch(function(err) {
     toast(err.message, 'e', 5000);
   });
+}
+
+function downloadProjectDocument(project) {
+  downloadProjectDocumentById(project.documentId);
 }
 
 /* ═══════════════════════════════════════════
@@ -1116,6 +1181,7 @@ function renderProjects(main) {
 function renderProjectDetail(main) {
   var proj = S.projects.filter(function(p) { return p.id === S.currentProjectId; })[0];
   if (!proj) { S.currentProjectId = null; render(); return; }
+  var units = S.units.filter(function(u) { return u.projectId === proj.id; });
   
   var hdr = div('hdr');
   var back = btn('btn bs bsm', '← Voltar', function() {
@@ -1139,23 +1205,29 @@ function renderProjectDetail(main) {
       : '');
   main.appendChild(titleCard);
 
-  if (proj.contractSummary || proj.documentId) {
+  var documentUnits = units.filter(function(unit) { return !!unit.documentId; });
+  if (proj.contractSummary || proj.documentId || documentUnits.length) {
     var contractCard = div('card');
     contractCard.appendChild(div('ct', 'Contrato / Estimate'));
     if (proj.contractSummary) {
       contractCard.appendChild(div('', '<div style="font-size:13px;color:var(--mu);line-height:1.6;margin-bottom:12px">' +
         esc(proj.contractSummary) + '</div>'));
     }
-    if (proj.documentId) {
+    if (documentUnits.length) {
+      documentUnits.forEach(function(unit, index) {
+        var label = unit.invoice || unit.unitNumber || ('Arquivo ' + (index + 1));
+        contractCard.appendChild(btn('btn bs bfull', 'Baixar: ' + label, function() {
+          downloadProjectDocumentById(unit.documentId);
+        }));
+      });
+    } else if (proj.documentId) {
       contractCard.appendChild(btn('btn bs bfull', 'Baixar Arquivo Original', function() {
         downloadProjectDocument(proj);
       }));
     }
     main.appendChild(contractCard);
   }
-  
-  var units = S.units.filter(function(u) { return u.projectId === proj.id; });
-  
+
   if (!units.length) {
     main.appendChild(div('empty',
       '<div class="ei">📋</div>' +
@@ -1489,9 +1561,14 @@ function replaceLocalDataFromGitHub(data) {
       data.projects.map(function(item) {
         var project = Object.assign({}, item);
         project.documentId = '';
+        project.documentIds = [];
         return dbPut('projects', project);
       })
-        .concat(data.units.map(function(item) { return dbPut('units', item); }))
+        .concat(data.units.map(function(item) {
+          var unit = Object.assign({}, item);
+          unit.documentId = '';
+          return dbPut('units', unit);
+        }))
         .concat(data.scopes.map(function(item) { return dbPut('scopes', item); }))
         .concat(data.tasks.map(function(item) { return dbPut('tasks', item); }))
     );
@@ -2326,7 +2403,15 @@ function renderSettings(main) {
                 return Promise.all(taskIds.map(function(id) { return dbDel('tasks', id); }));
               })
               .then(function() {
-                return p.documentId ? dbDel('documents', p.documentId) : null;
+                return dbAll('documents').then(function(documents) {
+                  return Promise.all(documents
+                    .filter(function(documentRecord) {
+                      return documentRecord.projectId === p.id;
+                    })
+                    .map(function(documentRecord) {
+                      return dbDel('documents', documentRecord.id);
+                    }));
+                });
               })
               .then(reload)
               .then(function() { toast('Projeto excluído'); });
@@ -2575,6 +2660,7 @@ function openProjectForm(proj) {
         contractTotal: proj ? (proj.contractTotal || 0) : 0,
         contractSummary: proj ? (proj.contractSummary || '') : '',
         documentId: proj ? (proj.documentId || '') : '',
+        documentIds: proj && Array.isArray(proj.documentIds) ? proj.documentIds.slice() : [],
         createdAt: proj ? proj.createdAt : now,
         updatedAt: now
       }).then(reload).then(function() {
