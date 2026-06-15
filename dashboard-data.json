@@ -39,7 +39,7 @@
       "bdBa": "",
       "invoice": "Estimate_8070_from_The_Captains_Contractors",
       "startDate": "2026-06-14",
-      "deadline": "",
+      "deadline": "2026-06-22",
       "supervisors": {
         "demo": "",
         "painter": "",
@@ -47,8 +47,7 @@
         "assembler": ""
       },
       "createdAt": "2026-06-14T21:53:43.297Z",
-      "updatedAt": "2026-06-14T21:53:43.297Z",
-      "documentId": ""
+      "updatedAt": "2026-06-15T23:10:43.181Z"
     },
     {
       "id": "a275da81-2605-417c-9e33-90c9b5b6b944",
@@ -80,10 +79,10 @@
       "weight": 0.2,
       "personId": "f69b6f5b-f1f8-4f61-b9f7-15c42fde6287",
       "subcontractorName": "Vilson",
-      "subcontractAmount": 0,
+      "subcontractAmount": 250,
       "subcontractPaid": 0,
       "createdAt": "2026-06-14T21:53:43.297Z",
-      "updatedAt": "2026-06-15T04:24:12.485Z"
+      "updatedAt": "2026-06-15T23:09:31.516Z"
     },
     {
       "id": "6285ebea-8eac-49b2-bd9e-43f4cb0e7b06",
@@ -153,11 +152,11 @@
       "scopeId": "6285ebea-8eac-49b2-bd9e-43f4cb0e7b06",
       "title": "Shower Valve",
       "order": 1,
-      "progress": 0,
+      "progress": 100,
       "deadline": "2026-06-15",
-      "status": "pending",
+      "status": "completed",
       "createdAt": "2026-06-14T21:53:43.297Z",
-      "updatedAt": "2026-06-15T04:25:57.055Z"
+      "updatedAt": "2026-06-15T23:07:58.418Z"
     },
     {
       "id": "24988086-df02-44f6-9161-bea67b0afda6",
@@ -191,6 +190,17 @@
       "status": "pending",
       "createdAt": "2026-06-15T04:22:51.628Z",
       "updatedAt": "2026-06-15T04:22:51.628Z"
+    },
+    {
+      "id": "594b2f63-ab30-45fa-8644-2bd5f353ff71",
+      "scopeId": "08ea42c8-5212-4f70-82b6-f98e9e06495f",
+      "title": "Texture",
+      "order": 3,
+      "progress": 0,
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-06-15T23:09:59.956Z",
+      "updatedAt": "2026-06-15T23:09:59.956Z"
     },
     {
       "id": "5a24dd2d-623f-476e-829e-96284f07d470",
@@ -252,11 +262,11 @@
       "scopeId": "6285ebea-8eac-49b2-bd9e-43f4cb0e7b06",
       "title": "Shower Pan Drain",
       "order": 2,
-      "progress": 0,
+      "progress": 100,
       "deadline": "2026-06-15",
-      "status": "pending",
+      "status": "completed",
       "createdAt": "2026-06-14T21:53:43.297Z",
-      "updatedAt": "2026-06-14T22:13:15.571Z"
+      "updatedAt": "2026-06-15T23:08:05.220Z"
     },
     {
       "id": "8f6ea882-0503-48f8-9259-0f5e8ea83e14",
@@ -274,11 +284,11 @@
       "scopeId": "08ea42c8-5212-4f70-82b6-f98e9e06495f",
       "title": "Drywall Repair & Finishing",
       "order": 1,
-      "progress": 0,
+      "progress": 70,
       "deadline": "",
-      "status": "pending",
+      "status": "in_progress",
       "createdAt": "2026-06-14T21:53:43.297Z",
-      "updatedAt": "2026-06-14T21:53:43.297Z"
+      "updatedAt": "2026-06-15T23:09:44.346Z"
     },
     {
       "id": "bc01ddd9-4f88-4a40-946c-a4ded7a4cc53",
@@ -377,5 +387,5 @@
       "updatedAt": "2026-06-15T04:23:34.675Z"
     }
   ],
-  "updatedAt": "2026-06-15T23:05:37.142Z"
+  "updatedAt": "2026-06-15T23:11:38.617Z"
 }
