@@ -1476,7 +1476,9 @@ var BRIGHTSCALE_GITHUB = {
   user: 'libanius',
   repo: 'BrightScale-Tracker',
   tokenKey: 'brightscale_gh_token',
-  lastSyncKey: 'brightscale_last_sync'
+  lastSyncKey: 'brightscale_last_sync',
+  syncBaseKey: 'brightscale_sync_base_updated_at',
+  backupDirectory: 'backups'
 };
 
 function getBrightScaleGitHubConfig() {
@@ -1521,31 +1523,102 @@ function getLocalSyncData() {
   };
 }
 
-function fetchGitHubBackup() {
+function validateGitHubBackup(data) {
+  if (!Array.isArray(data.projects) || !Array.isArray(data.units) ||
+      !Array.isArray(data.scopes) || !Array.isArray(data.tasks)) {
+    throw new Error('O arquivo remoto não é um backup válido do BrightScale');
+  }
+  return data;
+}
+
+function githubApiHeaders(includeJson) {
+  var config = getBrightScaleGitHubConfig();
+  var headers = {
+    'Authorization': 'token ' + config.token,
+    'Accept': 'application/vnd.github.v3+json'
+  };
+  if (includeJson) headers['Content-Type'] = 'application/json';
+  return headers;
+}
+
+function fetchGitHubBackup(path) {
   var config = getBrightScaleGitHubConfig();
   if (!config.token) return Promise.reject(new Error('Configure o token do BrightScale em Ajustes primeiro'));
+  path = path || 'dashboard-data.json';
   var apiUrl = 'https://api.github.com/repos/' + config.user + '/' + config.repo +
-    '/contents/dashboard-data.json?read=' + Date.now();
+    '/contents/' + path + '?read=' + Date.now();
 
   return fetch(apiUrl, {
     cache: 'no-store',
-    headers: {
-      'Authorization': 'token ' + config.token,
-      'Accept': 'application/vnd.github.v3+json'
-    }
+    headers: githubApiHeaders()
   }).then(function(res) {
-    if (res.status === 404) throw new Error('Backup dashboard-data.json não encontrado no GitHub');
+    if (res.status === 404) throw new Error('Backup não encontrado no GitHub');
     if (!res.ok) throw new Error('GitHub API error: ' + res.status);
     return res.json();
   }).then(function(fileData) {
     if (!fileData.content) throw new Error('Backup remoto sem conteúdo');
-    var data = JSON.parse(decodeGitHubContent(fileData.content));
-    if (!Array.isArray(data.projects) || !Array.isArray(data.units) ||
-        !Array.isArray(data.scopes) || !Array.isArray(data.tasks)) {
-      throw new Error('O arquivo remoto não é um backup válido do BrightScale');
-    }
+    var data = validateGitHubBackup(JSON.parse(decodeGitHubContent(fileData.content)));
     data._sha = fileData.sha || '';
+    data._path = path;
     return data;
+  });
+}
+
+function listGitHubBackups() {
+  var config = getBrightScaleGitHubConfig();
+  if (!config.token) return Promise.reject(new Error('Configure o token do BrightScale em Ajustes primeiro'));
+  var apiUrl = 'https://api.github.com/repos/' + config.user + '/' + config.repo +
+    '/contents/' + BRIGHTSCALE_GITHUB.backupDirectory + '?list=' + Date.now();
+
+  return fetch(apiUrl, {
+    cache: 'no-store',
+    headers: githubApiHeaders()
+  }).then(function(res) {
+    if (res.status === 404) return [];
+    if (!res.ok) throw new Error('GitHub API error: ' + res.status);
+    return res.json();
+  }).then(function(files) {
+    return (Array.isArray(files) ? files : [])
+      .filter(function(file) {
+        return file.type === 'file' && /^brightscale-backup-.*\.json$/.test(file.name);
+      })
+      .sort(function(a, b) { return b.name.localeCompare(a.name); })
+      .map(function(file) {
+        var timestamp = file.name
+          .replace(/^brightscale-backup-/, '')
+          .replace(/\.json$/, '')
+          .replace(/^(\d{4}-\d{2}-\d{2})T(\d{2})-(\d{2})-(\d{2})-(\d{3})Z$/, '$1T$2:$3:$4.$5Z');
+        return {
+          name: file.name,
+          path: file.path,
+          timestamp: timestamp,
+          sha: file.sha
+        };
+      });
+  });
+}
+
+function putGitHubFile(path, json, message, existingSha) {
+  var config = getBrightScaleGitHubConfig();
+  var apiUrl = 'https://api.github.com/repos/' + config.user + '/' + config.repo + '/contents/' + path;
+  var body = {
+    message: message,
+    content: btoa(unescape(encodeURIComponent(json))),
+    branch: 'main'
+  };
+  if (existingSha) body.sha = existingSha;
+
+  return fetch(apiUrl, {
+    method: 'PUT',
+    headers: githubApiHeaders(true),
+    body: JSON.stringify(body)
+  }).then(function(res) {
+    if (!res.ok) {
+      return res.json().then(function(err) {
+        throw new Error(err.message || 'Falha ao enviar backup');
+      });
+    }
+    return res.json();
   });
 }
 
@@ -1574,6 +1647,10 @@ function replaceLocalDataFromGitHub(data) {
     );
   }).then(function() {
     localStorage.setItem('brightscale_last_restore', new Date().toISOString());
+    var syncBaseUpdatedAt = data._syncBaseUpdatedAt || data.updatedAt;
+    if (syncBaseUpdatedAt) {
+      localStorage.setItem(BRIGHTSCALE_GITHUB.syncBaseKey, syncBaseUpdatedAt);
+    }
     S.currentProjectId = null;
     S.currentUnitId = null;
     clearOpenScopes();
@@ -1583,105 +1660,183 @@ function replaceLocalDataFromGitHub(data) {
 
 function syncToGitHub(callback) {
   var config = getBrightScaleGitHubConfig();
-  var user = config.user;
-  var repo = config.repo;
   var token = config.token;
   
   if (!token) {
     toast('Configure o token do BrightScale em Ajustes primeiro', 'w', 4000);
     if (callback) callback(false);
-    return;
+    return Promise.resolve(false);
   }
   
   var localData = getLocalSyncData();
   if (countBackupRecords(localData) === 0) {
     toast('⛔ Upload bloqueado: este aparelho não possui dados. Restaure do GitHub primeiro.', 'e', 7000);
     if (callback) callback(false);
-    return;
+    return Promise.resolve(false);
   }
 
+  var updatedAt = new Date().toISOString();
   var data = {
     projects: localData.projects,
     units: localData.units,
     scopes: localData.scopes,
     tasks: localData.tasks,
-    updatedAt: new Date().toISOString()
+    updatedAt: updatedAt
   };
   
   var json = JSON.stringify(data, null, 2);
-  var content = btoa(unescape(encodeURIComponent(json)));
-  
-  var fileName = 'dashboard-data.json';
-  var apiUrl = 'https://api.github.com/repos/' + user + '/' + repo + '/contents/' + fileName;
-  
-  // Step 1: Get current file SHA (if exists)
-  fetch(apiUrl, {
-    headers: {
-      'Authorization': 'token ' + token,
-      'Accept': 'application/vnd.github.v3+json'
-    }
+  var compactTimestamp = updatedAt.replace(/:/g, '-').replace(/\./g, '-');
+  var archivePath = BRIGHTSCALE_GITHUB.backupDirectory +
+    '/brightscale-backup-' + compactTimestamp + '.json';
+  var latestPath = 'dashboard-data.json';
+  var latestSha = '';
+  var syncBase = localStorage.getItem(BRIGHTSCALE_GITHUB.syncBaseKey) ||
+    localStorage.getItem(BRIGHTSCALE_GITHUB.lastSyncKey) || '';
+
+  return fetchGitHubBackup(latestPath)
+  .catch(function(err) {
+    if (err.message === 'Backup não encontrado no GitHub') return null;
+    throw err;
   })
-  .then(function(res) {
-    if (res.ok) return res.json();
-    if (res.status === 404) return null; // File doesn't exist yet
-    throw new Error('GitHub API error: ' + res.status);
-  })
-  .then(function(fileData) {
-    // Step 2: Create or update file
-    var body = {
-      message: 'Update dashboard data - ' + new Date().toLocaleString('pt-BR'),
-      content: content,
-      branch: 'main'
-    };
-    
-    if (fileData && fileData.sha) {
-      body.sha = fileData.sha; // Required for updates
-    }
-    
-    return fetch(apiUrl, {
-      method: 'PUT',
-      headers: {
-        'Authorization': 'token ' + token,
-        'Accept': 'application/vnd.github.v3+json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(body)
-    });
-  })
-  .then(function(res) {
-    if (!res.ok) {
-      return res.json().then(function(err) {
-        throw new Error(err.message || 'Upload failed');
-      });
-    }
-    return res.json().then(function() {
-      return fetch(apiUrl + '?verify=' + Date.now(), {
-        cache: 'no-store',
-        headers: {
-          'Authorization': 'token ' + token,
-          'Accept': 'application/vnd.github.v3+json'
+  .then(function(remoteData) {
+    if (remoteData) {
+      latestSha = remoteData._sha || '';
+      if (!syncBase) {
+        var remoteRecords = JSON.stringify({
+          projects: remoteData.projects,
+          units: remoteData.units,
+          scopes: remoteData.scopes,
+          tasks: remoteData.tasks
+        });
+        var localRecords = JSON.stringify(localData);
+        if (remoteRecords !== localRecords) {
+          throw new Error('Este aparelho não conhece a versão atual do GitHub. Restaure um backup antes de enviar.');
         }
-      });
-    });
+      }
+      if (syncBase && remoteData.updatedAt &&
+          new Date(remoteData.updatedAt).getTime() > new Date(syncBase).getTime()) {
+        throw new Error('Existe um backup mais novo criado em outro aparelho. Restaure esse backup antes de enviar.');
+      }
+    }
+    return putGitHubFile(
+      archivePath,
+      json,
+      'Create BrightScale backup - ' + new Date(updatedAt).toLocaleString('pt-BR')
+    );
   })
   .then(function(res) {
-    if (!res.ok) throw new Error('Não foi possível confirmar o backup no GitHub');
-    return res.json();
+    return putGitHubFile(
+      latestPath,
+      json,
+      'Update dashboard data - ' + new Date(updatedAt).toLocaleString('pt-BR'),
+      latestSha
+    );
   })
-  .then(function(remoteFile) {
-    if (!remoteFile.content || decodeGitHubContent(remoteFile.content) !== json) {
+  .then(function() {
+    return fetchGitHubBackup(archivePath);
+  })
+  .then(function(remoteBackup) {
+    var remoteJson = JSON.stringify({
+      projects: remoteBackup.projects,
+      units: remoteBackup.units,
+      scopes: remoteBackup.scopes,
+      tasks: remoteBackup.tasks,
+      updatedAt: remoteBackup.updatedAt
+    }, null, 2);
+    if (remoteJson !== json) {
       throw new Error('O backup remoto não corresponde aos dados locais');
     }
   })
   .then(function() {
-    localStorage.setItem(BRIGHTSCALE_GITHUB.lastSyncKey, new Date().toISOString());
-    toast('✅ Backup confirmado no GitHub!');
+    localStorage.setItem(BRIGHTSCALE_GITHUB.lastSyncKey, updatedAt);
+    localStorage.setItem(BRIGHTSCALE_GITHUB.syncBaseKey, updatedAt);
+    toast('✅ Backup versionado confirmado no GitHub!');
     if (callback) callback(true);
+    return true;
   })
   .catch(function(err) {
     console.error('GitHub sync error:', err);
     toast('❌ Erro ao sincronizar: ' + err.message, 'e', 4000);
     if (callback) callback(false);
+    return false;
+  });
+}
+
+function openGitHubBackupHistory(onRestored) {
+  showModal(function(mo, close) {
+    mo.appendChild(div('mtit', 'Restaurar Backup'));
+    mo.appendChild(div('', '<div style="font-size:13px;color:var(--mu);margin-bottom:14px;line-height:1.6">' +
+      'Escolha uma cópia por data e hora. Os dados atuais deste aparelho serão substituídos somente após sua confirmação.</div>'));
+    var status = div('');
+    status.style.cssText = 'font-size:12px;color:var(--mu);padding:10px 12px;border-radius:8px;background:var(--sf2);border:1px solid var(--bd);margin-bottom:10px;';
+    status.textContent = 'Buscando histórico no GitHub...';
+    mo.appendChild(status);
+    var list = div('');
+    mo.appendChild(list);
+    mo.appendChild(btn('btn bs bfull', 'Fechar', close));
+
+    function addBackupOption(label, detail, path) {
+      var option = btn('btn bs bfull', label, function() {
+        option.disabled = true;
+        option.textContent = 'Carregando backup...';
+        var selectedBackup = fetchGitHubBackup(path);
+        var currentBackup = path === 'dashboard-data.json'
+          ? selectedBackup
+          : fetchGitHubBackup('dashboard-data.json');
+        Promise.all([selectedBackup, currentBackup]).then(function(results) {
+          var data = results[0];
+          var currentData = results[1];
+          data._syncBaseUpdatedAt = currentData.updatedAt || data.updatedAt;
+          option.disabled = false;
+          option.textContent = label;
+          var projects = data.projects.length;
+          var units = data.units.length;
+          showConfirm({
+            title: 'Confirmar restauração',
+            msg: 'Restaurar o backup de ' +
+              (data.updatedAt ? new Date(data.updatedAt).toLocaleString('pt-BR') : detail) +
+              ' com ' + projects + ' projeto(s) e ' + units + ' unit(s)? ' +
+              'Os dados locais atuais serão substituídos. PDFs originais não fazem parte do backup remoto.',
+            yesL: 'Restaurar',
+            onYes: function() {
+              status.innerHTML = '<span style="color:var(--ac)">Restaurando backup selecionado...</span>';
+              replaceLocalDataFromGitHub(data).then(function() {
+                close();
+                toast('Backup restaurado com sucesso!');
+                if (onRestored) onRestored(data);
+              }).catch(function(err) {
+                status.innerHTML = '<span style="color:var(--ac3)">Erro: ' + esc(err.message) + '</span>';
+                toast('Erro ao restaurar: ' + err.message, 'e', 7000);
+              });
+            }
+          });
+        }).catch(function(err) {
+          option.disabled = false;
+          option.textContent = label;
+          toast('Erro ao abrir backup: ' + err.message, 'e', 7000);
+        });
+      });
+      option.style.cssText += 'margin-bottom:8px;text-align:left;white-space:normal;line-height:1.4;';
+      var detailBox = div('');
+      detailBox.style.cssText = 'font-size:11px;color:var(--mu);margin:-4px 8px 10px;';
+      detailBox.textContent = detail;
+      list.appendChild(option);
+      list.appendChild(detailBox);
+    }
+
+    listGitHubBackups().then(function(backups) {
+      status.textContent = backups.length
+        ? backups.length + ' backup(s) versionado(s) encontrado(s).'
+        : 'Nenhum backup versionado encontrado. O backup atual ainda pode ser restaurado.';
+      backups.forEach(function(backup) {
+        var date = new Date(backup.timestamp);
+        var detail = isNaN(date.getTime()) ? backup.name : date.toLocaleString('pt-BR');
+        addBackupOption('Backup de ' + detail, backup.name, backup.path);
+      });
+      addBackupOption('Último backup / Dashboard atual', 'dashboard-data.json', 'dashboard-data.json');
+    }).catch(function(err) {
+      status.innerHTML = '<span style="color:var(--ac3)">Erro: ' + esc(err.message) + '</span>';
+    });
   });
 }
 
@@ -1786,23 +1941,23 @@ function renderReports(main) {
   
   // GitHub Sync Card
   var syncCard = div('card');
-  syncCard.appendChild(div('ct', 'Sincronizar com GitHub'));
+  syncCard.appendChild(div('ct', 'Backup no GitHub'));
   syncCard.appendChild(div('', '<div style="font-size:13px;color:var(--mu);margin-bottom:12px">' +
-    'Envie os dados para o GitHub e atualize o dashboard público automaticamente.</div>'));
+    'Crie uma cópia com data e hora e atualize o dashboard público automaticamente.</div>'));
   
-  var syncBtn = btn('btn bp bfull', '☁️ Sincronizar Agora', function() {
-    syncBtn.textContent = '⏳ Sincronizando...';
+  var syncBtn = btn('btn bp bfull', '☁️ Criar Backup Agora', function() {
+    syncBtn.textContent = '⏳ Criando backup...';
     syncBtn.disabled = true;
     
     syncToGitHub(function(success) {
-      syncBtn.textContent = '☁️ Sincronizar Agora';
+      syncBtn.textContent = '☁️ Criar Backup Agora';
       syncBtn.disabled = false;
       
       if (success) {
         showModal(function(mo, close) {
-          mo.appendChild(div('mtit', '✅ Sincronizado!'));
+          mo.appendChild(div('mtit', '✅ Backup criado!'));
           mo.appendChild(div('', '<div style="font-size:14px;color:var(--mu);margin-bottom:16px;line-height:1.7">' +
-            'Dashboard atualizado com sucesso!<br><br>' +
+            'Cópia versionada e dashboard atualizados com sucesso!<br><br>' +
             'O dashboard público agora mostra os dados mais recentes.<br><br>' +
             'Link do dashboard:<br>' +
             '<code style="background:var(--sf2);padding:8px 12px;border-radius:6px;display:block;margin-top:8px;' +
@@ -2235,61 +2390,36 @@ function renderSettings(main) {
   deviceDataCard.appendChild(div('ct', 'Dados entre Dispositivos'));
   deviceDataCard.appendChild(div('', '<div style="font-size:13px;color:var(--mu);margin-bottom:12px;line-height:1.6">' +
     'Este aparelho possui <b style="color:var(--tx)">' + S.projects.length + ' projeto(s)</b>. ' +
-    'Use restaurar em um aparelho novo ou vazio. A restauração baixa os dados do GitHub e nunca envia o estado vazio.</div>'));
+    'Crie um backup após trabalhar e restaure a cópia mais recente nos outros aparelhos antes de editar. ' +
+    'Cada backup fica salvo com data e hora.</div>'));
   var deviceStatus = div('');
   deviceStatus.style.cssText = 'display:none;font-size:12px;font-family:monospace;padding:8px 12px;border-radius:8px;background:var(--sf2);border:1px solid var(--bd);margin-bottom:10px;line-height:1.5;';
   deviceDataCard.appendChild(deviceStatus);
 
-  var restoreBtn = btn('btn bp bfull', '⬇️ Restaurar Backup do GitHub', function() {
-    restoreBtn.disabled = true;
-    restoreBtn.textContent = 'Buscando backup...';
+  var backupBtn = btn('btn bp bfull', 'Criar Backup Agora', function() {
+    backupBtn.disabled = true;
+    backupBtn.textContent = 'Criando backup...';
     deviceStatus.style.display = '';
-    deviceStatus.textContent = 'Lendo dashboard-data.json no GitHub...';
-
-    fetchGitHubBackup().then(function(remoteData) {
-      restoreBtn.disabled = false;
-      restoreBtn.textContent = '⬇️ Restaurar Backup do GitHub';
-      var remoteProjects = remoteData.projects.length;
-      var remoteUnits = remoteData.units.length;
-      var localHasData = countBackupRecords(getLocalSyncData()) > 0;
-      deviceStatus.innerHTML = '<span style="color:var(--ac)">Backup encontrado:</span> ' +
-        remoteProjects + ' projeto(s), ' + remoteUnits + ' unit(s)' +
-        (remoteData.updatedAt ? '<br>Atualizado: ' + esc(new Date(remoteData.updatedAt).toLocaleString('pt-BR')) : '');
-
-      showConfirm({
-        title: 'Restaurar do GitHub',
-        msg: (localHasData
-          ? 'ATENÇÃO: os dados deste aparelho serão substituídos pelo backup do GitHub. '
-          : 'Este aparelho está vazio. ') +
-          'Restaurar ' + remoteProjects + ' projeto(s) e ' + remoteUnits + ' unit(s)? ' +
-          'Arquivos PDF originais não fazem parte do backup remoto.',
-        yesL: 'Restaurar backup',
-        onYes: function() {
-          restoreBtn.disabled = true;
-          restoreBtn.textContent = 'Restaurando...';
-          deviceStatus.textContent = 'Substituindo dados locais pelo backup confirmado...';
-          replaceLocalDataFromGitHub(remoteData)
-            .then(function() {
-              deviceStatus.innerHTML = '<span style="color:var(--ac)">✓ Backup restaurado neste aparelho.</span>';
-              toast('Backup do GitHub restaurado! ✓');
-            })
-            .catch(function(err) {
-              deviceStatus.innerHTML = '<span style="color:var(--ac3)">Erro: ' + esc(err.message) + '</span>';
-              toast('Erro ao restaurar: ' + err.message, 'e', 7000);
-            })
-            .finally(function() {
-              restoreBtn.disabled = false;
-              restoreBtn.textContent = '⬇️ Restaurar Backup do GitHub';
-            });
-        }
-      });
-    }).catch(function(err) {
-      restoreBtn.disabled = false;
-      restoreBtn.textContent = '⬇️ Restaurar Backup do GitHub';
-      deviceStatus.innerHTML = '<span style="color:var(--ac3)">Erro: ' + esc(err.message) + '</span>';
-      toast('Erro ao buscar backup: ' + err.message, 'e', 7000);
+    deviceStatus.textContent = 'Salvando cópia versionada e atualizando o dashboard...';
+    syncToGitHub(function(success) {
+      backupBtn.disabled = false;
+      backupBtn.textContent = 'Criar Backup Agora';
+      deviceStatus.innerHTML = success
+        ? '<span style="color:var(--ac)">Backup confirmado com data e hora no GitHub.</span>'
+        : '<span style="color:var(--ac3)">Backup não criado. Veja a mensagem de erro acima.</span>';
     });
   });
+  deviceDataCard.appendChild(backupBtn);
+
+  var restoreBtn = btn('btn bs bfull', 'Escolher e Restaurar Backup', function() {
+    openGitHubBackupHistory(function(data) {
+      deviceStatus.style.display = '';
+      deviceStatus.innerHTML = '<span style="color:var(--ac)">Restaurado: ' +
+        esc(data.updatedAt ? new Date(data.updatedAt).toLocaleString('pt-BR') : 'backup selecionado') +
+        '</span>';
+    });
+  });
+  restoreBtn.style.marginTop = '8px';
   deviceDataCard.appendChild(restoreBtn);
   main.appendChild(deviceDataCard);
 

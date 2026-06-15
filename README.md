@@ -4,7 +4,8 @@ Projeto isolado do TimeTrack.
 
 - Repositório: `libanius/BrightScale-Tracker`
 - Dados publicados: `dashboard-data.json`
-- Backups exportados: `brightscale-backup-*.json`
+- Backups versionados no GitHub: `backups/brightscale-backup-*.json`
+- Backups exportados manualmente: `brightscale-backup-*.json`
 - Configuração local: chaves `brightscale_*` no navegador
 
 Arquivos antigos, planilhas e backups ficam fora deste repositório, na pasta
@@ -24,4 +25,12 @@ fica armazenado localmente no IndexedDB do aparelho e não é publicado no
 dashboard GitHub.
 
 PDFs escaneados como imagem ainda exigem OCR antes da importação.
+
+## Dados entre dispositivos
+
+Em Ajustes, `Criar Backup Agora` atualiza o dashboard e cria uma cópia
+imutável com data e hora. `Escolher e Restaurar Backup` lista o histórico do
+GitHub para restauração. O app bloqueia uploads de aparelhos baseados em uma
+versão remota antiga, evitando sobrescrever mudanças feitas em outro aparelho.
+
 Pwa Project manager tracker app
