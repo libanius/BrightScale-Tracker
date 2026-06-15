@@ -55,13 +55,14 @@ GitHub.
 
 ## Responsáveis
 
-Responsáveis são cadastrados uma única vez com nome, empresa e e-mail. Cada
-scope pode selecionar um responsável da lista; todas as tasks daquele scope
-ficam sob a responsabilidade dele. Tasks não possuem responsável próprio.
+Subcontractors são cadastrados somente em Ajustes, com nome, empresa, e-mail e
+status Ativo/Inativo. Cada scope pode selecionar apenas um subcontractor ativo
+da lista; todas as tasks daquele scope ficam sob a responsabilidade dele.
+Tasks não possuem responsável próprio.
 
-Em Ajustes, `Abrir Cadastro de Responsáveis` permite consultar e editar os
-cadastros e abrir a ficha financeira consolidada por responsável. Cadastros e
-vínculos também fazem parte dos backups. Nomes antigos gravados diretamente nos
-scopes são migrados automaticamente.
+Em Ajustes, `Abrir Cadastro de Subcontractors` permite consultar, editar,
+ativar/desativar e abrir a ficha financeira consolidada. Cadastros e vínculos
+também fazem parte dos backups. Nomes antigos gravados diretamente nos scopes
+são migrados automaticamente como ativos.
 
 Pwa Project manager tracker app

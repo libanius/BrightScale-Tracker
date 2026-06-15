@@ -122,6 +122,9 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;background:var(--ac);
 .finance-line:last-child{border-bottom:none;}
 .finance-line-title{font-size:14px;font-weight:700;margin-bottom:4px;}
 .finance-line-meta{font-size:12px;color:var(--mu);line-height:1.6;}
+.status-tag{display:inline-block;padding:4px 9px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-left:8px;}
+.status-tag.active{background:rgba(0,229,160,.12);color:var(--ac);}
+.status-tag.inactive{background:rgba(107,107,138,.16);color:var(--mu);}
 .countdown{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;}
 .countdown.ok{background:rgba(0,229,160,.12);color:var(--ac);}
 .countdown.warn{background:rgba(255,185,60,.12);color:#ffb93c;}
@@ -370,10 +373,18 @@ function migrateResponsibilityData() {
     var tasks = result[1];
     var people = result[2];
     var peopleByName = {};
+    var promises = [];
     people.forEach(function(person) {
       peopleByName[(person.name || '').trim().toLowerCase()] = person;
+      if (typeof person.active !== 'boolean') {
+        person = Object.assign({}, person, {
+          active: true,
+          updatedAt: new Date().toISOString()
+        });
+        peopleByName[(person.name || '').trim().toLowerCase()] = person;
+        promises.push(dbPut('people', person));
+      }
     });
-    var promises = [];
     scopes.forEach(function(scope) {
       var legacyName = (scope.subcontractorName || '').trim();
       if (!scope.personId && legacyName) {
@@ -386,6 +397,7 @@ function migrateResponsibilityData() {
             name: legacyName,
             company: '',
             email: '',
+            active: true,
             createdAt: now,
             updatedAt: now
           };
@@ -598,6 +610,10 @@ function getProjectScopes(projectId) {
 
 function getPersonById(personId) {
   return S.people.filter(function(person) { return person.id === personId; })[0] || null;
+}
+
+function isPersonActive(person) {
+  return person && person.active !== false;
 }
 
 function getScopePerson(scope) {
@@ -1255,7 +1271,7 @@ function calcPersonFinancials(personId) {
 
 function openPersonForm(person, onSaved) {
   showModal(function(mo, close) {
-    mo.appendChild(div('mtit', person ? 'Editar Responsável' : 'Cadastrar Responsável'));
+    mo.appendChild(div('mtit', person ? 'Editar Subcontractor' : 'Cadastrar Subcontractor'));
 
     function addInput(label, value, type, placeholder) {
       var field = div('fg');
@@ -1272,13 +1288,20 @@ function openPersonForm(person, onSaved) {
     var nameInput = addInput('Nome', person && person.name, 'text', 'ex: Carlos Silva');
     var companyInput = addInput('Empresa', person && person.company, 'text', 'ex: CS Finish Carpentry');
     var emailInput = addInput('E-mail', person && person.email, 'email', 'ex: carlos@empresa.com');
+    var statusField = div('fg');
+    statusField.appendChild(mkLbl('Status'));
+    var statusSelect = el('select', '');
+    statusSelect.innerHTML = '<option value="active">Ativo</option><option value="inactive">Inativo</option>';
+    statusSelect.value = !person || isPersonActive(person) ? 'active' : 'inactive';
+    statusField.appendChild(statusSelect);
+    mo.appendChild(statusField);
     var row = div('brow');
     var cancel = btn('btn bs', 'Cancelar', close);
     cancel.style.flex = '1';
     var save = btn('btn bp', 'Salvar', function() {
       var name = nameInput.value.trim();
       if (!name) {
-        toast('Informe o nome do responsável', 'w');
+        toast('Informe o nome do subcontractor', 'w');
         return;
       }
       var now = new Date().toISOString();
@@ -1287,12 +1310,13 @@ function openPersonForm(person, onSaved) {
         name: name,
         company: companyInput.value.trim(),
         email: emailInput.value.trim(),
+        active: statusSelect.value === 'active',
         createdAt: person ? person.createdAt : now,
         updatedAt: now
       };
       dbPut('people', record).then(reload).then(function() {
         close();
-        toast(person ? 'Responsável atualizado' : 'Responsável cadastrado');
+        toast(person ? 'Subcontractor atualizado' : 'Subcontractor cadastrado');
         if (onSaved) onSaved(record);
       });
     });
@@ -1345,8 +1369,8 @@ function openPersonFinancialCard(personId) {
 
 function openPeopleDirectory() {
   showModal(function(mo, close) {
-    mo.appendChild(div('mtit', 'Responsáveis'));
-    mo.appendChild(btn('btn bp bfull', '+ Cadastrar Responsável', function() {
+    mo.appendChild(div('mtit', 'Subcontractors'));
+    mo.appendChild(btn('btn bp bfull', '+ Cadastrar Subcontractor', function() {
       close();
       openPersonForm(null, openPeopleDirectory);
     }));
@@ -1356,10 +1380,15 @@ function openPeopleDirectory() {
     if (!S.people.length) {
       mo.appendChild(div('', '<div style="font-size:13px;color:var(--mu);margin-bottom:16px">Nenhum responsável cadastrado.</div>'));
     }
-    S.people.forEach(function(person) {
+    S.people.slice().sort(function(a, b) {
+      if (isPersonActive(a) !== isPersonActive(b)) return isPersonActive(a) ? -1 : 1;
+      return a.name.localeCompare(b.name);
+    }).forEach(function(person) {
       var line = div('finance-line');
       var heading = div('finance-line-title');
       heading.textContent = person.name;
+      heading.appendChild(el('span', 'status-tag ' + (isPersonActive(person) ? 'active' : 'inactive'),
+        isPersonActive(person) ? 'Ativo' : 'Inativo'));
       line.appendChild(heading);
       line.appendChild(div('finance-line-meta',
         (person.company ? esc(person.company) : 'Empresa não informada') +
@@ -1373,6 +1402,16 @@ function openPeopleDirectory() {
         close();
         openPersonForm(person, openPeopleDirectory);
       }));
+      actions.appendChild(btn('btn ' + (isPersonActive(person) ? 'br' : 'bs') + ' bsm',
+        isPersonActive(person) ? 'Desativar' : 'Ativar', function() {
+          dbPut('people', Object.assign({}, person, {
+            active: !isPersonActive(person),
+            updatedAt: new Date().toISOString()
+          })).then(reload).then(function() {
+            close();
+            openPeopleDirectory();
+          });
+        }));
       line.appendChild(actions);
       mo.appendChild(line);
     });
@@ -3066,10 +3105,11 @@ function renderSettings(main) {
   main.appendChild(pc);
 
   var peopleCard = div('card');
-  peopleCard.appendChild(div('ct', 'Responsáveis / Subcontractors'));
+  peopleCard.appendChild(div('ct', 'Subcontractors'));
   peopleCard.appendChild(div('', '<div style="font-size:13px;color:var(--mu);line-height:1.6;margin-bottom:12px">' +
-    S.people.length + ' responsável(is) cadastrado(s). Consulte contatos e fichas financeiras consolidadas.</div>'));
-  peopleCard.appendChild(btn('btn bp bfull', 'Abrir Cadastro de Responsáveis', openPeopleDirectory));
+    S.people.length + ' cadastrado(s) · ' +
+    S.people.filter(isPersonActive).length + ' ativo(s). Consulte contatos, status e fichas financeiras.</div>'));
+  peopleCard.appendChild(btn('btn bp bfull', 'Abrir Cadastro de Subcontractors', openPeopleDirectory));
   main.appendChild(peopleCard);
   
   var dataCard = div('card');
@@ -3977,10 +4017,10 @@ function openScopeForm(unitId, scope) {
     mo.appendChild(f3);
 
     var f4 = div('fg');
-    f4.appendChild(mkLbl('Responsável pelo Scope (opcional)'));
+    f4.appendChild(mkLbl('Subcontractor Responsável (opcional)'));
     var personSelect = el('select', '');
     personSelect.innerHTML = '<option value="">Sem responsável</option>';
-    S.people.forEach(function(person) {
+    S.people.filter(isPersonActive).forEach(function(person) {
       var option = document.createElement('option');
       option.value = person.id;
       option.textContent = person.name + (person.company ? ' · ' + person.company : '');
@@ -3988,36 +4028,9 @@ function openScopeForm(unitId, scope) {
     });
     if (scope && scope.personId) personSelect.value = scope.personId;
     f4.appendChild(personSelect);
-    var addPersonButton = btn('btn bs bfull', '+ Cadastrar Novo Responsável', function() {
-      newPersonFields.style.display = newPersonFields.style.display === 'none' ? '' : 'none';
-      if (newPersonFields.style.display !== 'none') newPersonName.focus();
-    });
-    addPersonButton.style.marginTop = '8px';
-    f4.appendChild(addPersonButton);
+    f4.appendChild(div('', '<div style="font-size:11px;color:var(--mu);margin-top:7px;line-height:1.5">' +
+      'Cadastre ou reative subcontractors em Ajustes → Subcontractors.</div>'));
     mo.appendChild(f4);
-
-    var newPersonFields = div('');
-    newPersonFields.style.display = 'none';
-    var np1 = div('fg');
-    np1.appendChild(mkLbl('Nome'));
-    var newPersonName = el('input', '');
-    newPersonName.placeholder = 'ex: Carlos Silva';
-    np1.appendChild(newPersonName);
-    newPersonFields.appendChild(np1);
-    var np2 = div('fg');
-    np2.appendChild(mkLbl('Empresa'));
-    var newPersonCompany = el('input', '');
-    newPersonCompany.placeholder = 'ex: CS Finish Carpentry';
-    np2.appendChild(newPersonCompany);
-    newPersonFields.appendChild(np2);
-    var np3 = div('fg');
-    np3.appendChild(mkLbl('E-mail'));
-    var newPersonEmail = el('input', '');
-    newPersonEmail.type = 'email';
-    newPersonEmail.placeholder = 'ex: carlos@empresa.com';
-    np3.appendChild(newPersonEmail);
-    newPersonFields.appendChild(np3);
-    mo.appendChild(newPersonFields);
 
     var f5 = div('fg');
     f5.appendChild(mkLbl('Valor Acordado com Subcontractor (US$)'));
@@ -4071,33 +4084,9 @@ function openScopeForm(unitId, scope) {
       }
       
       var now = new Date().toISOString();
-      var personPromise = Promise.resolve(personSelect.value);
-      if (newPersonFields.style.display !== 'none') {
-        var newName = newPersonName.value.trim();
-        if (!newName) {
-          toast('Informe o nome do novo responsável', 'w');
-          return;
-        }
-        var personRecord = {
-          id: uid(),
-          name: newName,
-          company: newPersonCompany.value.trim(),
-          email: newPersonEmail.value.trim(),
-          createdAt: now,
-          updatedAt: now
-        };
-        personPromise = dbPut('people', personRecord).then(function() {
-          return personRecord.id;
-        });
-      }
-      personPromise.then(function(personId) {
-        var selectedPerson = getPersonById(personId);
-        if (!selectedPerson && newPersonFields.style.display !== 'none') {
-          selectedPerson = {
-            name: newPersonName.value.trim()
-          };
-        }
-        return dbPut('scopes', {
+      var personId = personSelect.value;
+      var selectedPerson = getPersonById(personId);
+      dbPut('scopes', {
         id: scope ? scope.id : uid(),
         unitId: unitId,
         title: title,
@@ -4109,7 +4098,6 @@ function openScopeForm(unitId, scope) {
         subcontractPaid: subcontractPaid,
         createdAt: scope ? scope.createdAt : now,
         updatedAt: now
-        });
       }).then(function(savedScopeId) {
         setScopeOpen(scope ? scope.id : savedScopeId, true);
         return reload();
