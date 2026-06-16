@@ -78,12 +78,12 @@
       "title": "Framing & Drywall",
       "order": 1,
       "weight": 0.2,
-      "personId": "f69b6f5b-f1f8-4f61-b9f7-15c42fde6287",
-      "subcontractorName": "Vilson",
-      "subcontractAmount": 250,
+      "personId": "",
+      "subcontractorName": "",
+      "subcontractAmount": 0,
       "subcontractPaid": 0,
       "createdAt": "2026-06-14T21:53:43.297Z",
-      "updatedAt": "2026-06-15T23:09:31.516Z"
+      "updatedAt": "2026-06-16T04:26:48.223Z"
     },
     {
       "id": "6285ebea-8eac-49b2-bd9e-43f4cb0e7b06",
@@ -419,5 +419,5 @@
       "updatedAt": "2026-06-15T04:23:34.675Z"
     }
   ],
-  "updatedAt": "2026-06-16T04:26:08.032Z"
+  "updatedAt": "2026-06-16T04:26:48.255Z"
 }
