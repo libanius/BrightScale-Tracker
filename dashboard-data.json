@@ -375,6 +375,21 @@
       "updatedAt": "2026-06-16T04:26:05.519Z"
     },
     {
+      "id": "29d714ef-47ad-4305-b531-82766159d208",
+      "projectId": "3db2664f-4027-46db-970b-f7c354e37fad",
+      "type": "labor",
+      "description": "Paulo",
+      "workerName": "Paulo",
+      "note": "Plumbing e compra de material",
+      "scopeId": "6285ebea-8eac-49b2-bd9e-43f4cb0e7b06",
+      "hourlyRate": 28,
+      "hours": 9,
+      "amount": 252,
+      "date": "2026-06-16",
+      "createdAt": "2026-06-16T04:29:52.392Z",
+      "updatedAt": "2026-06-16T04:29:52.392Z"
+    },
+    {
       "id": "bbecf687-e477-4e0e-baa5-3155e6505d62",
       "projectId": "3db2664f-4027-46db-970b-f7c354e37fad",
       "type": "labor",
@@ -419,5 +434,5 @@
       "updatedAt": "2026-06-15T04:23:34.675Z"
     }
   ],
-  "updatedAt": "2026-06-16T04:27:27.578Z"
+  "updatedAt": "2026-06-16T04:29:52.407Z"
 }
