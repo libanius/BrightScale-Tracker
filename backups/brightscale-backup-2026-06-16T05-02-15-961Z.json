@@ -1,0 +1,447 @@
+{
+  "projects": [
+    {
+      "id": "aba2a76a-e157-4f9a-a88c-9c73f0dfb8ab",
+      "name": "Marjory Horwin",
+      "address": "Marjory Horwin",
+      "client": {
+        "name": "Marjory Horwin",
+        "contact": ""
+      },
+      "contractTotal": 1050,
+      "contractSummary": "Documento \"Majore Estimate 8068_CO_01.pdf\" analisado com 3 scope(s): Flooring & Tile, Cabinets & Carpentry, General Construction.",
+      "documentId": "",
+      "documentIds": [],
+      "createdAt": "2026-06-15T02:37:56.235Z",
+      "updatedAt": "2026-06-15T02:37:56.235Z"
+    },
+    {
+      "id": "3db2664f-4027-46db-970b-f7c354e37fad",
+      "name": "Rami Smidi",
+      "address": "641 NW 132nd Terr, Plantation FL 33325",
+      "client": {
+        "name": "Rami Smidi",
+        "contact": ""
+      },
+      "contractTotal": 9000,
+      "contractSummary": "Documento \"Estimate_8070_from_The_Captains_Contractors.pdf\" analisado com 5 scope(s): Framing & Drywall, Plumbing, Electrical, Cabinets & Carpentry, General Construction.",
+      "documentId": "",
+      "createdAt": "2026-06-14T21:53:43.297Z",
+      "updatedAt": "2026-06-14T21:53:43.297Z",
+      "documentIds": []
+    }
+  ],
+  "units": [
+    {
+      "id": "7cdd0873-9d3f-4c3c-8212-cc853f2db2af",
+      "projectId": "3db2664f-4027-46db-970b-f7c354e37fad",
+      "unitNumber": "641",
+      "bdBa": "",
+      "invoice": "Estimate_8070_from_The_Captains_Contractors",
+      "startDate": "2026-06-14",
+      "deadline": "2026-06-22",
+      "supervisors": {
+        "demo": "",
+        "painter": "",
+        "tile": "",
+        "assembler": ""
+      },
+      "createdAt": "2026-06-14T21:53:43.297Z",
+      "updatedAt": "2026-06-15T23:10:43.181Z",
+      "documentId": ""
+    },
+    {
+      "id": "a275da81-2605-417c-9e33-90c9b5b6b944",
+      "projectId": "aba2a76a-e157-4f9a-a88c-9c73f0dfb8ab",
+      "unitNumber": "Main",
+      "bdBa": "",
+      "invoice": "Majore Estimate 8068_CO_01",
+      "estimateTotal": 1050,
+      "contractSummary": "Documento \"Majore Estimate 8068_CO_01.pdf\" analisado com 3 scope(s): Flooring & Tile, Cabinets & Carpentry, General Construction.",
+      "documentId": "",
+      "startDate": "2026-06-14",
+      "deadline": "",
+      "supervisors": {
+        "demo": "",
+        "painter": "",
+        "tile": "",
+        "assembler": ""
+      },
+      "createdAt": "2026-06-15T02:37:56.235Z",
+      "updatedAt": "2026-06-15T02:37:56.235Z"
+    }
+  ],
+  "scopes": [
+    {
+      "id": "08ea42c8-5212-4f70-82b6-f98e9e06495f",
+      "unitId": "7cdd0873-9d3f-4c3c-8212-cc853f2db2af",
+      "title": "Framing & Drywall",
+      "order": 1,
+      "weight": 0.2,
+      "personId": "",
+      "subcontractorName": "",
+      "subcontractAmount": 0,
+      "subcontractPaid": 0,
+      "createdAt": "2026-06-14T21:53:43.297Z",
+      "updatedAt": "2026-06-16T04:26:50.591Z"
+    },
+    {
+      "id": "6285ebea-8eac-49b2-bd9e-43f4cb0e7b06",
+      "unitId": "7cdd0873-9d3f-4c3c-8212-cc853f2db2af",
+      "title": "Plumbing",
+      "order": 2,
+      "weight": 0.2,
+      "personId": "",
+      "subcontractorName": "",
+      "subcontractAmount": 0,
+      "subcontractPaid": 0,
+      "createdAt": "2026-06-14T21:53:43.297Z",
+      "updatedAt": "2026-06-16T04:27:27.545Z"
+    },
+    {
+      "id": "77625b84-d9fd-4025-8034-13a39f91521f",
+      "unitId": "7cdd0873-9d3f-4c3c-8212-cc853f2db2af",
+      "title": "Tile Work",
+      "order": 6,
+      "weight": 0.1,
+      "personId": "cd4b7f72-a65d-462c-a320-d23eb2c90265",
+      "subcontractorName": "Madson",
+      "subcontractAmount": 1400,
+      "subcontractPaid": 0,
+      "createdAt": "2026-06-14T22:16:00.000Z",
+      "updatedAt": "2026-06-15T04:25:27.123Z"
+    },
+    {
+      "id": "91f5386e-a6b8-46ad-9d0a-52afbb9bee28",
+      "unitId": "a275da81-2605-417c-9e33-90c9b5b6b944",
+      "title": "Change Orders",
+      "order": 2,
+      "weight": 0.3333333333333333,
+      "personId": "14dbf4fe-b359-4dbd-9730-14b841e49a60",
+      "subcontractorName": "Paulo Libanio",
+      "subcontractAmount": 250,
+      "subcontractPaid": 0,
+      "createdAt": "2026-06-15T02:37:56.235Z",
+      "updatedAt": "2026-06-15T04:20:10.521Z"
+    },
+    {
+      "id": "ad164760-5e83-47c0-9222-f4e751c20168",
+      "unitId": "7cdd0873-9d3f-4c3c-8212-cc853f2db2af",
+      "title": "Electrical",
+      "order": 3,
+      "weight": 0.2,
+      "personId": "",
+      "subcontractorName": "",
+      "subcontractAmount": 250,
+      "subcontractPaid": 0,
+      "createdAt": "2026-06-14T21:53:43.297Z",
+      "updatedAt": "2026-06-15T04:26:57.674Z"
+    },
+    {
+      "id": "fe09f0f5-445a-4dfe-9d14-bbb92cc5f5b2",
+      "unitId": "7cdd0873-9d3f-4c3c-8212-cc853f2db2af",
+      "title": "Vanity and Glass Door",
+      "order": 4,
+      "weight": 0.2,
+      "createdAt": "2026-06-14T21:53:43.297Z",
+      "updatedAt": "2026-06-14T22:15:23.488Z"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "08f83eca-040e-4968-b5dc-d47a3db03112",
+      "scopeId": "6285ebea-8eac-49b2-bd9e-43f4cb0e7b06",
+      "title": "Shower Valve",
+      "order": 1,
+      "progress": 100,
+      "deadline": "2026-06-15",
+      "status": "completed",
+      "createdAt": "2026-06-14T21:53:43.297Z",
+      "updatedAt": "2026-06-15T23:07:58.418Z"
+    },
+    {
+      "id": "24988086-df02-44f6-9161-bea67b0afda6",
+      "scopeId": "77625b84-d9fd-4025-8034-13a39f91521f",
+      "title": "Shower Tile Installation",
+      "order": 2,
+      "progress": 0,
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-06-14T22:16:24.705Z",
+      "updatedAt": "2026-06-14T22:17:13.434Z"
+    },
+    {
+      "id": "42cf09cb-89b9-4943-bb97-3901276e4174",
+      "scopeId": "ad164760-5e83-47c0-9222-f4e751c20168",
+      "title": "Mirror Installation",
+      "order": 2,
+      "progress": 0,
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-06-15T04:25:07.310Z",
+      "updatedAt": "2026-06-15T04:25:07.310Z"
+    },
+    {
+      "id": "58c6ecad-abba-4349-936a-f1b31b90be29",
+      "scopeId": "08ea42c8-5212-4f70-82b6-f98e9e06495f",
+      "title": "Painting",
+      "order": 2,
+      "progress": 0,
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-06-15T04:22:51.628Z",
+      "updatedAt": "2026-06-16T04:09:47.898Z"
+    },
+    {
+      "id": "594b2f63-ab30-45fa-8644-2bd5f353ff71",
+      "scopeId": "08ea42c8-5212-4f70-82b6-f98e9e06495f",
+      "title": "Texture",
+      "order": 3,
+      "progress": 5,
+      "deadline": "",
+      "status": "in_progress",
+      "createdAt": "2026-06-15T23:09:59.956Z",
+      "updatedAt": "2026-06-16T04:10:09.624Z"
+    },
+    {
+      "id": "5a24dd2d-623f-476e-829e-96284f07d470",
+      "scopeId": "fe09f0f5-445a-4dfe-9d14-bbb92cc5f5b2",
+      "title": "Vanity Installation",
+      "order": 1,
+      "progress": 0,
+      "deadline": "2026-06-21",
+      "status": "pending",
+      "createdAt": "2026-06-14T21:53:43.297Z",
+      "updatedAt": "2026-06-14T22:14:53.871Z"
+    },
+    {
+      "id": "5f957ea6-cd6a-4afb-9c13-3ab0d431cded",
+      "scopeId": "77625b84-d9fd-4025-8034-13a39f91521f",
+      "title": "Durock Installation",
+      "order": 1,
+      "progress": 0,
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-06-14T22:16:11.948Z",
+      "updatedAt": "2026-06-14T22:17:09.614Z"
+    },
+    {
+      "id": "6145df42-ee58-4406-b32f-554001b82cfa",
+      "scopeId": "6285ebea-8eac-49b2-bd9e-43f4cb0e7b06",
+      "title": "Shower Trim Instalattion",
+      "order": 3,
+      "progress": 0,
+      "deadline": "2026-06-21",
+      "status": "pending",
+      "createdAt": "2026-06-14T21:53:43.297Z",
+      "updatedAt": "2026-06-14T22:13:48.228Z"
+    },
+    {
+      "id": "657c8e3b-e219-4421-b537-cda97297811d",
+      "scopeId": "ad164760-5e83-47c0-9222-f4e751c20168",
+      "title": "Vanity Light Installation",
+      "order": 1,
+      "progress": 0,
+      "deadline": "2026-06-21",
+      "status": "pending",
+      "createdAt": "2026-06-14T21:53:43.297Z",
+      "updatedAt": "2026-06-14T22:14:12.284Z"
+    },
+    {
+      "id": "6f3845ea-522f-4a30-9d4a-5b15f992e6ac",
+      "scopeId": "91f5386e-a6b8-46ad-9d0a-52afbb9bee28",
+      "title": "Install pet door on existing door",
+      "order": 1,
+      "progress": 0,
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-06-15T02:37:56.235Z",
+      "updatedAt": "2026-06-15T04:20:32.186Z"
+    },
+    {
+      "id": "860d0e31-d31f-4d22-9f88-a9cc35ab8ebc",
+      "scopeId": "6285ebea-8eac-49b2-bd9e-43f4cb0e7b06",
+      "title": "Shower Pan Drain",
+      "order": 2,
+      "progress": 100,
+      "deadline": "2026-06-15",
+      "status": "completed",
+      "createdAt": "2026-06-14T21:53:43.297Z",
+      "updatedAt": "2026-06-15T23:08:05.220Z"
+    },
+    {
+      "id": "8f6ea882-0503-48f8-9259-0f5e8ea83e14",
+      "scopeId": "77625b84-d9fd-4025-8034-13a39f91521f",
+      "title": "Tile Flooring Installation",
+      "order": 3,
+      "progress": 0,
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-06-14T22:16:37.050Z",
+      "updatedAt": "2026-06-14T22:17:16.048Z"
+    },
+    {
+      "id": "945a278f-bb8d-4277-8d93-d1b185f94290",
+      "scopeId": "08ea42c8-5212-4f70-82b6-f98e9e06495f",
+      "title": "Drywall Repair & Finishing",
+      "order": 1,
+      "progress": 70,
+      "deadline": "",
+      "status": "in_progress",
+      "createdAt": "2026-06-14T21:53:43.297Z",
+      "updatedAt": "2026-06-15T23:09:44.346Z"
+    },
+    {
+      "id": "bc01ddd9-4f88-4a40-946c-a4ded7a4cc53",
+      "scopeId": "fe09f0f5-445a-4dfe-9d14-bbb92cc5f5b2",
+      "title": "Frameless Glass Door",
+      "order": 2,
+      "progress": 0,
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-06-14T21:53:43.297Z",
+      "updatedAt": "2026-06-14T21:53:43.297Z"
+    },
+    {
+      "id": "bc3f5987-3a4a-468d-bce6-1a0949f425e3",
+      "scopeId": "91f5386e-a6b8-46ad-9d0a-52afbb9bee28",
+      "title": "Install approximately 16 LF of baseboard",
+      "order": 4,
+      "progress": 0,
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-06-15T02:37:56.235Z",
+      "updatedAt": "2026-06-15T02:37:56.235Z"
+    },
+    {
+      "id": "d76d8ec3-47de-409a-80da-73a83138eef0",
+      "scopeId": "91f5386e-a6b8-46ad-9d0a-52afbb9bee28",
+      "title": "Replace weather stripping / door seals on entry door",
+      "order": 2,
+      "progress": 0,
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-06-15T02:37:56.235Z",
+      "updatedAt": "2026-06-15T02:37:56.235Z"
+    },
+    {
+      "id": "e1d04ba0-59ed-424d-aed7-e95e0e1cde19",
+      "scopeId": "77625b84-d9fd-4025-8034-13a39f91521f",
+      "title": "Marble curb Installation",
+      "order": 4,
+      "progress": 0,
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-06-14T22:16:54.768Z",
+      "updatedAt": "2026-06-14T22:17:20.953Z"
+    },
+    {
+      "id": "e35abc7b-c674-4570-a643-eae59b93645d",
+      "scopeId": "91f5386e-a6b8-46ad-9d0a-52afbb9bee28",
+      "title": "Replace weather seals on double garage door",
+      "order": 3,
+      "progress": 0,
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-06-15T02:37:56.235Z",
+      "updatedAt": "2026-06-15T02:37:56.235Z"
+    },
+    {
+      "id": "f02fab30-7bbb-40a0-ae80-dbbc9bc14267",
+      "scopeId": "77625b84-d9fd-4025-8034-13a39f91521f",
+      "title": "Grout",
+      "order": 5,
+      "progress": 0,
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-06-14T22:17:00.666Z",
+      "updatedAt": "2026-06-14T22:17:23.666Z"
+    }
+  ],
+  "expenses": [
+    {
+      "id": "29d714ef-47ad-4305-b531-82766159d208",
+      "projectId": "3db2664f-4027-46db-970b-f7c354e37fad",
+      "type": "labor",
+      "description": "Paulo",
+      "workerName": "Paulo",
+      "note": "Plumbing e compra de material",
+      "scopeId": "6285ebea-8eac-49b2-bd9e-43f4cb0e7b06",
+      "hourlyRate": 28,
+      "hours": 9,
+      "amount": 252,
+      "date": "2026-06-16",
+      "createdAt": "2026-06-16T04:29:52.392Z",
+      "updatedAt": "2026-06-16T04:29:52.392Z"
+    },
+    {
+      "id": "bbecf687-e477-4e0e-baa5-3155e6505d62",
+      "projectId": "3db2664f-4027-46db-970b-f7c354e37fad",
+      "type": "labor",
+      "description": "Vilson",
+      "workerName": "Vilson",
+      "note": "Drywall Hanging",
+      "scopeId": "08ea42c8-5212-4f70-82b6-f98e9e06495f",
+      "hourlyRate": 30,
+      "hours": 4,
+      "amount": 120,
+      "date": "2026-06-16",
+      "createdAt": "2026-06-16T04:26:07.722Z",
+      "updatedAt": "2026-06-16T04:26:07.722Z"
+    }
+  ],
+  "people": [
+    {
+      "id": "cd4b7f72-a65d-462c-a320-d23eb2c90265",
+      "name": "Madson",
+      "company": "Madson LLC",
+      "email": "madson@gmail.com",
+      "active": true,
+      "createdAt": "2026-06-15T04:21:46.170Z",
+      "updatedAt": "2026-06-15T04:21:46.170Z"
+    },
+    {
+      "id": "14dbf4fe-b359-4dbd-9730-14b841e49a60",
+      "name": "Paulo Libanio",
+      "company": "BrightScale Group LLC",
+      "email": "contact@brightscalegroup.com",
+      "createdAt": "2026-06-15T03:52:19.147Z",
+      "updatedAt": "2026-06-15T04:18:49.345Z",
+      "active": true
+    },
+    {
+      "id": "f69b6f5b-f1f8-4f61-b9f7-15c42fde6287",
+      "name": "Vilson",
+      "company": "Renaissance LLC",
+      "email": "",
+      "active": true,
+      "createdAt": "2026-06-15T04:23:34.675Z",
+      "updatedAt": "2026-06-15T04:23:34.675Z"
+    }
+  ],
+  "notes": [
+    {
+      "id": "7f341b40-5ef1-4e45-9d63-56adc7b27329",
+      "projectId": "3db2664f-4027-46db-970b-f7c354e37fad",
+      "scopeId": "",
+      "type": "general",
+      "text": "Rami esteve no local. Foi reportado a ele sobre proximas fases.",
+      "date": "2026-06-16",
+      "internalOnly": true,
+      "createdAt": "2026-06-16T04:57:09.093Z",
+      "updatedAt": "2026-06-16T04:57:09.093Z"
+    },
+    {
+      "id": "443a4b34-cb00-4cc1-bae5-7c68d50734df",
+      "projectId": "3db2664f-4027-46db-970b-f7c354e37fad",
+      "scopeId": "",
+      "type": "general",
+      "text": "Começamos hoje efetivamente a obra. Paulo foi comprar material e terminou o rough plumbing. Shower valve, shower drain e sink drain. \nVilson chegou as 1:00pm e ficou até as 5:00pm Fazendo Drywall.",
+      "date": "2026-06-16",
+      "internalOnly": true,
+      "createdAt": "2026-06-16T04:50:01.309Z",
+      "updatedAt": "2026-06-16T04:56:28.412Z"
+    }
+  ],
+  "updatedAt": "2026-06-16T05:02:15.961Z"
+}
