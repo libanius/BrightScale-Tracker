@@ -419,5 +419,18 @@
       "updatedAt": "2026-06-15T04:23:34.675Z"
     }
   ],
-  "updatedAt": "2026-06-16T04:30:15.762Z"
+  "notes": [
+    {
+      "id": "443a4b34-cb00-4cc1-bae5-7c68d50734df",
+      "projectId": "3db2664f-4027-46db-970b-f7c354e37fad",
+      "scopeId": "",
+      "type": "general",
+      "text": "Começamos hoje efetivamente a obra. Paulo foi comprar material e terminal o rough plumbing. Shower valve, shower drain e sink drain. \nVilson chegou as 1:00pm e ficou até as 5:00pm Fazendo Drywall.",
+      "date": "2026-06-16",
+      "internalOnly": true,
+      "createdAt": "2026-06-16T04:50:01.309Z",
+      "updatedAt": "2026-06-16T04:50:01.309Z"
+    }
+  ],
+  "updatedAt": "2026-06-16T04:50:01.325Z"
 }
