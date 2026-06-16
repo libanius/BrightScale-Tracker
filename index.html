@@ -736,12 +736,22 @@ function render() {
    CONTRACT / ESTIMATE IMPORT
 ═══════════════════════════════════════════ */
 function readFileAsArrayBuffer(file) {
-  if (file.arrayBuffer) return file.arrayBuffer();
+  if (typeof file.arrayBuffer === 'function') return file.arrayBuffer();
   return new Promise(function(resolve, reject) {
     var reader = new FileReader();
     reader.onload = function() { resolve(reader.result); };
     reader.onerror = function() { reject(reader.error); };
     reader.readAsArrayBuffer(file);
+  });
+}
+
+function readFileAsText(file) {
+  if (typeof file.text === 'function') return file.text();
+  return new Promise(function(resolve, reject) {
+    var reader = new FileReader();
+    reader.onload = function() { resolve(reader.result || ''); };
+    reader.onerror = function() { reject(reader.error); };
+    reader.readAsText(file);
   });
 }
 
@@ -764,36 +774,55 @@ function loadExternalScript(src, globalName) {
   });
 }
 
-function extractPdfText(file) {
-  return readFileAsArrayBuffer(file).then(function(buffer) {
-    return import('https://cdn.jsdelivr.net/npm/pdfjs-dist@6.0.227/legacy/build/pdf.mjs')
-      .then(function(pdfjs) {
-        pdfjs.GlobalWorkerOptions.workerSrc =
-          'https://cdn.jsdelivr.net/npm/pdfjs-dist@6.0.227/legacy/build/pdf.worker.mjs';
-        return pdfjs.getDocument({data: new Uint8Array(buffer)}).promise;
-      })
-      .then(function(pdf) {
-        var pages = [];
-        for (var pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
-          pages.push(pdf.getPage(pageNumber).then(function(page) {
-            return page.getTextContent().then(function(content) {
-              var lines = [];
-              var current = '';
-              content.items.forEach(function(item) {
-                current += (current ? ' ' : '') + item.str;
-                if (item.hasEOL) {
-                  lines.push(current);
-                  current = '';
-                }
-              });
-              if (current) lines.push(current);
-              return lines.join('\n');
-            });
-          }));
-        }
-        return Promise.all(pages).then(function(textPages) { return textPages.join('\n'); });
-      });
+var PDFJS_VERSION = '3.11.174';
+var PDFJS_SCRIPT = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@' + PDFJS_VERSION + '/build/pdf.min.js';
+var PDFJS_WORKER = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@' + PDFJS_VERSION + '/build/pdf.worker.min.js';
+
+function loadPdfReader() {
+  if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+  return loadExternalScript(PDFJS_SCRIPT, 'pdfjsLib').then(function(pdfjs) {
+    if (!pdfjs || typeof pdfjs.getDocument !== 'function') {
+      throw new Error('Leitor de PDF indisponível');
+    }
+    pdfjs.GlobalWorkerOptions.workerSrc = PDFJS_WORKER;
+    return pdfjs;
   });
+}
+
+function extractPdfText(file) {
+  return Promise.all([readFileAsArrayBuffer(file), loadPdfReader()])
+    .then(function(result) {
+      var buffer = result[0];
+      var pdfjs = result[1];
+      return pdfjs.getDocument({
+        data: new Uint8Array(buffer),
+        useWorkerFetch: false,
+        isEvalSupported: false
+      }).promise;
+    })
+    .then(function(pdf) {
+      var pages = [];
+      for (var pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+        pages.push(pdf.getPage(pageNumber).then(function(page) {
+          return page.getTextContent().then(function(content) {
+            var lines = [];
+            var current = '';
+            content.items.forEach(function(item) {
+              var text = String(item.str || '').trim();
+              if (!text) return;
+              current += (current ? ' ' : '') + text;
+              if (item.hasEOL) {
+                lines.push(current);
+                current = '';
+              }
+            });
+            if (current) lines.push(current);
+            return lines.join('\n');
+          });
+        }));
+      }
+      return Promise.all(pages).then(function(textPages) { return textPages.join('\n'); });
+    });
 }
 
 function extractDocxText(file) {
@@ -814,7 +843,7 @@ function extractDocumentText(file) {
   var name = file.name.toLowerCase();
   if (file.type === 'application/pdf' || /\.pdf$/.test(name)) return extractPdfText(file);
   if (/\.docx$/.test(name)) return extractDocxText(file);
-  if (/\.txt$|\.csv$|\.md$/.test(name) || /^text\//.test(file.type)) return file.text();
+  if (/\.txt$|\.csv$|\.md$/.test(name) || /^text\//.test(file.type)) return readFileAsText(file);
   return Promise.reject(new Error('Formato não suportado. Use PDF com texto, DOCX ou TXT.'));
 }
 
@@ -823,16 +852,31 @@ function cleanDocumentLine(line) {
     .replace(/^[•·▪◦\-–—\s]+/, '').trim();
 }
 
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function cleanLabeledValue(value) {
+  return cleanDocumentLine(value)
+    .replace(/\s+(?:ship to|bill to|estimate details|estimate no\.?|estimate date|invoice details|proposal details)\b.*$/i, '')
+    .trim();
+}
+
 function findLabeledValue(lines, labels) {
   var sortedLabels = labels.slice().sort(function(a, b) { return b.length - a.length; });
-  var labelSource = sortedLabels.join('|');
+  var labelSource = sortedLabels.map(escapeRegExp).join('|');
   var inline = new RegExp('^(?:' + labelSource + ')\\s*[:#-]\\s*(.+)$', 'i');
   for (var i = 0; i < lines.length; i++) {
     var match = lines[i].match(inline);
-    if (match && match[1].trim()) return match[1].trim();
+    if (match && match[1].trim()) return cleanLabeledValue(match[1]);
     if (new RegExp('^(?:' + labelSource + ')\\s*[:#-]?$', 'i').test(lines[i]) && lines[i + 1]) {
-      return lines[i + 1];
+      return cleanLabeledValue(lines[i + 1]);
     }
+  }
+  var embedded = new RegExp('(?:^|\\s)(?:' + labelSource + ')\\s*[:#-]?\\s+(.+)$', 'i');
+  for (var j = 0; j < lines.length; j++) {
+    var embeddedMatch = lines[j].match(embedded);
+    if (embeddedMatch && embeddedMatch[1].trim()) return cleanLabeledValue(embeddedMatch[1]);
   }
   return '';
 }
