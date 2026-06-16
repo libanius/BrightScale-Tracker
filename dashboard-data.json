@@ -91,12 +91,12 @@
       "title": "Plumbing",
       "order": 2,
       "weight": 0.2,
-      "personId": "14dbf4fe-b359-4dbd-9730-14b841e49a60",
-      "subcontractorName": "Paulo Libanio",
-      "subcontractAmount": 250,
+      "personId": "",
+      "subcontractorName": "",
+      "subcontractAmount": 0,
       "subcontractPaid": 0,
       "createdAt": "2026-06-14T21:53:43.297Z",
-      "updatedAt": "2026-06-15T04:24:42.480Z"
+      "updatedAt": "2026-06-16T04:27:27.545Z"
     },
     {
       "id": "77625b84-d9fd-4025-8034-13a39f91521f",
@@ -419,5 +419,5 @@
       "updatedAt": "2026-06-15T04:23:34.675Z"
     }
   ],
-  "updatedAt": "2026-06-16T04:26:52.809Z"
+  "updatedAt": "2026-06-16T04:27:27.578Z"
 }
