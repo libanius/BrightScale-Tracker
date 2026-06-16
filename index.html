@@ -1232,7 +1232,7 @@ function openContractReview(file, analysis) {
         close();
         S.currentProjectId = projectId;
         S.currentUnitId = null;
-        return reload();
+        return reloadAndPublishDashboard();
       }).then(function() {
         toast(targetProjectId
           ? 'Estimate adicionado ao projeto existente!'
@@ -1451,7 +1451,7 @@ function openPersonForm(person, onSaved) {
         updatedAt: now
       };
       markModalSaving(mo);
-      dbPut('people', record).then(reload).then(function() {
+      dbPut('people', record).then(reloadAndPublishDashboard).then(function() {
         close();
         toast(person ? 'Subcontractor atualizado' : 'Subcontractor cadastrado');
         if (onSaved) onSaved(record);
@@ -1544,7 +1544,7 @@ function openPeopleDirectory() {
           dbPut('people', Object.assign({}, person, {
             active: !isPersonActive(person),
             updatedAt: new Date().toISOString()
-          })).then(reload).then(function() {
+          })).then(reloadAndPublishDashboard).then(function() {
             close();
             openPeopleDirectory();
           });
@@ -1615,7 +1615,7 @@ function openMaterialExpenseForm(projectId, expense, onSaved) {
         date: date.value || today(),
         createdAt: expense ? expense.createdAt : now,
         updatedAt: now
-      }).then(reload).then(function() {
+      }).then(reloadAndPublishDashboard).then(function() {
         close();
         toast(expense ? 'Despesa atualizada' : 'Material adicionado');
         if (onSaved) onSaved();
@@ -1744,7 +1744,7 @@ function openProjectFinance(projectId) {
             msg: 'Excluir "' + expense.description + '" do extrato?',
             yesL: 'Excluir',
             onYes: function() {
-              dbDel('expenses', expense.id).then(reload).then(function() {
+              dbDel('expenses', expense.id).then(reloadAndPublishDashboard).then(function() {
                 close();
                 openProjectFinance(projectId);
               });
@@ -2136,7 +2136,7 @@ function renderUnitDetail(main) {
           msg: 'Excluir "' + task.title + '"?',
           yesL: 'Excluir',
           onYes: function() {
-            dbDel('tasks', task.id).then(reload).then(function() {
+            dbDel('tasks', task.id).then(reloadAndPublishDashboard).then(function() {
               toast('Task excluída');
             });
           }
@@ -2173,7 +2173,7 @@ function renderUnitDetail(main) {
               setScopeOpen(scope.id, false);
               return Promise.all(taskIds.map(function(id) { return dbDel('tasks', id); }));
             })
-            .then(reload)
+            .then(reloadAndPublishDashboard)
             .then(function() {
               toast('Scope excluído');
             });
@@ -2244,6 +2244,18 @@ function getLocalSyncData() {
     tasks: S.tasks.slice(),
     expenses: S.expenses.slice(),
     people: S.people.slice()
+  };
+}
+
+function buildSyncPayload(localData, updatedAt) {
+  return {
+    projects: localData.projects,
+    units: localData.units,
+    scopes: localData.scopes,
+    tasks: localData.tasks,
+    expenses: localData.expenses,
+    people: localData.people,
+    updatedAt: updatedAt
   };
 }
 
@@ -2388,6 +2400,100 @@ function replaceLocalDataFromGitHub(data) {
   });
 }
 
+var AUTO_DASHBOARD_SYNC = {
+  inFlight: false,
+  pending: false,
+  warnedNoToken: false
+};
+
+function autoPublishDashboardData() {
+  var config = getBrightScaleGitHubConfig();
+  if (!config.token) {
+    if (!AUTO_DASHBOARD_SYNC.warnedNoToken) {
+      AUTO_DASHBOARD_SYNC.warnedNoToken = true;
+      toast('Dashboard não atualizado: configure o token do GitHub em Ajustes', 'w', 5000);
+    }
+    return Promise.resolve(false);
+  }
+  if (AUTO_DASHBOARD_SYNC.inFlight) {
+    AUTO_DASHBOARD_SYNC.pending = true;
+    return Promise.resolve(false);
+  }
+
+  var localData = getLocalSyncData();
+  if (countBackupRecords(localData) === 0) return Promise.resolve(false);
+
+  AUTO_DASHBOARD_SYNC.inFlight = true;
+  AUTO_DASHBOARD_SYNC.pending = false;
+
+  var updatedAt = new Date().toISOString();
+  var data = buildSyncPayload(localData, updatedAt);
+  var json = JSON.stringify(data, null, 2);
+  var latestPath = 'dashboard-data.json';
+  var latestSha = '';
+  var syncBase = localStorage.getItem(BRIGHTSCALE_GITHUB.syncBaseKey) ||
+    localStorage.getItem(BRIGHTSCALE_GITHUB.lastSyncKey) || '';
+
+  return fetchGitHubBackup(latestPath)
+  .catch(function(err) {
+    if (err.message === 'Backup não encontrado no GitHub') return null;
+    throw err;
+  })
+  .then(function(remoteData) {
+    if (remoteData) {
+      latestSha = remoteData._sha || '';
+      if (!syncBase) {
+        var remoteRecords = JSON.stringify({
+          projects: remoteData.projects,
+          units: remoteData.units,
+          scopes: remoteData.scopes,
+          tasks: remoteData.tasks,
+          expenses: remoteData.expenses || [],
+          people: remoteData.people || []
+        });
+        var localRecords = JSON.stringify(localData);
+        if (remoteRecords !== localRecords) {
+          throw new Error('Restaure o backup atual do GitHub antes de publicar este aparelho.');
+        }
+      }
+      if (syncBase && remoteData.updatedAt &&
+          new Date(remoteData.updatedAt).getTime() > new Date(syncBase).getTime()) {
+        throw new Error('Existe dashboard mais novo no GitHub. Restaure antes de editar.');
+      }
+    }
+    return putGitHubFile(
+      latestPath,
+      json,
+      'Update dashboard data - ' + new Date(updatedAt).toLocaleString('pt-BR'),
+      latestSha
+    );
+  })
+  .then(function() {
+    localStorage.setItem(BRIGHTSCALE_GITHUB.lastSyncKey, updatedAt);
+    localStorage.setItem(BRIGHTSCALE_GITHUB.syncBaseKey, updatedAt);
+    toast('Dashboard atualizado');
+    return true;
+  })
+  .catch(function(err) {
+    console.error('Dashboard auto publish error:', err);
+    toast('Dashboard não atualizado: ' + err.message, 'e', 6000);
+    return false;
+  })
+  .then(function(result) {
+    AUTO_DASHBOARD_SYNC.inFlight = false;
+    if (AUTO_DASHBOARD_SYNC.pending) {
+      return autoPublishDashboardData();
+    }
+    return result;
+  });
+}
+
+function reloadAndPublishDashboard() {
+  return reload().then(function() {
+    return autoPublishDashboardData();
+  });
+}
+
 function syncToGitHub(callback) {
   var config = getBrightScaleGitHubConfig();
   var token = config.token;
@@ -2406,15 +2512,7 @@ function syncToGitHub(callback) {
   }
 
   var updatedAt = new Date().toISOString();
-  var data = {
-    projects: localData.projects,
-    units: localData.units,
-    scopes: localData.scopes,
-    tasks: localData.tasks,
-    expenses: localData.expenses,
-    people: localData.people,
-    updatedAt: updatedAt
-  };
+  var data = buildSyncPayload(localData, updatedAt);
   
   var json = JSON.stringify(data, null, 2);
   var compactTimestamp = updatedAt.replace(/:/g, '-').replace(/\./g, '-');
@@ -3236,7 +3334,7 @@ function renderSettings(main) {
                   .filter(function(expense) { return expense.projectId === p.id; })
                   .map(function(expense) { return dbDel('expenses', expense.id); }));
               })
-              .then(reload)
+              .then(reloadAndPublishDashboard)
               .then(function() { toast('Projeto excluído'); });
           }
         });
@@ -3282,7 +3380,7 @@ function renderSettings(main) {
                 .concat(taskIds.map(function(id) { return dbDel('tasks', id); }))
             );
           })
-          .then(reload)
+          .then(reloadAndPublishDashboard)
           .then(function() {
             toast('Registros limpos');
           });
@@ -3316,7 +3414,7 @@ function renderSettings(main) {
                 .concat(taskIds.map(function(id) { return dbDel('tasks', id); }))
             );
           })
-          .then(reload)
+          .then(reloadAndPublishDashboard)
           .then(function() {
             toast('Units limpas');
           });
@@ -3510,7 +3608,7 @@ function openProjectForm(proj) {
         documentIds: proj && Array.isArray(proj.documentIds) ? proj.documentIds.slice() : [],
         createdAt: proj ? proj.createdAt : now,
         updatedAt: now
-      }).then(reload).then(function() {
+      }).then(reloadAndPublishDashboard).then(function() {
         close();
         toast(proj ? 'Projeto atualizado' : 'Projeto "' + nm + '" criado');
       }).catch(function(err) {
@@ -3787,7 +3885,7 @@ function openUnitForm(projectId, unit) {
               })
               .then(function() {
                 S.currentUnitId = null;
-                return reload();
+                return reloadAndPublishDashboard();
               })
               .then(function() {
                 close();
@@ -3888,7 +3986,7 @@ function openUnitForm(projectId, unit) {
         if (!unit) {
           S.currentUnitId = unitId;
         }
-        return reload();
+        return reloadAndPublishDashboard();
       }).then(function() {
         close();
         toast(unit ? 'Unit atualizada' : 'Unit criada com sucesso!');
@@ -4117,7 +4215,7 @@ function importTemplateToUnit(unitId, template, closeCallback) {
     }
   });
   
-  Promise.all(promises).then(reload).then(function() {
+  Promise.all(promises).then(reloadAndPublishDashboard).then(function() {
     closeCallback(true);
     toast('Template importado: ' + template.length + ' scope(s) criado(s)');
   });
@@ -4249,7 +4347,7 @@ function openScopeForm(unitId, scope) {
         updatedAt: now
       }).then(function(savedScopeId) {
         setScopeOpen(scope ? scope.id : savedScopeId, true);
-        return reload();
+        return reloadAndPublishDashboard();
       }).then(function() {
         close();
         toast(scope ? 'Scope atualizado' : 'Scope criado');
@@ -4347,7 +4445,7 @@ function openTaskForm(scopeId, task) {
         updatedAt: now
       }).then(function() {
         setScopeOpen(scopeId, true);
-        return reload();
+        return reloadAndPublishDashboard();
       }).then(function() {
         close();
         toast(task ? 'Task atualizada' : 'Task criada');
@@ -4437,7 +4535,7 @@ function openTaskEdit(task) {
         updatedAt: new Date().toISOString()
       }).then(function() {
         setScopeOpen(task.scopeId, true);
-        return reload();
+        return reloadAndPublishDashboard();
       }).then(function() {
         close();
         toast('Task atualizada!');

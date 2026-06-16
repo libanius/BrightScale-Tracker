@@ -28,10 +28,12 @@ PDFs escaneados como imagem ainda exigem OCR antes da importação.
 
 ## Dados entre dispositivos
 
-Em Ajustes, `Criar Backup Agora` atualiza o dashboard e cria uma cópia
-imutável com data e hora. `Escolher e Restaurar Backup` lista o histórico do
-GitHub para restauração. O app bloqueia uploads de aparelhos baseados em uma
-versão remota antiga, evitando sobrescrever mudanças feitas em outro aparelho.
+Ao salvar edições no tracker, o app atualiza automaticamente
+`dashboard-data.json`, mantendo o dashboard geral e os links por cliente em
+sincronia. Em Ajustes, `Criar Backup Agora` continua criando uma cópia imutável
+com data e hora. `Escolher e Restaurar Backup` lista o histórico do GitHub para
+restauração. O app bloqueia uploads de aparelhos baseados em uma versão remota
+antiga, evitando sobrescrever mudanças feitas em outro aparelho.
 
 ## Dashboard por cliente
 
