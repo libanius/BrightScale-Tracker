@@ -746,6 +746,12 @@ function calcProjectFinancials(projectId) {
   var materialTotal = materials.reduce(function(sum, expense) {
     return sum + Number(expense.amount || 0);
   }, 0);
+  var labor = S.expenses.filter(function(expense) {
+    return expense.projectId === projectId && expense.type === 'labor';
+  });
+  var laborTotal = labor.reduce(function(sum, expense) {
+    return sum + Number(expense.amount || 0);
+  }, 0);
   var revenue = Number(project && project.contractTotal || 0);
   return {
     revenue: revenue,
@@ -756,9 +762,11 @@ function calcProjectFinancials(projectId) {
     subcontractPayable: Math.max(0, subcontractEarned - subcontractPaid),
     materialExpenses: materials,
     materialTotal: materialTotal,
-    projectedBalance: revenue - subcontractCommitted - materialTotal,
-    cashBalance: revenue - subcontractPaid - materialTotal,
-    currentProductionBalance: revenue - subcontractEarned - materialTotal
+    laborExpenses: labor,
+    laborTotal: laborTotal,
+    projectedBalance: revenue - subcontractCommitted - materialTotal - laborTotal,
+    cashBalance: revenue - subcontractPaid - materialTotal - laborTotal,
+    currentProductionBalance: revenue - subcontractEarned - materialTotal - laborTotal
   };
 }
 
@@ -1628,6 +1636,128 @@ function openMaterialExpenseForm(projectId, expense, onSaved) {
   });
 }
 
+function openLaborExpenseForm(projectId, expense, onSaved) {
+  showModal(function(mo, close) {
+    mo.appendChild(div('mtit', expense ? 'Editar Horas Trabalhadas' : 'Adicionar Horas Trabalhadas'));
+
+    var projectScopeIds = getProjectScopes(projectId).map(function(scope) { return scope.id; });
+    var projectScopes = S.scopes.filter(function(scope) {
+      return projectScopeIds.indexOf(scope.id) >= 0;
+    }).sort(function(a, b) { return (a.order || 0) - (b.order || 0); });
+
+    var f1 = div('fg');
+    f1.appendChild(mkLbl('Nome de quem trabalhou'));
+    var workerName = el('input', '');
+    workerName.placeholder = 'ex: João Helper';
+    workerName.value = expense ? (expense.workerName || expense.description || '') : '';
+    f1.appendChild(workerName);
+    mo.appendChild(f1);
+
+    var f2 = div('fg');
+    f2.appendChild(mkLbl('Função / Observação (opcional)'));
+    var note = el('input', '');
+    note.placeholder = 'ex: helper, cleanup, punch list';
+    note.value = expense ? (expense.note || '') : '';
+    f2.appendChild(note);
+    mo.appendChild(f2);
+
+    var f3 = div('fg');
+    f3.appendChild(mkLbl('Scope relacionado (opcional)'));
+    var scopeSelect = el('select', '');
+    scopeSelect.innerHTML = '<option value="">Projeto geral</option>';
+    projectScopes.forEach(function(scope) {
+      var option = document.createElement('option');
+      option.value = scope.id;
+      option.textContent = scope.title;
+      scopeSelect.appendChild(option);
+    });
+    scopeSelect.value = expense ? (expense.scopeId || '') : '';
+    f3.appendChild(scopeSelect);
+    mo.appendChild(f3);
+
+    var f4 = div('fg');
+    f4.appendChild(mkLbl('Preço por hora (US$)'));
+    var hourlyRate = el('input', '');
+    hourlyRate.type = 'number';
+    hourlyRate.min = '0';
+    hourlyRate.step = '0.01';
+    hourlyRate.placeholder = 'ex: 25.00';
+    hourlyRate.value = expense ? Number(expense.hourlyRate || 0) || '' : '';
+    f4.appendChild(hourlyRate);
+    mo.appendChild(f4);
+
+    var f5 = div('fg');
+    f5.appendChild(mkLbl('Quantidade de horas'));
+    var hours = el('input', '');
+    hours.type = 'number';
+    hours.min = '0';
+    hours.step = '0.25';
+    hours.placeholder = 'ex: 6.5';
+    hours.value = expense ? Number(expense.hours || 0) || '' : '';
+    f5.appendChild(hours);
+    mo.appendChild(f5);
+
+    var totalPreview = div('', '<div style="font-size:13px;color:var(--mu);margin:-4px 0 14px">Total: <b style="color:var(--ac)">$0.00</b></div>');
+    mo.appendChild(totalPreview);
+
+    function updateTotalPreview() {
+      var total = Number(hourlyRate.value || 0) * Number(hours.value || 0);
+      totalPreview.innerHTML = '<div style="font-size:13px;color:var(--mu);margin:-4px 0 14px">Total: <b style="color:var(--ac)">' +
+        formatUsd(total) + '</b></div>';
+    }
+    hourlyRate.oninput = updateTotalPreview;
+    hours.oninput = updateTotalPreview;
+    updateTotalPreview();
+
+    var f6 = div('fg');
+    f6.appendChild(mkLbl('Data'));
+    var date = el('input', '');
+    date.type = 'date';
+    date.value = expense && expense.date ? expense.date : today();
+    f6.appendChild(date);
+    mo.appendChild(f6);
+
+    var row = div('brow');
+    var cancel = btn('btn bs', 'Cancelar', close);
+    cancel.style.flex = '1';
+    var save = btn('btn bp', 'Salvar', function() {
+      var name = workerName.value.trim();
+      var rate = Number(hourlyRate.value || 0);
+      var qty = Number(hours.value || 0);
+      if (!name || rate <= 0 || qty <= 0) {
+        toast('Informe nome, preço por hora e horas maiores que zero', 'w');
+        return;
+      }
+      var now = new Date().toISOString();
+      var total = rate * qty;
+      markModalSaving(mo);
+      dbPut('expenses', {
+        id: expense ? expense.id : uid(),
+        projectId: projectId,
+        type: 'labor',
+        description: name,
+        workerName: name,
+        note: note.value.trim(),
+        scopeId: scopeSelect.value || '',
+        hourlyRate: rate,
+        hours: qty,
+        amount: total,
+        date: date.value || today(),
+        createdAt: expense ? expense.createdAt : now,
+        updatedAt: now
+      }).then(reloadAndPublishDashboard).then(function() {
+        close();
+        toast(expense ? 'Horas atualizadas' : 'Horas trabalhadas adicionadas');
+        if (onSaved) onSaved();
+      });
+    });
+    save.style.flex = '1';
+    row.appendChild(cancel);
+    row.appendChild(save);
+    mo.appendChild(row);
+  });
+}
+
 function openProjectFinance(projectId) {
   var project = S.projects.filter(function(item) { return item.id === projectId; })[0];
   if (!project) return;
@@ -1639,6 +1769,7 @@ function openProjectFinance(projectId) {
     appendFinanceStat(grid, 'Contrato', financial.revenue);
     appendFinanceStat(grid, 'Subcontracts', financial.subcontractCommitted);
     appendFinanceStat(grid, 'Materiais', financial.materialTotal);
+    appendFinanceStat(grid, 'Horas Trabalhadas', financial.laborTotal);
     appendFinanceStat(grid, 'Saldo Projetado', financial.projectedBalance,
       financial.projectedBalance >= 0 ? 'good' : 'warn');
     appendFinanceStat(grid, 'Produzido por Subs', financial.subcontractEarned);
@@ -1654,6 +1785,14 @@ function openProjectFinance(projectId) {
       });
     });
     mo.appendChild(addMaterial);
+
+    var addLabor = btn('btn bp bfull', '+ Adicionar Horas Trabalhadas', function() {
+      close();
+      openLaborExpenseForm(projectId, null, function() {
+        openProjectFinance(projectId);
+      });
+    });
+    mo.appendChild(addLabor);
 
     var subcontractTitle = div('ct', 'Ficha dos Subcontractors');
     subcontractTitle.style.marginTop = '18px';
@@ -1742,6 +1881,58 @@ function openProjectFinance(projectId) {
           showConfirm({
             title: 'Excluir material',
             msg: 'Excluir "' + expense.description + '" do extrato?',
+            yesL: 'Excluir',
+            onYes: function() {
+              dbDel('expenses', expense.id).then(reloadAndPublishDashboard).then(function() {
+                close();
+                openProjectFinance(projectId);
+              });
+            }
+          });
+        }));
+        line.appendChild(actions);
+        mo.appendChild(line);
+      });
+
+    var laborTitle = div('ct', 'Extrato de Horas Trabalhadas');
+    laborTitle.style.marginTop = '18px';
+    mo.appendChild(laborTitle);
+    if (!financial.laborExpenses.length) {
+      mo.appendChild(div('', '<div style="font-size:13px;color:var(--mu);margin-bottom:16px">Nenhuma hora trabalhada lançada.</div>'));
+    }
+    financial.laborExpenses
+      .slice()
+      .sort(function(a, b) { return (b.date || '').localeCompare(a.date || ''); })
+      .forEach(function(expense) {
+        var scope = expense.scopeId
+          ? S.scopes.filter(function(item) { return item.id === expense.scopeId; })[0]
+          : null;
+        var line = div('finance-line');
+        var top = div('');
+        top.style.cssText = 'display:flex;justify-content:space-between;gap:10px;align-items:flex-start;';
+        var info = div('');
+        var laborLineTitle = div('finance-line-title');
+        laborLineTitle.textContent = expense.workerName || expense.description || 'Horas trabalhadas';
+        info.appendChild(laborLineTitle);
+        info.appendChild(div('finance-line-meta',
+          (expense.date ? fDate(expense.date) : '') +
+          (scope ? ' · Scope: ' + esc(scope.title) : ' · Projeto geral') + '<br>' +
+          Number(expense.hours || 0) + 'h × ' + formatUsd(expense.hourlyRate || 0) +
+          (expense.note ? ' · ' + esc(expense.note) : '')));
+        top.appendChild(info);
+        top.appendChild(div('finance-value warn', formatUsd(expense.amount)));
+        line.appendChild(top);
+        var actions = div('brow');
+        actions.appendChild(btn('btn bs bsm', 'Editar', function() {
+          close();
+          openLaborExpenseForm(projectId, expense, function() {
+            openProjectFinance(projectId);
+          });
+        }));
+        actions.appendChild(btn('btn br bsm', 'Excluir', function() {
+          showConfirm({
+            title: 'Excluir horas',
+            msg: 'Excluir horas de "' + (expense.workerName || expense.description || 'trabalho') + '" do extrato?',
             yesL: 'Excluir',
             onYes: function() {
               dbDel('expenses', expense.id).then(reloadAndPublishDashboard).then(function() {
@@ -1903,7 +2094,7 @@ function renderProjectDetail(main) {
   var financeGrid = div('finance-grid');
   appendFinanceStat(financeGrid, 'Contrato', financial.revenue);
   appendFinanceStat(financeGrid, 'Custos Projetados',
-    financial.subcontractCommitted + financial.materialTotal);
+    financial.subcontractCommitted + financial.materialTotal + financial.laborTotal);
   appendFinanceStat(financeGrid, 'Crédito Produzido', financial.subcontractEarned);
   appendFinanceStat(financeGrid, 'Saldo Projetado', financial.projectedBalance,
     financial.projectedBalance >= 0 ? 'good' : 'warn');
@@ -2758,6 +2949,7 @@ function renderReports(main) {
       txt += '  Contrato: ' + formatUsd(projectFinance.revenue) + '\n';
       txt += '  Subcontracts acordados: ' + formatUsd(projectFinance.subcontractCommitted) + '\n';
       txt += '  Materiais: ' + formatUsd(projectFinance.materialTotal) + '\n';
+      txt += '  Horas trabalhadas: ' + formatUsd(projectFinance.laborTotal) + '\n';
       txt += '  Crédito produzido: ' + formatUsd(projectFinance.subcontractEarned) + '\n';
       txt += '  Saldo projetado: ' + formatUsd(projectFinance.projectedBalance) + '\n\n';
       

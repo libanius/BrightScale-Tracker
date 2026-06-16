@@ -46,9 +46,11 @@ projeto.
 ## Financeiro de projetos
 
 Cada projeto possui um extrato com receita do contrato, compromissos com
-subcontractors, despesas de material e saldo projetado. No scope é possível
-informar responsável, valor acordado e valor já pago. O crédito produzido é
-calculado automaticamente pelo progresso do scope:
+subcontractors, despesas de material, horas trabalhadas e saldo projetado. No
+scope é possível informar responsável, valor acordado e valor já pago. Horas de
+helpers podem ser lançadas por nome, preço/hora, quantidade, data e scope
+opcional. O crédito produzido é calculado automaticamente pelo progresso do
+scope:
 
 `crédito produzido = valor acordado × progresso do scope`
 
