@@ -52,7 +52,7 @@ helpers podem ser lançadas por nome, preço/hora, quantidade, data e scope
 opcional. O crédito produzido é calculado automaticamente pelo progresso do
 scope:
 
-`crédito produzido = valor acordado × progresso do scope`
+`crédito produzido = (valor acordado × progresso do scope) + horas trabalhadas`
 
 As despesas financeiras fazem parte dos backups locais e versionados no
 GitHub.

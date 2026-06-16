@@ -752,12 +752,14 @@ function calcProjectFinancials(projectId) {
   var laborTotal = labor.reduce(function(sum, expense) {
     return sum + Number(expense.amount || 0);
   }, 0);
+  var productionCredit = subcontractEarned + laborTotal;
   var revenue = Number(project && project.contractTotal || 0);
   return {
     revenue: revenue,
     subcontractScopes: subcontractScopes,
     subcontractCommitted: subcontractCommitted,
     subcontractEarned: subcontractEarned,
+    productionCredit: productionCredit,
     subcontractPaid: subcontractPaid,
     subcontractPayable: Math.max(0, subcontractEarned - subcontractPaid),
     materialExpenses: materials,
@@ -766,7 +768,7 @@ function calcProjectFinancials(projectId) {
     laborTotal: laborTotal,
     projectedBalance: revenue - subcontractCommitted - materialTotal - laborTotal,
     cashBalance: revenue - subcontractPaid - materialTotal - laborTotal,
-    currentProductionBalance: revenue - subcontractEarned - materialTotal - laborTotal
+    currentProductionBalance: revenue - productionCredit - materialTotal
   };
 }
 
@@ -1772,6 +1774,7 @@ function openProjectFinance(projectId) {
     appendFinanceStat(grid, 'Horas Trabalhadas', financial.laborTotal);
     appendFinanceStat(grid, 'Saldo Projetado', financial.projectedBalance,
       financial.projectedBalance >= 0 ? 'good' : 'warn');
+    appendFinanceStat(grid, 'Crédito Produzido', financial.productionCredit, 'good');
     appendFinanceStat(grid, 'Produzido por Subs', financial.subcontractEarned);
     appendFinanceStat(grid, 'A Pagar Agora', financial.subcontractPayable, 'warn');
     appendFinanceStat(grid, 'Saldo de Caixa', financial.cashBalance,
@@ -2095,7 +2098,7 @@ function renderProjectDetail(main) {
   appendFinanceStat(financeGrid, 'Contrato', financial.revenue);
   appendFinanceStat(financeGrid, 'Custos Projetados',
     financial.subcontractCommitted + financial.materialTotal + financial.laborTotal);
-  appendFinanceStat(financeGrid, 'Crédito Produzido', financial.subcontractEarned);
+  appendFinanceStat(financeGrid, 'Crédito Produzido', financial.productionCredit);
   appendFinanceStat(financeGrid, 'Saldo Projetado', financial.projectedBalance,
     financial.projectedBalance >= 0 ? 'good' : 'warn');
   financeCard.appendChild(financeGrid);
@@ -2950,7 +2953,7 @@ function renderReports(main) {
       txt += '  Subcontracts acordados: ' + formatUsd(projectFinance.subcontractCommitted) + '\n';
       txt += '  Materiais: ' + formatUsd(projectFinance.materialTotal) + '\n';
       txt += '  Horas trabalhadas: ' + formatUsd(projectFinance.laborTotal) + '\n';
-      txt += '  Crédito produzido: ' + formatUsd(projectFinance.subcontractEarned) + '\n';
+      txt += '  Crédito produzido: ' + formatUsd(projectFinance.productionCredit) + '\n';
       txt += '  Saldo projetado: ' + formatUsd(projectFinance.projectedBalance) + '\n\n';
       
       var units = S.units.filter(function(u) { return u.projectId === proj.id; });
