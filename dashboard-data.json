@@ -190,18 +190,18 @@
       "deadline": "",
       "status": "pending",
       "createdAt": "2026-06-15T04:22:51.628Z",
-      "updatedAt": "2026-06-15T04:22:51.628Z"
+      "updatedAt": "2026-06-16T04:09:47.898Z"
     },
     {
       "id": "594b2f63-ab30-45fa-8644-2bd5f353ff71",
       "scopeId": "08ea42c8-5212-4f70-82b6-f98e9e06495f",
       "title": "Texture",
       "order": 3,
-      "progress": 0,
+      "progress": 5,
       "deadline": "",
-      "status": "pending",
+      "status": "in_progress",
       "createdAt": "2026-06-15T23:09:59.956Z",
-      "updatedAt": "2026-06-15T23:09:59.956Z"
+      "updatedAt": "2026-06-16T04:10:09.624Z"
     },
     {
       "id": "5a24dd2d-623f-476e-829e-96284f07d470",
@@ -358,7 +358,23 @@
       "updatedAt": "2026-06-14T22:17:23.666Z"
     }
   ],
-  "expenses": [],
+  "expenses": [
+    {
+      "id": "24092934-aeba-46f9-9fb9-cf5ffbd5a931",
+      "projectId": "3db2664f-4027-46db-970b-f7c354e37fad",
+      "type": "labor",
+      "description": "Vilson",
+      "workerName": "Vilson",
+      "note": "Drywall Hanging",
+      "scopeId": "08ea42c8-5212-4f70-82b6-f98e9e06495f",
+      "hourlyRate": 30,
+      "hours": 4,
+      "amount": 120,
+      "date": "2026-06-16",
+      "createdAt": "2026-06-16T04:26:05.519Z",
+      "updatedAt": "2026-06-16T04:26:05.519Z"
+    }
+  ],
   "people": [
     {
       "id": "cd4b7f72-a65d-462c-a320-d23eb2c90265",
@@ -388,5 +404,5 @@
       "updatedAt": "2026-06-15T04:23:34.675Z"
     }
   ],
-  "updatedAt": "2026-06-16T04:08:28.905Z"
+  "updatedAt": "2026-06-16T04:26:05.523Z"
 }
