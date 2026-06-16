@@ -373,6 +373,21 @@
       "date": "2026-06-16",
       "createdAt": "2026-06-16T04:26:05.519Z",
       "updatedAt": "2026-06-16T04:26:05.519Z"
+    },
+    {
+      "id": "bbecf687-e477-4e0e-baa5-3155e6505d62",
+      "projectId": "3db2664f-4027-46db-970b-f7c354e37fad",
+      "type": "labor",
+      "description": "Vilson",
+      "workerName": "Vilson",
+      "note": "Drywall Hanging",
+      "scopeId": "08ea42c8-5212-4f70-82b6-f98e9e06495f",
+      "hourlyRate": 30,
+      "hours": 4,
+      "amount": 120,
+      "date": "2026-06-16",
+      "createdAt": "2026-06-16T04:26:07.722Z",
+      "updatedAt": "2026-06-16T04:26:07.722Z"
     }
   ],
   "people": [
@@ -404,5 +419,5 @@
       "updatedAt": "2026-06-15T04:23:34.675Z"
     }
   ],
-  "updatedAt": "2026-06-16T04:26:05.523Z"
+  "updatedAt": "2026-06-16T04:26:08.032Z"
 }
