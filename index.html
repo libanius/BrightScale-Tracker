@@ -304,7 +304,7 @@ var TEMPLATES = {
 var DB;
 function openDB() {
   return new Promise(function(res, rej) {
-    var r = indexedDB.open('brightscale_v1', 4);
+    var r = indexedDB.open('brightscale_v1', 5);
     r.onupgradeneeded = function(e) {
       var d = e.target.result;
       if (!d.objectStoreNames.contains('projects'))
@@ -321,6 +321,8 @@ function openDB() {
         d.createObjectStore('expenses', {keyPath: 'id'});
       if (!d.objectStoreNames.contains('people'))
         d.createObjectStore('people', {keyPath: 'id'});
+      if (!d.objectStoreNames.contains('notes'))
+        d.createObjectStore('notes', {keyPath: 'id'});
     };
     r.onsuccess = function(e) { DB = e.target.result; res(); };
     r.onerror = function(e) { rej(e.target.error); };
@@ -436,6 +438,7 @@ var S = {
   tasks: [],
   expenses: [],
   people: [],
+  notes: [],
   currentProjectId: null,
   currentUnitId: null,
   openScopeIds: {}
@@ -646,7 +649,8 @@ function reload() {
     dbAll('scopes'),
     dbAll('tasks'),
     dbAll('expenses'),
-    dbAll('people')
+    dbAll('people'),
+    dbAll('notes')
   ]).then(function(r) {
     S.projects = r[0].sort(function(a, b) { return a.name.localeCompare(b.name); });
     S.units = r[1];
@@ -654,6 +658,9 @@ function reload() {
     S.tasks = r[3];
     S.expenses = r[4];
     S.people = r[5].sort(function(a, b) { return a.name.localeCompare(b.name); });
+    S.notes = r[6].sort(function(a, b) {
+      return (b.createdAt || b.date || '').localeCompare(a.createdAt || a.date || '');
+    });
     console.log('Reload completo. Projects:', S.projects.length, 'Units:', S.units.length, 'Scopes:', S.scopes.length, 'Tasks:', S.tasks.length);
     render();
   });
@@ -699,6 +706,23 @@ function getProjectScopes(projectId) {
 
 function getPersonById(personId) {
   return S.people.filter(function(person) { return person.id === personId; })[0] || null;
+}
+
+function getProjectById(projectId) {
+  return S.projects.filter(function(project) { return project.id === projectId; })[0] || null;
+}
+
+function getScopeById(scopeId) {
+  return S.scopes.filter(function(scope) { return scope.id === scopeId; })[0] || null;
+}
+
+function getScopesForProject(projectId) {
+  var unitIds = S.units.filter(function(unit) {
+    return unit.projectId === projectId;
+  }).map(function(unit) { return unit.id; });
+  return S.scopes.filter(function(scope) {
+    return unitIds.indexOf(scope.unitId) >= 0;
+  }).sort(function(a, b) { return (a.order || 0) - (b.order || 0); });
 }
 
 function isPersonActive(person) {
@@ -1977,6 +2001,165 @@ function downloadProjectDocument(project) {
   downloadProjectDocumentById(project.documentId);
 }
 
+function openDailyNoteForm(defaultProjectId, note, onSaved) {
+  showModal(function(mo, close) {
+    mo.appendChild(div('mtit', note ? 'Editar Nota do Dia' : 'Nota do Dia'));
+
+    var f1 = div('fg');
+    f1.appendChild(mkLbl('Projeto (opcional)'));
+    var projectSelect = el('select', '');
+    projectSelect.innerHTML = '<option value="">Geral / todos os projetos</option>';
+    S.projects.forEach(function(project) {
+      var option = document.createElement('option');
+      option.value = project.id;
+      option.textContent = project.name;
+      projectSelect.appendChild(option);
+    });
+    projectSelect.value = note ? (note.projectId || '') : (defaultProjectId || '');
+    f1.appendChild(projectSelect);
+    mo.appendChild(f1);
+
+    var f2 = div('fg');
+    f2.appendChild(mkLbl('Scope (opcional)'));
+    var scopeSelect = el('select', '');
+    f2.appendChild(scopeSelect);
+    mo.appendChild(f2);
+
+    function renderScopeOptions() {
+      scopeSelect.innerHTML = '<option value="">Sem scope específico</option>';
+      if (!projectSelect.value) {
+        scopeSelect.disabled = true;
+        return;
+      }
+      scopeSelect.disabled = false;
+      getScopesForProject(projectSelect.value).forEach(function(scope) {
+        var option = document.createElement('option');
+        option.value = scope.id;
+        option.textContent = scope.title;
+        scopeSelect.appendChild(option);
+      });
+      scopeSelect.value = note ? (note.scopeId || '') : '';
+    }
+    projectSelect.onchange = renderScopeOptions;
+    renderScopeOptions();
+
+    var f3 = div('fg');
+    f3.appendChild(mkLbl('Tipo'));
+    var typeSelect = el('select', '');
+    [
+      ['progress', 'Progress'],
+      ['issue', 'Issue'],
+      ['material', 'Material'],
+      ['labor', 'Labor'],
+      ['payment', 'Payment'],
+      ['general', 'General']
+    ].forEach(function(item) {
+      var option = document.createElement('option');
+      option.value = item[0];
+      option.textContent = item[1];
+      typeSelect.appendChild(option);
+    });
+    typeSelect.value = note ? (note.type || 'progress') : 'progress';
+    f3.appendChild(typeSelect);
+    mo.appendChild(f3);
+
+    var f4 = div('fg');
+    f4.appendChild(mkLbl('Nota interna'));
+    var textInput = el('textarea', '');
+    textInput.placeholder = 'ex: Hoje finalizamos drywall no Rami e aguardamos material no projeto X.';
+    textInput.value = note ? (note.text || '') : '';
+    textInput.style.minHeight = '110px';
+    f4.appendChild(textInput);
+    f4.appendChild(div('', '<div style="font-size:11px;color:var(--mu);margin-top:7px;line-height:1.5">' +
+      'Essa nota aparece somente no dashboard geral da equipe. Não aparece no link do cliente.</div>'));
+    mo.appendChild(f4);
+
+    var f5 = div('fg');
+    f5.appendChild(mkLbl('Data'));
+    var dateInput = el('input', '');
+    dateInput.type = 'date';
+    dateInput.value = note && note.date ? note.date : today();
+    f5.appendChild(dateInput);
+    mo.appendChild(f5);
+
+    var row = div('brow');
+    var cancel = btn('btn bs', 'Cancelar', close);
+    cancel.style.flex = '1';
+    var save = btn('btn bp', 'Salvar', function() {
+      var text = textInput.value.trim();
+      if (!text) {
+        toast('Escreva a nota do dia', 'w');
+        return;
+      }
+      var now = new Date().toISOString();
+      markModalSaving(mo);
+      dbPut('notes', {
+        id: note ? note.id : uid(),
+        projectId: projectSelect.value || '',
+        scopeId: scopeSelect.value || '',
+        type: typeSelect.value,
+        text: text,
+        date: dateInput.value || today(),
+        internalOnly: true,
+        createdAt: note ? note.createdAt : now,
+        updatedAt: now
+      }).then(reloadAndPublishDashboard).then(function() {
+        close();
+        toast(note ? 'Nota atualizada' : 'Nota do dia adicionada');
+        if (onSaved) onSaved();
+      });
+    });
+    save.style.flex = '1';
+    row.appendChild(cancel);
+    row.appendChild(save);
+    mo.appendChild(row);
+    setTimeout(function() { textInput.focus(); }, 200);
+  });
+}
+
+function renderTrackerJourney(main, projectId) {
+  var todayNotes = S.notes.filter(function(note) {
+    if ((note.date || '').slice(0, 10) !== today()) return false;
+    return !projectId || note.projectId === projectId || !note.projectId;
+  }).sort(function(a, b) {
+    return (b.createdAt || b.updatedAt || '').localeCompare(a.createdAt || a.updatedAt || '');
+  });
+  if (!todayNotes.length) return;
+
+  var card = div('card');
+  card.appendChild(div('ct', 'Journey de Hoje'));
+  todayNotes.slice(0, 8).forEach(function(note) {
+    var project = getProjectById(note.projectId);
+    var scope = getScopeById(note.scopeId);
+    var line = div('finance-line');
+    var title = div('finance-line-title');
+    title.textContent = (note.type || 'general').toUpperCase() +
+      (project ? ' · ' + project.name : ' · Geral');
+    line.appendChild(title);
+    line.appendChild(div('finance-line-meta',
+      (scope ? 'Scope: ' + esc(scope.title) + '<br>' : '') + esc(note.text)));
+    var actions = div('brow');
+    actions.appendChild(btn('btn bs bsm', 'Editar', function() {
+      openDailyNoteForm(note.projectId || '', note);
+    }));
+    actions.appendChild(btn('btn br bsm', 'Excluir', function() {
+      showConfirm({
+        title: 'Excluir nota',
+        msg: 'Excluir esta nota do Journey?',
+        yesL: 'Excluir',
+        onYes: function() {
+          dbDel('notes', note.id).then(reloadAndPublishDashboard).then(function() {
+            toast('Nota excluída');
+          });
+        }
+      });
+    }));
+    line.appendChild(actions);
+    card.appendChild(line);
+  });
+  main.appendChild(card);
+}
+
 /* ═══════════════════════════════════════════
    PROJECTS TAB
 ═══════════════════════════════════════════ */
@@ -2001,6 +2184,9 @@ function renderProjects(main) {
     var baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
     window.open(baseUrl + 'dashboard.html', '_blank');
   }));
+  actions.appendChild(btn('btn bs bsm', '+ Nota do Dia', function() {
+    openDailyNoteForm('', null);
+  }));
   actions.appendChild(btn('btn bp bsm', '+ Novo', function() {
     console.log('Clicou em + Novo Projeto');
     openProjectForm(null);
@@ -2008,6 +2194,8 @@ function renderProjects(main) {
   heading.appendChild(actions);
   hero.appendChild(heading);
   main.appendChild(hero);
+
+  renderTrackerJourney(main, '');
 
   var importCard = div('card');
   importCard.appendChild(div('ct', 'Criar por Contrato ou Estimate'));
@@ -2075,6 +2263,9 @@ function renderProjectDetail(main) {
     });
   });
   hdr.appendChild(back);
+  hdr.appendChild(btn('btn bs bsm', '+ Atualização do Dia', function() {
+    openDailyNoteForm(proj.id, null);
+  }));
   hdr.appendChild(btn('btn bp bsm', '+ Nova Unit', function() { openUnitForm(proj.id, null); }));
   main.appendChild(hdr);
   
@@ -2106,6 +2297,8 @@ function renderProjectDetail(main) {
     openProjectFinance(proj.id);
   }));
   main.appendChild(financeCard);
+
+  renderTrackerJourney(main, proj.id);
 
   var documentUnits = units.filter(function(unit) { return !!unit.documentId; });
   if (proj.contractSummary || proj.documentId || documentUnits.length) {
@@ -2425,7 +2618,7 @@ function decodeGitHubContent(content) {
 }
 
 function countBackupRecords(data) {
-  return ['projects', 'units', 'scopes', 'tasks', 'expenses', 'people'].reduce(function(total, key) {
+  return ['projects', 'units', 'scopes', 'tasks', 'expenses', 'people', 'notes'].reduce(function(total, key) {
     return total + (Array.isArray(data[key]) ? data[key].length : 0);
   }, 0);
 }
@@ -2437,7 +2630,8 @@ function getLocalSyncData() {
     scopes: S.scopes.slice(),
     tasks: S.tasks.slice(),
     expenses: S.expenses.slice(),
-    people: S.people.slice()
+    people: S.people.slice(),
+    notes: S.notes.slice()
   };
 }
 
@@ -2449,6 +2643,7 @@ function buildSyncPayload(localData, updatedAt) {
     tasks: localData.tasks,
     expenses: localData.expenses,
     people: localData.people,
+    notes: localData.notes,
     updatedAt: updatedAt
   };
 }
@@ -2460,6 +2655,7 @@ function validateGitHubBackup(data) {
   }
   if (!Array.isArray(data.expenses)) data.expenses = [];
   if (!Array.isArray(data.people)) data.people = [];
+  if (!Array.isArray(data.notes)) data.notes = [];
   return data;
 }
 
@@ -2562,6 +2758,7 @@ function replaceLocalDataFromGitHub(data) {
     dbClear('tasks'),
     dbClear('expenses'),
     dbClear('people'),
+    dbClear('notes'),
     dbClear('documents')
   ]).then(function() {
     return Promise.all(
@@ -2580,6 +2777,7 @@ function replaceLocalDataFromGitHub(data) {
         .concat(data.tasks.map(function(item) { return dbPut('tasks', item); }))
         .concat((data.expenses || []).map(function(item) { return dbPut('expenses', item); }))
         .concat((data.people || []).map(function(item) { return dbPut('people', item); }))
+        .concat((data.notes || []).map(function(item) { return dbPut('notes', item); }))
     );
   }).then(function() {
     localStorage.setItem('brightscale_last_restore', new Date().toISOString());
@@ -2643,7 +2841,8 @@ function autoPublishDashboardData() {
           scopes: remoteData.scopes,
           tasks: remoteData.tasks,
           expenses: remoteData.expenses || [],
-          people: remoteData.people || []
+          people: remoteData.people || [],
+          notes: remoteData.notes || []
         });
         var localRecords = JSON.stringify(localData);
         if (remoteRecords !== localRecords) {
@@ -2732,7 +2931,8 @@ function syncToGitHub(callback) {
           scopes: remoteData.scopes,
           tasks: remoteData.tasks,
           expenses: remoteData.expenses || [],
-          people: remoteData.people || []
+          people: remoteData.people || [],
+          notes: remoteData.notes || []
         });
         var localRecords = JSON.stringify(localData);
         if (remoteRecords !== localRecords) {
@@ -2769,6 +2969,7 @@ function syncToGitHub(callback) {
       tasks: remoteBackup.tasks,
       expenses: remoteBackup.expenses || [],
       people: remoteBackup.people || [],
+      notes: remoteBackup.notes || [],
       updatedAt: remoteBackup.updatedAt
     }, null, 2);
     if (remoteJson !== json) {
@@ -3023,7 +3224,8 @@ function renderReports(main) {
       dbAll('scopes'),
       dbAll('tasks'),
       dbAll('expenses'),
-      dbAll('people')
+      dbAll('people'),
+      dbAll('notes')
     ]).then(function(r) {
       var json = JSON.stringify({
         projects: r[0],
@@ -3032,6 +3234,7 @@ function renderReports(main) {
         tasks: r[3],
         expenses: r[4],
         people: r[5],
+        notes: r[6],
         v: 3,
         at: new Date().toISOString()
       }, null, 2);
@@ -3133,6 +3336,9 @@ function renderReports(main) {
             .then(function() {
               return Promise.all((data.people || []).map(function(p) { return dbPut('people', p); }));
             })
+            .then(function() {
+              return Promise.all((data.notes || []).map(function(n) { return dbPut('notes', n); }));
+            })
             .then(migrateResponsibilityData)
             .then(reload)
             .then(function() {
@@ -3167,7 +3373,8 @@ function renderReports(main) {
       dbAll('scopes'),
       dbAll('tasks'),
       dbAll('expenses'),
-      dbAll('people')
+      dbAll('people'),
+      dbAll('notes')
     ]).then(function(r) {
       var json = JSON.stringify({
         projects: r[0],
@@ -3176,6 +3383,7 @@ function renderReports(main) {
         tasks: r[3],
         expenses: r[4],
         people: r[5],
+        notes: r[6],
         v: 3,
         at: new Date().toISOString()
       }, null, 2);
@@ -3236,6 +3444,9 @@ function renderReports(main) {
                 })
                 .then(function() {
                   return Promise.all((data.people || []).map(function(p) { return dbPut('people', p); }));
+                })
+                .then(function() {
+                  return Promise.all((data.notes || []).map(function(n) { return dbPut('notes', n); }));
                 })
                 .then(migrateResponsibilityData)
                 .then(reload)
@@ -3529,6 +3740,11 @@ function renderSettings(main) {
                   .filter(function(expense) { return expense.projectId === p.id; })
                   .map(function(expense) { return dbDel('expenses', expense.id); }));
               })
+              .then(function() {
+                return Promise.all(S.notes
+                  .filter(function(note) { return note.projectId === p.id; })
+                  .map(function(note) { return dbDel('notes', note.id); }));
+              })
               .then(reloadAndPublishDashboard)
               .then(function() { toast('Projeto excluído'); });
           }
@@ -3636,7 +3852,7 @@ function renderSettings(main) {
           msg: 'Tem CERTEZA ABSOLUTA? Todos os dados serão perdidos para sempre!',
           yesL: 'Sim, apagar tudo',
           onYes: function() {
-            Promise.all([dbAll('projects'), dbAll('units'), dbAll('scopes'), dbAll('tasks'), dbAll('documents'), dbAll('expenses'), dbAll('people')])
+            Promise.all([dbAll('projects'), dbAll('units'), dbAll('scopes'), dbAll('tasks'), dbAll('documents'), dbAll('expenses'), dbAll('people'), dbAll('notes')])
               .then(function(r) {
                 var projectIds = r[0].map(function(p) { return p.id; });
                 var unitIds = r[1].map(function(u) { return u.id; });
@@ -3645,6 +3861,7 @@ function renderSettings(main) {
                 var documentIds = r[4].map(function(d) { return d.id; });
                 var expenseIds = r[5].map(function(e) { return e.id; });
                 var personIds = r[6].map(function(p) { return p.id; });
+                var noteIds = r[7].map(function(n) { return n.id; });
                 
                 return Promise.all(
                   projectIds.map(function(id) { return dbDel('projects', id); })
@@ -3654,6 +3871,7 @@ function renderSettings(main) {
                     .concat(documentIds.map(function(id) { return dbDel('documents', id); }))
                     .concat(expenseIds.map(function(id) { return dbDel('expenses', id); }))
                     .concat(personIds.map(function(id) { return dbDel('people', id); }))
+                    .concat(noteIds.map(function(id) { return dbDel('notes', id); }))
                 );
               })
               .then(function() {

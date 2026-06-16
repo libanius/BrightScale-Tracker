@@ -51,6 +51,13 @@ body{background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSyst
 .stat-card{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:20px;text-align:center;}
 .stat-value{font-size:32px;font-weight:700;color:var(--ac);font-family:monospace;}
 .stat-label{font-size:12px;color:var(--mu);margin-top:4px;text-transform:uppercase;letter-spacing:1px;}
+.journey-card{background:var(--sf);border:1px solid var(--bd);border-radius:16px;padding:22px;margin-bottom:30px;}
+.journey-title{font-size:16px;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;color:var(--tx);}
+.journey-item{padding:12px 0;border-top:1px solid var(--bd);}
+.journey-item:first-of-type{border-top:none;}
+.journey-meta{font-size:11px;color:var(--mu);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;}
+.journey-type{display:inline-block;padding:3px 8px;border-radius:999px;background:rgba(0,229,160,.12);color:var(--ac);font-size:10px;font-weight:800;margin-right:6px;}
+.journey-text{font-size:14px;line-height:1.55;color:var(--tx);}
 .task-list{margin-top:16px;border-top:1px solid var(--bd);padding-top:12px;}
 .task-item{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;margin-bottom:4px;background:var(--bg);border-radius:8px;}
 .task-status{padding:4px 10px;border-radius:12px;font-size:10px;font-weight:700;text-transform:uppercase;}
@@ -230,6 +237,51 @@ function calcDaysRemaining(deadline) {
   return diff;
 }
 
+function noteTypeLabel(type) {
+  var labels = {
+    progress: 'Progress',
+    issue: 'Issue',
+    material: 'Material',
+    labor: 'Labor',
+    payment: 'Payment',
+    general: 'General'
+  };
+  return labels[type] || 'General';
+}
+
+function localDateKey(date) {
+  return date.getFullYear() + '-' +
+    String(date.getMonth() + 1).padStart(2, '0') + '-' +
+    String(date.getDate()).padStart(2, '0');
+}
+
+function renderTodayJourney(data, projects, scopes) {
+  if (isClientView) return '';
+  var todayKey = localDateKey(new Date());
+  var notes = (data.notes || []).filter(function(note) {
+    return (note.date || '').slice(0, 10) === todayKey;
+  }).sort(function(a, b) {
+    return (b.createdAt || b.updatedAt || '').localeCompare(a.createdAt || a.updatedAt || '');
+  });
+  if (!notes.length) return '';
+
+  var html = '<div class="journey-card"><div class="journey-title">Journey de Hoje</div>';
+  notes.slice(0, 12).forEach(function(note) {
+    var project = projects.filter(function(item) { return item.id === note.projectId; })[0];
+    var scope = scopes.filter(function(item) { return item.id === note.scopeId; })[0];
+    var time = note.createdAt ? new Date(note.createdAt).toLocaleTimeString('en-US', {
+      hour: 'numeric', minute: '2-digit'
+    }) : '';
+    html += '<div class="journey-item">';
+    html += '<div class="journey-meta"><span class="journey-type">' + esc(noteTypeLabel(note.type)) + '</span>' +
+      esc([time, project && project.name, scope && scope.title].filter(Boolean).join(' · ')) + '</div>';
+    html += '<div class="journey-text">' + esc(note.text) + '</div>';
+    html += '</div>';
+  });
+  html += '</div>';
+  return html;
+}
+
 function render(data) {
   var content = document.getElementById('content');
   
@@ -260,6 +312,8 @@ function render(data) {
       month: 'short', day: 'numeric', year: 'numeric',
       hour: 'numeric', minute: '2-digit'
     }) + '</div>';
+
+  html += renderTodayJourney(data, projects, scopes);
   
   // Stats
   var totalUnits = units.length;

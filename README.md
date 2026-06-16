@@ -43,6 +43,9 @@ somente o projeto selecionado. Como solução de MVP, o link não possui login:
 qualquer pessoa que receber ou encaminhar o endereço poderá visualizar aquele
 projeto.
 
+Notas do `Journey de Hoje` são internas e aparecem somente no dashboard geral
+da equipe. Elas não são renderizadas no link filtrado para cliente.
+
 ## Financeiro de projetos
 
 Cada projeto possui um extrato com receita do contrato, compromissos com
