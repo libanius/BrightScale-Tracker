@@ -521,11 +521,33 @@ function showModal(fn) {
   closeModal();
   var ov = div('ov'); ov.id = 'overlay';
   var mo = div('modal');
-  function close() { if (ov.parentNode) ov.parentNode.removeChild(ov); }
+  mo.__dirty = false;
+  mo.__saving = false;
+  mo.__readyForDirtyTracking = false;
+  mo.addEventListener('input', function(e) {
+    if (mo.__readyForDirtyTracking && isDirtyTrackableInput(e.target)) mo.__dirty = true;
+  });
+  mo.addEventListener('change', function(e) {
+    if (mo.__readyForDirtyTracking && isDirtyTrackableInput(e.target)) mo.__dirty = true;
+  });
+  function close(force) {
+    force = force === true;
+    if (!force && mo.__dirty && !mo.__saving) {
+      confirmSavePendingChanges(mo, function() { close(true); });
+      return;
+    }
+    if (ov.parentNode) ov.parentNode.removeChild(ov);
+    if (mo.__afterSaveClose) {
+      var afterSaveClose = mo.__afterSaveClose;
+      mo.__afterSaveClose = null;
+      afterSaveClose();
+    }
+  }
   fn(mo, close);
   ov.appendChild(mo);
   ov.onclick = function(e) { if (e.target === ov) close(); };
   document.body.appendChild(ov);
+  setTimeout(function() { mo.__readyForDirtyTracking = true; }, 0);
 }
 function closeModal() {
   var e = document.getElementById('overlay');
@@ -546,6 +568,73 @@ function showConfirm(opts) {
   box.appendChild(row); ov.appendChild(box);
   document.body.appendChild(ov);
 }
+
+function isDirtyTrackableInput(target) {
+  if (!target || !target.tagName) return false;
+  return /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName);
+}
+
+function getDirtyModal() {
+  var overlay = document.getElementById('overlay');
+  if (!overlay) return null;
+  var modal = overlay.querySelector('.modal');
+  return modal && modal.__dirty ? modal : null;
+}
+
+function findModalSaveButton(modal) {
+  var buttons = Array.prototype.slice.call(modal.querySelectorAll('button'));
+  return buttons.filter(function(button) {
+    return button.className && /\bbp\b/.test(button.className) &&
+      /salvar|criar|adicionar|importar|usar template/i.test(button.textContent || '');
+  }).pop() || null;
+}
+
+function markModalSaving(modal) {
+  if (!modal) return;
+  modal.__saving = true;
+  modal.__dirty = false;
+}
+
+function confirmSavePendingChanges(modal, onDiscard) {
+  if (document.getElementById('confbox')) return;
+  showConfirm({
+    title: 'Salvar alterações?',
+    msg: 'Você editou informações que ainda não foram salvas. Deseja salvar antes de sair?',
+    noL: 'Sair sem salvar',
+    yesL: 'Salvar',
+    onNo: function() {
+      modal.__dirty = false;
+      if (onDiscard) onDiscard();
+    },
+    onYes: function() {
+      var saveButton = findModalSaveButton(modal);
+      if (!saveButton) {
+        toast('Nenhum botão de salvar encontrado nesta tela', 'w', 4000);
+        return;
+      }
+      saveButton.click();
+    }
+  });
+}
+
+function runAfterPendingSave(action) {
+  var modal = getDirtyModal();
+  if (!modal) {
+    action();
+    return;
+  }
+  modal.__afterSaveClose = action;
+  confirmSavePendingChanges(modal, function() {
+    closeModal();
+    action();
+  });
+}
+
+window.addEventListener('beforeunload', function(e) {
+  if (!getDirtyModal()) return;
+  e.preventDefault();
+  e.returnValue = '';
+});
 
 /* ═══════════════════════════════════════════
    RELOAD
@@ -698,12 +787,14 @@ function renderNav() {
     b.className = 'nb' + (S.tab === t.id ? ' on' : '');
     b.innerHTML = svgI(t.d) + t.l;
     b.onclick = function() {
-      S.tab = t.id;
-      if (t.id === 'projects') {
-        S.currentUnitId = null;
-        clearOpenScopes();
-      }
-      render();
+      runAfterPendingSave(function() {
+        S.tab = t.id;
+        if (t.id === 'projects') {
+          S.currentUnitId = null;
+          clearOpenScopes();
+        }
+        render();
+      });
     };
     tabs.appendChild(b);
   });
@@ -1126,6 +1217,7 @@ function openContractReview(file, analysis) {
         toast('Informe o nome do projeto', 'w');
         return;
       }
+      markModalSaving(mo);
       create.disabled = true;
       create.textContent = targetProjectId ? 'Adicionando...' : 'Criando...';
       importContractToProject(file, analysis.rawText, {
@@ -1358,6 +1450,7 @@ function openPersonForm(person, onSaved) {
         createdAt: person ? person.createdAt : now,
         updatedAt: now
       };
+      markModalSaving(mo);
       dbPut('people', record).then(reload).then(function() {
         close();
         toast(person ? 'Subcontractor atualizado' : 'Subcontractor cadastrado');
@@ -1511,6 +1604,7 @@ function openMaterialExpenseForm(projectId, expense, onSaved) {
         return;
       }
       var now = new Date().toISOString();
+      markModalSaving(mo);
       dbPut('expenses', {
         id: expense ? expense.id : uid(),
         projectId: projectId,
@@ -1747,8 +1841,10 @@ function renderProjects(main) {
     
     var pi = div('pi');
     pi.onclick = function() {
-      S.currentProjectId = proj.id;
-      render();
+      runAfterPendingSave(function() {
+        S.currentProjectId = proj.id;
+        render();
+      });
     };
     
     var dot = div('pdot');
@@ -1779,8 +1875,10 @@ function renderProjectDetail(main) {
   
   var hdr = div('hdr');
   var back = btn('btn bs bsm', '← Voltar', function() {
-    S.currentProjectId = null;
-    render();
+    runAfterPendingSave(function() {
+      S.currentProjectId = null;
+      render();
+    });
   });
   hdr.appendChild(back);
   hdr.appendChild(btn('btn bp bsm', '+ Nova Unit', function() { openUnitForm(proj.id, null); }));
@@ -1857,11 +1955,13 @@ function renderProjectDetail(main) {
     
     var pi = div('pi');
     pi.onclick = function() {
-      console.log('Clicou na unit:', unit.id, unit.unitNumber);
-      clearOpenScopes();
-      S.currentUnitId = unit.id;
-      console.log('S.currentUnitId setado para:', S.currentUnitId);
-      render();
+      runAfterPendingSave(function() {
+        console.log('Clicou na unit:', unit.id, unit.unitNumber);
+        clearOpenScopes();
+        S.currentUnitId = unit.id;
+        console.log('S.currentUnitId setado para:', S.currentUnitId);
+        render();
+      });
     };
     
     var dot = div('pdot');
@@ -1894,9 +1994,11 @@ function renderUnitDetail(main) {
   
   var hdr = div('hdr');
   var back = btn('btn bs bsm', '← Units', function() {
-    S.currentUnitId = null;
-    clearOpenScopes();
-    render();
+    runAfterPendingSave(function() {
+      S.currentUnitId = null;
+      clearOpenScopes();
+      render();
+    });
   });
   hdr.appendChild(back);
   main.appendChild(hdr);
@@ -3393,6 +3495,7 @@ function openProjectForm(proj) {
       }
       
       var now = new Date().toISOString();
+      markModalSaving(mo);
       dbPut('projects', {
         id: proj ? proj.id : uid(),
         name: nm,
@@ -3713,6 +3816,7 @@ function openUnitForm(projectId, unit) {
       
       var now = new Date().toISOString();
       var unitId = unit ? unit.id : uid();
+      markModalSaving(mo);
       
       console.log('Salvando unit. TemplateType:', templateType, 'CustomTemplate:', customTemplate ? 'Carregado' : 'null');
       
@@ -4014,7 +4118,7 @@ function importTemplateToUnit(unitId, template, closeCallback) {
   });
   
   Promise.all(promises).then(reload).then(function() {
-    closeCallback();
+    closeCallback(true);
     toast('Template importado: ' + template.length + ' scope(s) criado(s)');
   });
 }
@@ -4130,6 +4234,7 @@ function openScopeForm(unitId, scope) {
       var now = new Date().toISOString();
       var personId = personSelect.value;
       var selectedPerson = getPersonById(personId);
+      markModalSaving(mo);
       dbPut('scopes', {
         id: scope ? scope.id : uid(),
         unitId: unitId,
@@ -4229,6 +4334,7 @@ function openTaskForm(scopeId, task) {
       var status = progress === 0 ? 'pending' : progress === 100 ? 'completed' : 'in_progress';
       
       var now = new Date().toISOString();
+      markModalSaving(mo);
       dbPut('tasks', {
         id: task ? task.id : uid(),
         scopeId: scopeId,
@@ -4317,6 +4423,7 @@ function openTaskEdit(task) {
       }
       var prog = parseInt(ri.value);
       var status = prog === 0 ? 'pending' : prog === 100 ? 'completed' : 'in_progress';
+      markModalSaving(mo);
       
       dbPut('tasks', {
         id: task.id,
