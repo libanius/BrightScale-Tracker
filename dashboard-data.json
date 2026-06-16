@@ -421,6 +421,17 @@
   ],
   "notes": [
     {
+      "id": "7f341b40-5ef1-4e45-9d63-56adc7b27329",
+      "projectId": "3db2664f-4027-46db-970b-f7c354e37fad",
+      "scopeId": "",
+      "type": "general",
+      "text": "Rami esteve no local. Foi reportado a ele sobre proximas fases.",
+      "date": "2026-06-16",
+      "internalOnly": true,
+      "createdAt": "2026-06-16T04:57:09.093Z",
+      "updatedAt": "2026-06-16T04:57:09.093Z"
+    },
+    {
       "id": "443a4b34-cb00-4cc1-bae5-7c68d50734df",
       "projectId": "3db2664f-4027-46db-970b-f7c354e37fad",
       "scopeId": "",
@@ -432,5 +443,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-06-16T04:56:28.416Z"
+  "updatedAt": "2026-06-16T04:57:09.118Z"
 }
