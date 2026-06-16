@@ -518,6 +518,86 @@ function toast(msg, type, dur) {
 }
 
 /* ═══════════════════════════════════════════
+   APP REFRESH / CACHE
+═══════════════════════════════════════════ */
+function getAppRefreshUrl(mode) {
+  var url = new URL(location.href);
+  url.searchParams.set('v', Date.now());
+  url.searchParams.set('refresh', mode || 'manual');
+  return url.toString();
+}
+
+function clearBrightScaleAppCache() {
+  var chain = ('caches' in window)
+    ? caches.keys().then(function(keys) {
+        var ownKeys = keys.filter(function(key) {
+          return key.toLowerCase().indexOf('brightscale') >= 0;
+        });
+        return Promise.all(ownKeys.map(function(key) { return caches.delete(key); }));
+      })
+    : Promise.resolve();
+
+  if ('serviceWorker' in navigator) {
+    chain = chain.then(function() {
+      return navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        var ownRegistrations = registrations.filter(function(registration) {
+          return registration.scope.toLowerCase().indexOf('/brightscale-tracker/') >= 0;
+        });
+        return Promise.all(ownRegistrations.map(function(registration) {
+          return registration.unregister();
+        }));
+      });
+    });
+  }
+
+  return chain;
+}
+
+function forceRefreshApp(options) {
+  options = options || {};
+  var statusEl = options.statusEl;
+  var buttonEl = options.buttonEl;
+  var buttonText = options.buttonText || 'Forçar atualizar app';
+
+  if (buttonEl) {
+    buttonEl.disabled = true;
+    buttonEl.textContent = 'Limpando cache...';
+  }
+  if (statusEl) {
+    statusEl.style.display = '';
+    statusEl.textContent = 'Limpando somente o cache do app...';
+  }
+
+  return clearBrightScaleAppCache().then(function() {
+    if (statusEl) statusEl.textContent = 'Cache limpo. Abrindo versão mais recente...';
+    location.replace(getAppRefreshUrl(options.mode || 'manual'));
+    return new Promise(function() {});
+  }).catch(function(err) {
+    if (buttonEl) {
+      buttonEl.disabled = false;
+      buttonEl.textContent = buttonText;
+    }
+    if (statusEl) statusEl.textContent = 'Falha ao limpar cache: ' + err.message;
+    if (!options.silent) toast('Erro ao limpar cache', 'e');
+    throw err;
+  });
+}
+
+function autoForceRefreshAppOnSplash() {
+  var key = 'brightscale:auto-refresh:' + location.pathname;
+  var alreadyRefreshed = location.search.indexOf('refresh=auto') >= 0;
+  try {
+    if (sessionStorage.getItem(key) === 'done') return Promise.resolve();
+    sessionStorage.setItem(key, 'done');
+  } catch (err) {
+    if (alreadyRefreshed) return Promise.resolve();
+  }
+  return forceRefreshApp({mode: 'auto', silent: true}).catch(function(err) {
+    console.warn('Auto refresh skipped:', err);
+  });
+}
+
+/* ═══════════════════════════════════════════
    MODAL / CONFIRM
 ═══════════════════════════════════════════ */
 function showModal(fn) {
@@ -3623,47 +3703,17 @@ function renderSettings(main) {
   var reloadStatus = div('');
   reloadStatus.style.cssText = 'display:none;font-size:12px;font-family:monospace;padding:8px 12px;border-radius:8px;background:var(--sf2);border:1px solid var(--bd);margin-bottom:10px;';
   reloadCard.appendChild(reloadStatus);
-  var reloadAppBtn = btn('btn bp bfull', 'Atualizar App Agora', function() {
+  var reloadAppBtn = btn('btn bp bfull', 'Forçar atualizar app', function() {
     showConfirm({
       title: 'Atualizar App',
       msg: 'Limpar o cache e abrir a versão mais recente? Nenhum dado será enviado ao GitHub.',
-      yesL: 'Atualizar app',
+      yesL: 'Forçar atualizar',
       onYes: function() {
-        reloadAppBtn.disabled = true;
-        reloadAppBtn.textContent = 'Limpando cache...';
-        reloadStatus.style.display = '';
-        reloadStatus.textContent = 'Limpando somente o cache do app...';
-        var chain = ('caches' in window)
-          ? caches.keys().then(function(keys) {
-              var ownKeys = keys.filter(function(key) {
-                return key.toLowerCase().indexOf('brightscale') >= 0;
-              });
-              return Promise.all(ownKeys.map(function(key) { return caches.delete(key); }));
-            })
-          : Promise.resolve();
-
-        if ('serviceWorker' in navigator) {
-          chain = chain.then(function() {
-            return navigator.serviceWorker.getRegistrations().then(function(registrations) {
-              var ownRegistrations = registrations.filter(function(registration) {
-                return registration.scope.toLowerCase().indexOf('/brightscale-tracker/') >= 0;
-              });
-              return Promise.all(ownRegistrations.map(function(registration) {
-                return registration.unregister();
-              }));
-            });
-          });
-        }
-
-        chain.then(function() {
-          reloadStatus.textContent = 'Cache limpo. Abrindo versão mais recente...';
-          var url = location.href.split('?')[0] + '?v=' + Date.now();
-          location.replace(url);
-        }).catch(function(err) {
-          reloadAppBtn.disabled = false;
-          reloadAppBtn.textContent = 'Atualizar App Agora';
-          reloadStatus.textContent = 'Falha ao limpar cache: ' + err.message;
-          toast('Erro ao limpar cache', 'e');
+        forceRefreshApp({
+          statusEl: reloadStatus,
+          buttonEl: reloadAppBtn,
+          buttonText: 'Forçar atualizar app',
+          mode: 'manual'
         });
       }
     });
@@ -4974,6 +5024,8 @@ openDB().then(function() {
   F.date = today(); F.useNow = true;
   RS.period = 'today'; RS.df = today(); RS.dt = today();
   return migrateResponsibilityData();
+}).then(function() {
+  return autoForceRefreshAppOnSplash();
 }).then(function() {
   var remaining = Math.max(0, SPLASH_MIN_MS - (Date.now() - splashStartedAt));
   return new Promise(function(resolve) {
