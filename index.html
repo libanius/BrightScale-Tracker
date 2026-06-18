@@ -143,6 +143,31 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;background:var(--ac);
 .spinner{width:40px;height:40px;border:4px solid var(--bd);border-top-color:var(--ac);border-radius:50%;animation:spin 1s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .dash-logo{width:80px;height:80px;margin:0 auto 16px;display:block;}
+.pblock{border-bottom:1px solid var(--bd);}
+.pblock:last-child{border-bottom:none;}
+.pblock>.pi{border-bottom:none;}
+.pnotes-hdr{display:flex;align-items:center;gap:5px;padding:4px 0 10px 26px;cursor:pointer;user-select:none;}
+.pnotes-hdr:active{opacity:.7;}
+.pnotes-lbl{font-size:11px;font-weight:700;color:var(--ac2);letter-spacing:.4px;}
+.pnotes-arr{font-size:9px;color:var(--ac2);transition:transform .18s;flex-shrink:0;}
+.pnotes-arr.open{transform:rotate(90deg);}
+.pnotes-body{padding:0 0 10px;}
+.pnote-item{background:var(--sf2);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin-bottom:7px;}
+.pnote-item:last-child{margin-bottom:0;}
+.pnote-type{font-size:10px;font-weight:700;color:var(--ac2);text-transform:uppercase;letter-spacing:.8px;}
+.pnote-text{font-size:13px;color:var(--tx);margin-top:4px;line-height:1.5;}
+.pnote-actions{display:flex;gap:6px;margin-top:8px;}
+.journey-card-hdr{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;margin-bottom:0;}
+.journey-card-hdr:active{opacity:.7;}
+.journey-card-ct{font-size:11px;font-weight:700;letter-spacing:1.2px;color:var(--mu);text-transform:uppercase;}
+.journey-card-arr{font-size:12px;color:var(--mu);transition:transform .2s;}
+.journey-card-arr.open{transform:rotate(90deg);}
+.journey-card-body{display:none;margin-top:12px;}
+.journey-card-body.open{display:block;}
+.note-date-hdr{font-size:11px;font-weight:700;color:var(--ac);letter-spacing:.8px;text-transform:uppercase;padding:12px 0 6px;border-top:1px solid var(--bd);margin-top:2px;}
+.note-hist-empty{text-align:center;padding:28px 0 8px;color:var(--mu);font-size:13px;}
+.note-card-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:14px;}
+.note-card-hdr-actions{display:flex;gap:6px;flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -2207,7 +2232,22 @@ function renderTrackerJourney(main, projectId) {
   if (!todayNotes.length) return;
 
   var card = div('card');
-  card.appendChild(div('ct', 'Journey de Hoje'));
+
+  var cardArr = el('span', 'journey-card-arr', '▶');
+  var countLabel = ' · ' + todayNotes.length + (todayNotes.length === 1 ? ' nota' : ' notas');
+  var cardHdr = div('journey-card-hdr');
+  var cardHdrLeft = div('');
+  cardHdrLeft.style.cssText = 'display:flex;align-items:center;gap:8px;';
+  cardHdrLeft.appendChild(el('span', 'journey-card-ct', 'Journey de Hoje'));
+  var cardCount = el('span', '', countLabel);
+  cardCount.style.cssText = 'font-size:11px;color:var(--mu);';
+  cardHdrLeft.appendChild(cardCount);
+  cardHdr.appendChild(cardHdrLeft);
+  cardHdr.appendChild(cardArr);
+  card.appendChild(cardHdr);
+
+  var cardBody = div('journey-card-body');
+
   todayNotes.slice(0, 8).forEach(function(note) {
     var project = getProjectById(note.projectId);
     var scope = getScopeById(note.scopeId);
@@ -2235,8 +2275,17 @@ function renderTrackerJourney(main, projectId) {
       });
     }));
     line.appendChild(actions);
-    card.appendChild(line);
+    cardBody.appendChild(line);
   });
+
+  cardHdr.onclick = function() {
+    var open = cardBody.classList.contains('open');
+    cardBody.className = open ? 'journey-card-body' : 'journey-card-body open';
+    cardArr.textContent = open ? '▶' : '▼';
+    cardArr.className = open ? 'journey-card-arr' : 'journey-card-arr open';
+  };
+
+  card.appendChild(cardBody);
   main.appendChild(card);
 }
 
@@ -2275,8 +2324,6 @@ function renderProjects(main) {
   hero.appendChild(heading);
   main.appendChild(hero);
 
-  renderTrackerJourney(main, '');
-
   var importCard = div('card');
   importCard.appendChild(div('ct', 'Criar por Contrato ou Estimate'));
   importCard.appendChild(div('', '<div style="font-size:13px;color:var(--mu);line-height:1.6;margin-bottom:12px">' +
@@ -2300,7 +2347,14 @@ function renderProjects(main) {
     var units = S.units.filter(function(u) { return u.projectId === proj.id; });
     var activeUnits = units.filter(function(u) { return calcUnitProgress(u.id) < 100; });
     var prog = calcProjectProgress(proj.id);
-    
+    var todayProjNotes = S.notes.filter(function(n) {
+      return (n.date || '').slice(0, 10) === today() && n.projectId === proj.id;
+    }).sort(function(a, b) {
+      return (b.createdAt || '').localeCompare(a.createdAt || '');
+    });
+
+    var pblock = div('pblock');
+
     var pi = div('pi');
     pi.onclick = function() {
       runAfterPendingSave(function() {
@@ -2308,25 +2362,209 @@ function renderProjects(main) {
         render();
       });
     };
-    
+
     var dot = div('pdot');
     dot.style.background = 'var(--ac)';
-    
+
     var info = div('pinfo');
     info.innerHTML = '<div class="pname">' + esc(proj.name) + '</div>' +
       '<div class="prate">' + units.length + ' units • ' +
       activeUnits.length + ' ativas' +
       (proj.contractTotal ? ' • ' + esc(formatUsd(proj.contractTotal)) : '') + '</div>';
-    
+
     var stats = div('pstats');
     stats.innerHTML = '<div class="pprog">' + prog + '%</div>' +
       '<div class="pmeta">completo</div>';
-    
+
     pi.appendChild(dot);
     pi.appendChild(info);
     pi.appendChild(stats);
-    card.appendChild(pi);
+    pblock.appendChild(pi);
+
+    if (todayProjNotes.length) {
+      var notesArr = el('span', 'pnotes-arr', '▶');
+      var notesHdr = div('pnotes-hdr');
+      notesHdr.appendChild(notesArr);
+      notesHdr.appendChild(el('span', 'pnotes-lbl',
+        todayProjNotes.length + (todayProjNotes.length === 1 ? ' nota hoje' : ' notas hoje')));
+
+      var notesBody = div('pnotes-body');
+      notesBody.style.display = 'none';
+
+      todayProjNotes.forEach(function(note) {
+        var scope = getScopeById(note.scopeId);
+        var ni = div('pnote-item');
+        var topLine = document.createElement('div');
+        topLine.appendChild(el('span', 'pnote-type', note.type || 'geral'));
+        if (scope) {
+          var scopeSpan = document.createElement('span');
+          scopeSpan.style.cssText = 'font-size:10px;color:var(--mu);margin-left:6px;';
+          scopeSpan.textContent = scope.title;
+          topLine.appendChild(scopeSpan);
+        }
+        ni.appendChild(topLine);
+        ni.appendChild(div('pnote-text', esc(note.text)));
+        var acts = div('pnote-actions');
+        acts.appendChild(btn('btn bs bsm', 'Editar', (function(n) { return function(e) {
+          e.stopPropagation();
+          openDailyNoteForm(n.projectId || '', n);
+        }; })(note)));
+        acts.appendChild(btn('btn br bsm', 'Excluir', (function(n) { return function(e) {
+          e.stopPropagation();
+          showConfirm({
+            title: 'Excluir nota',
+            msg: 'Excluir esta nota?',
+            yesL: 'Excluir',
+            onYes: function() {
+              dbDel('notes', n.id).then(reloadAndPublishDashboard).then(function() {
+                toast('Nota excluída');
+              });
+            }
+          });
+        }; })(note)));
+        ni.appendChild(acts);
+        notesBody.appendChild(ni);
+      });
+
+      notesHdr.onclick = function(e) {
+        e.stopPropagation();
+        var open = notesBody.style.display !== 'none';
+        notesBody.style.display = open ? 'none' : 'block';
+        notesArr.textContent = open ? '▶' : '▼';
+        notesArr.className = open ? 'pnotes-arr' : 'pnotes-arr open';
+      };
+
+      pblock.appendChild(notesHdr);
+      pblock.appendChild(notesBody);
+    }
+
+    card.appendChild(pblock);
   });
+  main.appendChild(card);
+}
+
+function renderProjectNotes(main, proj) {
+  var allNotes = S.notes.filter(function(n) {
+    return n.projectId === proj.id;
+  }).sort(function(a, b) {
+    var ka = ((a.date || '').slice(0, 10)) + (a.createdAt || '');
+    var kb = ((b.date || '').slice(0, 10)) + (b.createdAt || '');
+    return kb.localeCompare(ka);
+  });
+
+  var card = div('card');
+
+  var cardHdr = div('note-card-hdr');
+  var titleBlock = div('');
+  titleBlock.appendChild(div('ct', 'Notas do Projeto'));
+  if (allNotes.length) {
+    var countEl = document.createElement('div');
+    countEl.style.cssText = 'font-size:11px;color:var(--mu);margin-top:-8px;margin-bottom:2px;';
+    countEl.textContent = allNotes.length + (allNotes.length === 1 ? ' nota' : ' notas') + ' no total';
+    titleBlock.appendChild(countEl);
+  }
+  cardHdr.appendChild(titleBlock);
+
+  var hdrActions = div('note-card-hdr-actions');
+  if (allNotes.length) {
+    hdrActions.appendChild(btn('btn bs bsm', '📋 Copiar', function() {
+      var txt = 'NOTAS — ' + proj.name + '\n';
+      txt += 'Exportado em: ' + new Date().toLocaleString('pt-BR') + '\n\n';
+      var byDate = {};
+      var dates = [];
+      allNotes.forEach(function(n) {
+        var d = (n.date || '').slice(0, 10) || 'sem-data';
+        if (!byDate[d]) { byDate[d] = []; dates.push(d); }
+        byDate[d].push(n);
+      });
+      dates.forEach(function(d) {
+        txt += (d === 'sem-data' ? 'Sem data' : fDate(d)) + '\n';
+        byDate[d].forEach(function(n) {
+          var scope = getScopeById(n.scopeId);
+          txt += (n.type || 'geral').toUpperCase();
+          if (scope) txt += ' · ' + scope.title;
+          txt += '\n' + (n.text || '') + '\n\n';
+        });
+      });
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(txt).then(function() { toast('Notas copiadas!'); })
+          .catch(function() { toast('Erro ao copiar', 'e'); });
+      } else {
+        var ta = document.createElement('textarea');
+        ta.value = txt;
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); toast('Notas copiadas!'); } catch(e) {}
+        document.body.removeChild(ta);
+      }
+    }));
+  }
+  hdrActions.appendChild(btn('btn bp bsm', '+ Nova Nota', function() {
+    openDailyNoteForm(proj.id, null);
+  }));
+  cardHdr.appendChild(hdrActions);
+  card.appendChild(cardHdr);
+
+  if (!allNotes.length) {
+    card.appendChild(div('note-hist-empty', 'Nenhuma nota registrada ainda.'));
+    main.appendChild(card);
+    return;
+  }
+
+  var byDate = {};
+  var dates = [];
+  allNotes.forEach(function(n) {
+    var d = (n.date || '').slice(0, 10) || 'sem-data';
+    if (!byDate[d]) { byDate[d] = []; dates.push(d); }
+    byDate[d].push(n);
+  });
+
+  dates.forEach(function(d, di) {
+    var isToday = d === today();
+    var label = d === 'sem-data' ? 'Sem data' : fDate(d);
+    if (isToday) label += ' — hoje';
+
+    var dateHdr = div('note-date-hdr', label);
+    if (di === 0) dateHdr.style.borderTop = 'none';
+    card.appendChild(dateHdr);
+
+    byDate[d].forEach(function(note) {
+      var scope = getScopeById(note.scopeId);
+      var ni = div('pnote-item');
+
+      var topLine = document.createElement('div');
+      topLine.style.cssText = 'display:flex;align-items:center;gap:6px;flex-wrap:wrap;';
+      topLine.appendChild(el('span', 'pnote-type', note.type || 'geral'));
+      if (scope) {
+        var scopeSpan = document.createElement('span');
+        scopeSpan.style.cssText = 'font-size:10px;color:var(--mu);';
+        scopeSpan.textContent = scope.title;
+        topLine.appendChild(scopeSpan);
+      }
+      ni.appendChild(topLine);
+      ni.appendChild(div('pnote-text', esc(note.text)));
+
+      var acts = div('pnote-actions');
+      acts.appendChild(btn('btn bs bsm', 'Editar', (function(n) { return function() {
+        openDailyNoteForm(n.projectId || '', n);
+      }; })(note)));
+      acts.appendChild(btn('btn br bsm', 'Excluir', (function(n) { return function() {
+        showConfirm({
+          title: 'Excluir nota',
+          msg: 'Excluir esta nota?',
+          yesL: 'Excluir',
+          onYes: function() {
+            dbDel('notes', n.id).then(reloadAndPublishDashboard).then(function() {
+              toast('Nota excluída');
+            });
+          }
+        });
+      }; })(note)));
+      ni.appendChild(acts);
+      card.appendChild(ni);
+    });
+  });
+
   main.appendChild(card);
 }
 
@@ -2343,9 +2581,6 @@ function renderProjectDetail(main) {
     });
   });
   hdr.appendChild(back);
-  hdr.appendChild(btn('btn bs bsm', '+ Atualização do Dia', function() {
-    openDailyNoteForm(proj.id, null);
-  }));
   hdr.appendChild(btn('btn bp bsm', '+ Nova Unit', function() { openUnitForm(proj.id, null); }));
   main.appendChild(hdr);
   
@@ -2378,7 +2613,7 @@ function renderProjectDetail(main) {
   }));
   main.appendChild(financeCard);
 
-  renderTrackerJourney(main, proj.id);
+  renderProjectNotes(main, proj);
 
   var documentUnits = units.filter(function(unit) { return !!unit.documentId; });
   if (proj.contractSummary || proj.documentId || documentUnits.length) {
@@ -3218,11 +3453,22 @@ function renderReports(main) {
   
   var ec = div('card');
   ec.appendChild(div('ct', 'Exportar Dados'));
-  
+
+  var includeNotes = false;
+  var notesToggleRow = div('');
+  notesToggleRow.style.cssText = 'display:flex;align-items:center;gap:10px;margin-bottom:14px;';
+  var notesChip = btn('chip', '📝 Incluir notas do dia');
+  notesChip.onclick = function() {
+    includeNotes = !includeNotes;
+    notesChip.className = includeNotes ? 'chip on' : 'chip';
+  };
+  notesToggleRow.appendChild(notesChip);
+  ec.appendChild(notesToggleRow);
+
   var genReport = function() {
     var txt = 'CONSTRUCTION TRACKER - RELATÓRIO\n';
     txt += 'Gerado em: ' + new Date().toLocaleString('pt-BR') + '\n\n';
-    
+
     S.projects.forEach(function(proj) {
       txt += '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n';
       txt += 'PROJETO: ' + proj.name + '\n';
@@ -3236,7 +3482,23 @@ function renderReports(main) {
       txt += '  Horas trabalhadas: ' + formatUsd(projectFinance.laborTotal) + '\n';
       txt += '  Crédito produzido: ' + formatUsd(projectFinance.productionCredit) + '\n';
       txt += '  Saldo projetado: ' + formatUsd(projectFinance.projectedBalance) + '\n\n';
-      
+
+      if (includeNotes) {
+        var projNotes = S.notes.filter(function(n) { return n.projectId === proj.id; })
+          .sort(function(a, b) { return (b.date || '').localeCompare(a.date || ''); });
+        if (projNotes.length) {
+          txt += '  NOTAS DO DIA\n';
+          projNotes.forEach(function(note) {
+            var scope = getScopeById(note.scopeId);
+            txt += '  [' + (note.date || '').slice(0, 10) + '] ' +
+              (note.type || 'geral').toUpperCase() +
+              (scope ? ' · ' + scope.title : '') + '\n';
+            txt += '  ' + (note.text || '') + '\n';
+          });
+          txt += '\n';
+        }
+      }
+
       var units = S.units.filter(function(u) { return u.projectId === proj.id; });
       units.forEach(function(unit) {
         txt += '  Unit #' + unit.unitNumber + ' - ' + (unit.bdBa || '') + '\n';
@@ -3249,7 +3511,7 @@ function renderReports(main) {
             txt += ' (' + (days < 0 ? 'Atrasado ' + Math.abs(days) : days) + ' dias)\n';
           } else txt += '\n';
         }
-        
+
         var scopes = S.scopes.filter(function(s) { return s.unitId === unit.id; })
           .sort(function(a, b) { return (a.order || 0) - (b.order || 0); });
         scopes.forEach(function(scope) {
@@ -3265,7 +3527,7 @@ function renderReports(main) {
     });
     return txt;
   };
-  
+
   var cpb = btn('btn bs bfull', '📋 Copiar Relatório', function() {
     var txt = genReport();
     if (navigator.clipboard) {
