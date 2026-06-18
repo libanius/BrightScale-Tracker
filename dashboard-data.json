@@ -285,11 +285,11 @@
       "scopeId": "08ea42c8-5212-4f70-82b6-f98e9e06495f",
       "title": "Drywall Repair & Finishing",
       "order": 1,
-      "progress": 70,
+      "progress": 100,
       "deadline": "",
-      "status": "in_progress",
+      "status": "completed",
       "createdAt": "2026-06-14T21:53:43.297Z",
-      "updatedAt": "2026-06-15T23:09:44.346Z"
+      "updatedAt": "2026-06-18T16:53:43.669Z"
     },
     {
       "id": "bc01ddd9-4f88-4a40-946c-a4ded7a4cc53",
@@ -443,5 +443,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-06-16T05:02:15.961Z"
+  "updatedAt": "2026-06-18T16:53:43.686Z"
 }
