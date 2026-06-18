@@ -219,11 +219,11 @@
       "scopeId": "77625b84-d9fd-4025-8034-13a39f91521f",
       "title": "Durock Installation",
       "order": 1,
-      "progress": 0,
+      "progress": 100,
       "deadline": "",
-      "status": "pending",
+      "status": "completed",
       "createdAt": "2026-06-14T22:16:11.948Z",
-      "updatedAt": "2026-06-14T22:17:09.614Z"
+      "updatedAt": "2026-06-18T21:06:13.555Z"
     },
     {
       "id": "6145df42-ee58-4406-b32f-554001b82cfa",
@@ -443,5 +443,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-06-18T21:00:16.126Z"
+  "updatedAt": "2026-06-18T21:06:13.582Z"
 }
