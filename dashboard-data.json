@@ -164,11 +164,11 @@
       "scopeId": "77625b84-d9fd-4025-8034-13a39f91521f",
       "title": "Shower Tile Installation",
       "order": 2,
-      "progress": 0,
+      "progress": 50,
       "deadline": "",
-      "status": "pending",
+      "status": "in_progress",
       "createdAt": "2026-06-14T22:16:24.705Z",
-      "updatedAt": "2026-06-14T22:17:13.434Z"
+      "updatedAt": "2026-06-18T21:06:22.407Z"
     },
     {
       "id": "42cf09cb-89b9-4943-bb97-3901276e4174",
@@ -443,5 +443,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-06-18T21:06:13.582Z"
+  "updatedAt": "2026-06-18T21:06:22.422Z"
 }
