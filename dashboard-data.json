@@ -421,6 +421,17 @@
   ],
   "notes": [
     {
+      "id": "a83095a2-4a83-4fb8-8cfd-139c4985be95",
+      "projectId": "3db2664f-4027-46db-970b-f7c354e37fad",
+      "scopeId": "77625b84-d9fd-4025-8034-13a39f91521f",
+      "type": "progress",
+      "text": "Madson já colocou todo durock, os tiles das 3 paredes. Amanhã segue com o chão",
+      "date": "2026-06-18",
+      "internalOnly": true,
+      "createdAt": "2026-06-18T21:19:53.342Z",
+      "updatedAt": "2026-06-18T21:19:53.342Z"
+    },
+    {
       "id": "7f341b40-5ef1-4e45-9d63-56adc7b27329",
       "projectId": "3db2664f-4027-46db-970b-f7c354e37fad",
       "scopeId": "",
@@ -443,5 +454,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-06-18T21:06:36.118Z"
+  "updatedAt": "2026-06-18T21:19:53.388Z"
 }
