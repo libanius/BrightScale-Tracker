@@ -2443,32 +2443,43 @@ function renderProjects(main) {
   main.appendChild(card);
 }
 
-function renderProjectNotes(main, proj) {
+function renderUnitNotes(main, unit, proj) {
+  var unitScopeIds = S.scopes
+    .filter(function(s) { return s.unitId === unit.id; })
+    .map(function(s) { return s.id; });
+
   var allNotes = S.notes.filter(function(n) {
-    return n.projectId === proj.id;
+    if (n.scopeId) return unitScopeIds.indexOf(n.scopeId) >= 0;
+    return n.projectId === unit.projectId;
   }).sort(function(a, b) {
     var ka = ((a.date || '').slice(0, 10)) + (a.createdAt || '');
     var kb = ((b.date || '').slice(0, 10)) + (b.createdAt || '');
     return kb.localeCompare(ka);
   });
 
-  var card = div('card');
+  var card = div('scope');
 
-  var cardHdr = div('note-card-hdr');
-  var titleBlock = div('');
-  titleBlock.appendChild(div('ct', 'Notas do Projeto'));
-  if (allNotes.length) {
-    var countEl = document.createElement('div');
-    countEl.style.cssText = 'font-size:11px;color:var(--mu);margin-top:-8px;margin-bottom:2px;';
-    countEl.textContent = allNotes.length + (allNotes.length === 1 ? ' nota' : ' notas') + ' no total';
-    titleBlock.appendChild(countEl);
-  }
-  cardHdr.appendChild(titleBlock);
+  var hdrDiv = div('scope-hdr');
+  var titleDiv = div('scope-title');
+  var arrow = el('span', 'scope-arrow', '▶');
+  titleDiv.appendChild(arrow);
+  titleDiv.appendChild(document.createTextNode('Notas'));
+  hdrDiv.appendChild(titleDiv);
+  var countBadge = div('scope-prog',
+    allNotes.length ? String(allNotes.length) : '0');
+  hdrDiv.appendChild(countBadge);
+  card.appendChild(hdrDiv);
 
-  var hdrActions = div('note-card-hdr-actions');
+  var body = div('scope-tasks');
+
+  var bodyInner = div('');
+  bodyInner.style.cssText = 'padding:12px 16px;';
+
+  var topRow = div('');
+  topRow.style.cssText = 'display:flex;gap:8px;margin-bottom:14px;';
   if (allNotes.length) {
-    hdrActions.appendChild(btn('btn bs bsm', '📋 Copiar', function() {
-      var txt = 'NOTAS — ' + proj.name + '\n';
+    topRow.appendChild(btn('btn bs bsm', '📋 Copiar', function() {
+      var txt = 'NOTAS — ' + (proj ? proj.name : '') + ' / Unit #' + unit.unitNumber + '\n';
       txt += 'Exportado em: ' + new Date().toLocaleString('pt-BR') + '\n\n';
       var byDate = {};
       var dates = [];
@@ -2480,9 +2491,9 @@ function renderProjectNotes(main, proj) {
       dates.forEach(function(d) {
         txt += (d === 'sem-data' ? 'Sem data' : fDate(d)) + '\n';
         byDate[d].forEach(function(n) {
-          var scope = getScopeById(n.scopeId);
+          var sc = getScopeById(n.scopeId);
           txt += (n.type || 'geral').toUpperCase();
-          if (scope) txt += ' · ' + scope.title;
+          if (sc) txt += ' · ' + sc.title;
           txt += '\n' + (n.text || '') + '\n\n';
         });
       });
@@ -2499,71 +2510,77 @@ function renderProjectNotes(main, proj) {
       }
     }));
   }
-  hdrActions.appendChild(btn('btn bp bsm', '+ Nova Nota', function() {
-    openDailyNoteForm(proj.id, null);
+  topRow.appendChild(btn('btn bp bsm', '+ Nova Nota', function() {
+    openDailyNoteForm(unit.projectId, null);
   }));
-  cardHdr.appendChild(hdrActions);
-  card.appendChild(cardHdr);
+  bodyInner.appendChild(topRow);
 
   if (!allNotes.length) {
-    card.appendChild(div('note-hist-empty', 'Nenhuma nota registrada ainda.'));
-    main.appendChild(card);
-    return;
+    var empty = div('');
+    empty.style.cssText = 'text-align:center;padding:16px 0;color:var(--mu);font-size:13px;';
+    empty.textContent = 'Nenhuma nota ainda.';
+    bodyInner.appendChild(empty);
+  } else {
+    var byDate = {};
+    var dates = [];
+    allNotes.forEach(function(n) {
+      var d = (n.date || '').slice(0, 10) || 'sem-data';
+      if (!byDate[d]) { byDate[d] = []; dates.push(d); }
+      byDate[d].push(n);
+    });
+
+    dates.forEach(function(d, di) {
+      var label = d === 'sem-data' ? 'Sem data' : fDate(d);
+      if (d === today()) label += ' — hoje';
+      var dateHdr = div('note-date-hdr', label);
+      if (di === 0) dateHdr.style.borderTop = 'none';
+      dateHdr.style.paddingTop = di === 0 ? '0' : '12px';
+      bodyInner.appendChild(dateHdr);
+
+      byDate[d].forEach(function(note) {
+        var sc = getScopeById(note.scopeId);
+        var ni = div('pnote-item');
+        var topLine = document.createElement('div');
+        topLine.style.cssText = 'display:flex;align-items:center;gap:6px;flex-wrap:wrap;';
+        topLine.appendChild(el('span', 'pnote-type', note.type || 'geral'));
+        if (sc) {
+          var scSpan = document.createElement('span');
+          scSpan.style.cssText = 'font-size:10px;color:var(--mu);';
+          scSpan.textContent = sc.title;
+          topLine.appendChild(scSpan);
+        }
+        ni.appendChild(topLine);
+        ni.appendChild(div('pnote-text', esc(note.text)));
+        var acts = div('pnote-actions');
+        acts.appendChild(btn('btn bs bsm', 'Editar', (function(n) { return function() {
+          openDailyNoteForm(n.projectId || '', n);
+        }; })(note)));
+        acts.appendChild(btn('btn br bsm', 'Excluir', (function(n) { return function() {
+          showConfirm({
+            title: 'Excluir nota',
+            msg: 'Excluir esta nota?',
+            yesL: 'Excluir',
+            onYes: function() {
+              dbDel('notes', n.id).then(reloadAndPublishDashboard).then(function() {
+                toast('Nota excluída');
+              });
+            }
+          });
+        }; })(note)));
+        ni.appendChild(acts);
+        bodyInner.appendChild(ni);
+      });
+    });
   }
 
-  var byDate = {};
-  var dates = [];
-  allNotes.forEach(function(n) {
-    var d = (n.date || '').slice(0, 10) || 'sem-data';
-    if (!byDate[d]) { byDate[d] = []; dates.push(d); }
-    byDate[d].push(n);
-  });
+  body.appendChild(bodyInner);
+  card.appendChild(body);
 
-  dates.forEach(function(d, di) {
-    var isToday = d === today();
-    var label = d === 'sem-data' ? 'Sem data' : fDate(d);
-    if (isToday) label += ' — hoje';
-
-    var dateHdr = div('note-date-hdr', label);
-    if (di === 0) dateHdr.style.borderTop = 'none';
-    card.appendChild(dateHdr);
-
-    byDate[d].forEach(function(note) {
-      var scope = getScopeById(note.scopeId);
-      var ni = div('pnote-item');
-
-      var topLine = document.createElement('div');
-      topLine.style.cssText = 'display:flex;align-items:center;gap:6px;flex-wrap:wrap;';
-      topLine.appendChild(el('span', 'pnote-type', note.type || 'geral'));
-      if (scope) {
-        var scopeSpan = document.createElement('span');
-        scopeSpan.style.cssText = 'font-size:10px;color:var(--mu);';
-        scopeSpan.textContent = scope.title;
-        topLine.appendChild(scopeSpan);
-      }
-      ni.appendChild(topLine);
-      ni.appendChild(div('pnote-text', esc(note.text)));
-
-      var acts = div('pnote-actions');
-      acts.appendChild(btn('btn bs bsm', 'Editar', (function(n) { return function() {
-        openDailyNoteForm(n.projectId || '', n);
-      }; })(note)));
-      acts.appendChild(btn('btn br bsm', 'Excluir', (function(n) { return function() {
-        showConfirm({
-          title: 'Excluir nota',
-          msg: 'Excluir esta nota?',
-          yesL: 'Excluir',
-          onYes: function() {
-            dbDel('notes', n.id).then(reloadAndPublishDashboard).then(function() {
-              toast('Nota excluída');
-            });
-          }
-        });
-      }; })(note)));
-      ni.appendChild(acts);
-      card.appendChild(ni);
-    });
-  });
+  hdrDiv.onclick = function() {
+    var open = body.classList.contains('open');
+    body.classList.toggle('open', !open);
+    arrow.classList.toggle('open', !open);
+  };
 
   main.appendChild(card);
 }
@@ -2612,8 +2629,6 @@ function renderProjectDetail(main) {
     openProjectFinance(proj.id);
   }));
   main.appendChild(financeCard);
-
-  renderProjectNotes(main, proj);
 
   var documentUnits = units.filter(function(unit) { return !!unit.documentId; });
   if (proj.contractSummary || proj.documentId || documentUnits.length) {
@@ -2750,7 +2765,9 @@ function renderUnitDetail(main) {
   editBtn.style.marginTop = '12px';
   infoCard.appendChild(editBtn);
   main.appendChild(infoCard);
-  
+
+  renderUnitNotes(main, unit, proj);
+
   var scopes = S.scopes.filter(function(s) { return s.unitId === unit.id; })
     .sort(function(a, b) { return (a.order || 0) - (b.order || 0); });
   
