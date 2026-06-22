@@ -329,11 +329,11 @@
       "scopeId": "77625b84-d9fd-4025-8034-13a39f91521f",
       "title": "Marble curb Installation",
       "order": 4,
-      "progress": 50,
+      "progress": 100,
       "deadline": "",
-      "status": "in_progress",
+      "status": "completed",
       "createdAt": "2026-06-14T22:16:54.768Z",
-      "updatedAt": "2026-06-18T21:06:36.107Z"
+      "updatedAt": "2026-06-22T14:36:00.090Z"
     },
     {
       "id": "e35abc7b-c674-4570-a643-eae59b93645d",
@@ -454,5 +454,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-06-22T14:35:54.282Z"
+  "updatedAt": "2026-06-22T14:36:00.103Z"
 }
