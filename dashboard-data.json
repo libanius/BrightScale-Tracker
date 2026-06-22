@@ -230,11 +230,11 @@
       "scopeId": "6285ebea-8eac-49b2-bd9e-43f4cb0e7b06",
       "title": "Shower Trim Instalattion",
       "order": 3,
-      "progress": 0,
+      "progress": 100,
       "deadline": "2026-06-21",
-      "status": "pending",
+      "status": "completed",
       "createdAt": "2026-06-14T21:53:43.297Z",
-      "updatedAt": "2026-06-14T22:13:48.228Z"
+      "updatedAt": "2026-06-22T14:35:29.544Z"
     },
     {
       "id": "657c8e3b-e219-4421-b537-cda97297811d",
@@ -454,5 +454,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-06-18T21:19:53.388Z"
+  "updatedAt": "2026-06-22T14:35:29.572Z"
 }
