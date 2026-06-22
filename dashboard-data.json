@@ -274,11 +274,11 @@
       "scopeId": "77625b84-d9fd-4025-8034-13a39f91521f",
       "title": "Tile Flooring Installation",
       "order": 3,
-      "progress": 0,
+      "progress": 100,
       "deadline": "",
-      "status": "pending",
+      "status": "completed",
       "createdAt": "2026-06-14T22:16:37.050Z",
-      "updatedAt": "2026-06-14T22:17:16.048Z"
+      "updatedAt": "2026-06-22T14:35:47.122Z"
     },
     {
       "id": "945a278f-bb8d-4277-8d93-d1b185f94290",
@@ -454,5 +454,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-06-22T14:35:42.186Z"
+  "updatedAt": "2026-06-22T14:35:47.131Z"
 }
