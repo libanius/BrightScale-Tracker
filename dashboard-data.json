@@ -340,11 +340,11 @@
       "scopeId": "91f5386e-a6b8-46ad-9d0a-52afbb9bee28",
       "title": "Replace weather seals on double garage door",
       "order": 3,
-      "progress": 0,
+      "progress": 100,
       "deadline": "",
-      "status": "pending",
+      "status": "completed",
       "createdAt": "2026-06-15T02:37:56.235Z",
-      "updatedAt": "2026-06-15T02:37:56.235Z"
+      "updatedAt": "2026-07-11T16:54:07.903Z"
     },
     {
       "id": "f02fab30-7bbb-40a0-ae80-dbbc9bc14267",
@@ -454,5 +454,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-11T16:54:01.898Z"
+  "updatedAt": "2026-07-11T16:54:07.917Z"
 }
