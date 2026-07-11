@@ -138,15 +138,6 @@
       "updatedAt": "2026-07-11T17:03:11.194Z"
     },
     {
-      "id": "54846343-7ecf-451b-b493-d6b27f379726",
-      "unitId": "6603538e-b6ea-4ade-8734-3d796a9d10fc",
-      "title": "Electrical",
-      "order": 12,
-      "weight": 0.1,
-      "createdAt": "2026-07-11T17:03:12.309Z",
-      "updatedAt": "2026-07-11T17:03:12.309Z"
-    },
-    {
       "id": "6172d778-9b60-4f78-97de-68f5bb8b5209",
       "unitId": "6603538e-b6ea-4ade-8734-3d796a9d10fc",
       "title": "Hot and Cold Water Rough-In",
@@ -618,16 +609,6 @@
       "status": "pending",
       "createdAt": "2026-07-11T17:18:43.643Z",
       "updatedAt": "2026-07-11T17:18:43.643Z"
-    },
-    {
-      "id": "553de532-a0da-46e1-a08d-3df4b9e06d81",
-      "scopeId": "54846343-7ecf-451b-b493-d6b27f379726",
-      "title": "Bathroom Electrical",
-      "order": 2,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:12.309Z",
-      "updatedAt": "2026-07-11T17:03:12.309Z"
     },
     {
       "id": "555f4639-3138-4a1e-8456-dae5597b8378",
@@ -1215,16 +1196,6 @@
       "updatedAt": "2026-07-11T17:03:11.194Z"
     },
     {
-      "id": "ee96dade-5dc3-4144-9210-42380ee8d105",
-      "scopeId": "54846343-7ecf-451b-b493-d6b27f379726",
-      "title": "Kitchen Electrical",
-      "order": 1,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:12.309Z",
-      "updatedAt": "2026-07-11T17:03:12.309Z"
-    },
-    {
       "id": "f02fab30-7bbb-40a0-ae80-dbbc9bc14267",
       "scopeId": "77625b84-d9fd-4025-8034-13a39f91521f",
       "title": "Grout",
@@ -1383,5 +1354,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-11T17:18:43.668Z"
+  "updatedAt": "2026-07-11T17:18:54.839Z"
 }
