@@ -445,6 +445,17 @@
       "date": "2026-06-16",
       "createdAt": "2026-06-16T04:26:07.722Z",
       "updatedAt": "2026-06-16T04:26:07.722Z"
+    },
+    {
+      "id": "ee62ef9f-bac6-4009-b671-03930626662f",
+      "projectId": "cb065def-bb30-48e2-9b5a-281ee03caa21",
+      "type": "material",
+      "description": "Aluguel Serra",
+      "vendor": "Home Depot",
+      "amount": 150,
+      "date": "2026-07-10",
+      "createdAt": "2026-07-11T17:02:28.510Z",
+      "updatedAt": "2026-07-11T17:02:28.510Z"
     }
   ],
   "people": [
@@ -511,5 +522,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-11T17:00:47.441Z"
+  "updatedAt": "2026-07-11T17:02:28.534Z"
 }
