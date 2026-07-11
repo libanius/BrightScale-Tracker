@@ -175,11 +175,11 @@
       "scopeId": "ad164760-5e83-47c0-9222-f4e751c20168",
       "title": "Mirror Installation",
       "order": 2,
-      "progress": 0,
+      "progress": 100,
       "deadline": "",
-      "status": "pending",
+      "status": "completed",
       "createdAt": "2026-06-15T04:25:07.310Z",
-      "updatedAt": "2026-06-15T04:25:07.310Z"
+      "updatedAt": "2026-07-11T16:55:07.500Z"
     },
     {
       "id": "58c6ecad-abba-4349-936a-f1b31b90be29",
@@ -454,5 +454,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-11T16:55:02.379Z"
+  "updatedAt": "2026-07-11T16:55:07.511Z"
 }
