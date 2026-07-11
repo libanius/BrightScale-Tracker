@@ -147,6 +147,15 @@
       "updatedAt": "2026-07-11T17:03:12.309Z"
     },
     {
+      "id": "6172d778-9b60-4f78-97de-68f5bb8b5209",
+      "unitId": "6603538e-b6ea-4ade-8734-3d796a9d10fc",
+      "title": "Hot and Cold Water Rough-In",
+      "order": 15,
+      "weight": 0.25,
+      "createdAt": "2026-07-11T17:18:43.643Z",
+      "updatedAt": "2026-07-11T17:18:43.643Z"
+    },
+    {
       "id": "6285ebea-8eac-49b2-bd9e-43f4cb0e7b06",
       "unitId": "7cdd0873-9d3f-4c3c-8212-cc853f2db2af",
       "title": "Plumbing",
@@ -167,6 +176,15 @@
       "weight": 0.25,
       "createdAt": "2026-07-11T17:03:12.309Z",
       "updatedAt": "2026-07-11T17:03:12.309Z"
+    },
+    {
+      "id": "7112985e-df84-4686-98c8-7d5d5dc4cde9",
+      "unitId": "6603538e-b6ea-4ade-8734-3d796a9d10fc",
+      "title": "Demolition and Floor Access",
+      "order": 14,
+      "weight": 0.2,
+      "createdAt": "2026-07-11T17:18:43.643Z",
+      "updatedAt": "2026-07-11T17:18:43.643Z"
     },
     {
       "id": "77625b84-d9fd-4025-8034-13a39f91521f",
@@ -244,6 +262,15 @@
       "updatedAt": "2026-07-11T17:03:11.194Z"
     },
     {
+      "id": "c2c33b37-bfa3-4037-b3ca-c83d9f2d5d2c",
+      "unitId": "6603538e-b6ea-4ade-8734-3d796a9d10fc",
+      "title": "Drainage Rough-In",
+      "order": 16,
+      "weight": 0.25,
+      "createdAt": "2026-07-11T17:18:43.643Z",
+      "updatedAt": "2026-07-11T17:18:43.643Z"
+    },
+    {
       "id": "ce2f26b2-e92e-439c-b97d-3414cac19ac5",
       "unitId": "6603538e-b6ea-4ade-8734-3d796a9d10fc",
       "title": "Assemblers",
@@ -271,6 +298,24 @@
       "updatedAt": "2026-07-11T17:03:12.309Z"
     },
     {
+      "id": "f1c4b98b-516c-4af2-85b0-7e72881d2e8a",
+      "unitId": "6603538e-b6ea-4ade-8734-3d796a9d10fc",
+      "title": "Testing and Final Plumbing Verification",
+      "order": 18,
+      "weight": 0.1,
+      "createdAt": "2026-07-11T17:18:43.643Z",
+      "updatedAt": "2026-07-11T17:18:43.643Z"
+    },
+    {
+      "id": "f6a2caf3-4bbc-4bea-b77f-ec2c2a51a1c8",
+      "unitId": "6603538e-b6ea-4ade-8734-3d796a9d10fc",
+      "title": "Fixture Installation and Connections",
+      "order": 17,
+      "weight": 0.2,
+      "createdAt": "2026-07-11T17:18:43.643Z",
+      "updatedAt": "2026-07-11T17:18:43.643Z"
+    },
+    {
       "id": "fe09f0f5-445a-4dfe-9d14-bbb92cc5f5b2",
       "unitId": "7cdd0873-9d3f-4c3c-8212-cc853f2db2af",
       "title": "Vanity and Glass Door",
@@ -290,6 +335,26 @@
       "status": "pending",
       "createdAt": "2026-07-11T17:03:12.309Z",
       "updatedAt": "2026-07-11T17:03:12.309Z"
+    },
+    {
+      "id": "01f8a489-40ce-461b-b075-f79d60a23e7c",
+      "scopeId": "c2c33b37-bfa3-4037-b3ca-c83d9f2d5d2c",
+      "title": "Install the new PVC Schedule 40 drain line for the bidet",
+      "order": 1,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:18:43.643Z",
+      "updatedAt": "2026-07-11T17:18:43.643Z"
+    },
+    {
+      "id": "062007f5-e8f6-4982-8b5b-3dd4422e5d67",
+      "scopeId": "f6a2caf3-4bbc-4bea-b77f-ec2c2a51a1c8",
+      "title": "Install and connect the client-provided bidet fixture",
+      "order": 3,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:18:43.643Z",
+      "updatedAt": "2026-07-11T17:18:43.643Z"
     },
     {
       "id": "066d2b41-65ca-42ec-8167-8ec95880051d",
@@ -323,6 +388,56 @@
       "updatedAt": "2026-06-15T23:07:58.418Z"
     },
     {
+      "id": "093ea579-9acc-46d4-80f4-95c5b67f4065",
+      "scopeId": "6172d778-9b60-4f78-97de-68f5bb8b5209",
+      "title": "Relocate and refabricate the hot and cold water lines for the freestanding tub",
+      "order": 2,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:18:43.643Z",
+      "updatedAt": "2026-07-11T17:18:43.643Z"
+    },
+    {
+      "id": "0e6bb400-2085-46fd-9a51-e75a30ca1390",
+      "scopeId": "6172d778-9b60-4f78-97de-68f5bb8b5209",
+      "title": "Install the hot and cold water rough-in for the shower",
+      "order": 3,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:18:43.643Z",
+      "updatedAt": "2026-07-11T17:18:43.643Z"
+    },
+    {
+      "id": "0e725343-3eeb-4ed7-8575-880bb5ae3481",
+      "scopeId": "f1c4b98b-516c-4af2-85b0-7e72881d2e8a",
+      "title": "Correct any leaks or connection issues identified during testing",
+      "order": 3,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:18:43.643Z",
+      "updatedAt": "2026-07-11T17:18:43.643Z"
+    },
+    {
+      "id": "0e8dfb3c-bc2b-4823-b5a3-dd8a053fca90",
+      "scopeId": "6172d778-9b60-4f78-97de-68f5bb8b5209",
+      "title": "Install new Type L copper hot and cold water supply lines for the bidet",
+      "order": 1,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:18:43.643Z",
+      "updatedAt": "2026-07-11T17:18:43.643Z"
+    },
+    {
+      "id": "0ec4bd2c-9541-4806-a004-6b48712526fd",
+      "scopeId": "c2c33b37-bfa3-4037-b3ca-c83d9f2d5d2c",
+      "title": "Install the new PVC drain for the freestanding bathtub",
+      "order": 3,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:18:43.643Z",
+      "updatedAt": "2026-07-11T17:18:43.643Z"
+    },
+    {
       "id": "1446c30a-eac8-48c9-9761-2ce886acf041",
       "scopeId": "141bff4e-82c3-4755-93e6-e8b31e18b57f",
       "title": "Install Mosaic",
@@ -353,6 +468,26 @@
       "updatedAt": "2026-07-11T17:03:11.194Z"
     },
     {
+      "id": "1e1e3518-dc34-4156-9923-d1120b8a2e20",
+      "scopeId": "f6a2caf3-4bbc-4bea-b77f-ec2c2a51a1c8",
+      "title": "Mount and connect the client-provided freestanding bathtub faucet",
+      "order": 1,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:18:43.643Z",
+      "updatedAt": "2026-07-11T17:18:43.643Z"
+    },
+    {
+      "id": "1f908f9a-c9f0-4a1f-9a6c-f46cd194db83",
+      "scopeId": "7112985e-df84-4686-98c8-7d5d5dc4cde9",
+      "title": "Protect adjacent finished areas and establish the work zone",
+      "order": 1,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:18:43.643Z",
+      "updatedAt": "2026-07-11T17:18:43.643Z"
+    },
+    {
       "id": "1fa5f32f-696e-4ebf-bd3f-4d70113cb09a",
       "scopeId": "87335e82-847a-49f5-84fb-c831ed16c876",
       "title": "Drywall Patch",
@@ -361,6 +496,16 @@
       "status": "pending",
       "createdAt": "2026-07-11T17:03:11.194Z",
       "updatedAt": "2026-07-11T17:03:11.194Z"
+    },
+    {
+      "id": "22e0759e-a737-4d82-94e2-365562043c19",
+      "scopeId": "c2c33b37-bfa3-4037-b3ca-c83d9f2d5d2c",
+      "title": "Install the new shower drain assembly at the specified location",
+      "order": 4,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:18:43.643Z",
+      "updatedAt": "2026-07-11T17:18:43.643Z"
     },
     {
       "id": "24988086-df02-44f6-9161-bea67b0afda6",
@@ -404,6 +549,16 @@
       "updatedAt": "2026-07-11T17:03:11.194Z"
     },
     {
+      "id": "3613e93b-af7e-46ef-9e98-e3bde8aa7f19",
+      "scopeId": "f6a2caf3-4bbc-4bea-b77f-ec2c2a51a1c8",
+      "title": "Install and connect the new toilet",
+      "order": 4,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:18:43.643Z",
+      "updatedAt": "2026-07-11T17:18:43.643Z"
+    },
+    {
       "id": "364fa4e2-637e-4612-b279-4b8242ef9bc4",
       "scopeId": "141bff4e-82c3-4755-93e6-e8b31e18b57f",
       "title": "Grout Flooring",
@@ -412,6 +567,16 @@
       "status": "pending",
       "createdAt": "2026-07-11T17:03:12.309Z",
       "updatedAt": "2026-07-11T17:03:12.309Z"
+    },
+    {
+      "id": "40de92ef-e97e-436a-8f25-eeeaeb2e5ad5",
+      "scopeId": "7112985e-df84-4686-98c8-7d5d5dc4cde9",
+      "title": "Mark the designated floor access locations for the bidet, freestanding tub, and shower",
+      "order": 2,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:18:43.643Z",
+      "updatedAt": "2026-07-11T17:18:43.643Z"
     },
     {
       "id": "42cf09cb-89b9-4943-bb97-3901276e4174",
@@ -435,6 +600,26 @@
       "updatedAt": "2026-07-11T17:03:11.194Z"
     },
     {
+      "id": "4b1b1ace-14a0-4c7f-8de7-7010247d0053",
+      "scopeId": "f6a2caf3-4bbc-4bea-b77f-ec2c2a51a1c8",
+      "title": "Connect the client-provided freestanding bathtub drain",
+      "order": 2,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:18:43.643Z",
+      "updatedAt": "2026-07-11T17:18:43.643Z"
+    },
+    {
+      "id": "4ea357b8-ea5c-4440-b640-ad8c898d0e79",
+      "scopeId": "f1c4b98b-516c-4af2-85b0-7e72881d2e8a",
+      "title": "Perform a pressure test on all new copper water supply lines",
+      "order": 1,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:18:43.643Z",
+      "updatedAt": "2026-07-11T17:18:43.643Z"
+    },
+    {
       "id": "553de532-a0da-46e1-a08d-3df4b9e06d81",
       "scopeId": "54846343-7ecf-451b-b493-d6b27f379726",
       "title": "Bathroom Electrical",
@@ -443,6 +628,16 @@
       "status": "pending",
       "createdAt": "2026-07-11T17:03:12.309Z",
       "updatedAt": "2026-07-11T17:03:12.309Z"
+    },
+    {
+      "id": "555f4639-3138-4a1e-8456-dae5597b8378",
+      "scopeId": "7112985e-df84-4686-98c8-7d5d5dc4cde9",
+      "title": "Locate and clear the area around the existing main drain connection",
+      "order": 5,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:18:43.643Z",
+      "updatedAt": "2026-07-11T17:18:43.643Z"
     },
     {
       "id": "56f42697-6cfc-40b3-94df-c07d07b7bb2b",
@@ -622,6 +817,46 @@
       "updatedAt": "2026-07-11T17:03:12.309Z"
     },
     {
+      "id": "7a9b59b0-ecf0-4541-867f-f3e694a32ef8",
+      "scopeId": "6172d778-9b60-4f78-97de-68f5bb8b5209",
+      "title": "Install the new shower mixing valve at the specified location",
+      "order": 4,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:18:43.643Z",
+      "updatedAt": "2026-07-11T17:18:43.643Z"
+    },
+    {
+      "id": "7efd5cc6-5cdb-4ede-a426-d5315528af6c",
+      "scopeId": "6172d778-9b60-4f78-97de-68f5bb8b5209",
+      "title": "Secure all new copper piping with appropriate hangers and straps",
+      "order": 5,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:18:43.643Z",
+      "updatedAt": "2026-07-11T17:18:43.643Z"
+    },
+    {
+      "id": "80d1bdcd-2a4e-4411-9ec9-70ab49c55ac7",
+      "scopeId": "c2c33b37-bfa3-4037-b3ca-c83d9f2d5d2c",
+      "title": "Secure all new drainage piping with appropriate supports",
+      "order": 6,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:18:43.643Z",
+      "updatedAt": "2026-07-11T17:18:43.643Z"
+    },
+    {
+      "id": "81eb5e00-b90a-4b7f-b47e-93fc11851491",
+      "scopeId": "c2c33b37-bfa3-4037-b3ca-c83d9f2d5d2c",
+      "title": "Connect the bidet drain to the exposed existing main drain",
+      "order": 2,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:18:43.643Z",
+      "updatedAt": "2026-07-11T17:18:43.643Z"
+    },
+    {
       "id": "860d0e31-d31f-4d22-9f88-a9cc35ab8ebc",
       "scopeId": "6285ebea-8eac-49b2-bd9e-43f4cb0e7b06",
       "title": "Shower Pan Drain",
@@ -705,6 +940,16 @@
       "updatedAt": "2026-07-11T17:03:12.309Z"
     },
     {
+      "id": "9dea0c9d-4605-48cc-89b9-6e8829b497bd",
+      "scopeId": "7112985e-df84-4686-98c8-7d5d5dc4cde9",
+      "title": "Expose the existing drainage system and copper water supply lines",
+      "order": 4,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:18:43.643Z",
+      "updatedAt": "2026-07-11T17:18:43.643Z"
+    },
+    {
       "id": "a2c8a6f7-b12a-4a91-9432-e03cfcd1fb03",
       "scopeId": "87335e82-847a-49f5-84fb-c831ed16c876",
       "title": "Sanding",
@@ -713,6 +958,16 @@
       "status": "pending",
       "createdAt": "2026-07-11T17:03:11.194Z",
       "updatedAt": "2026-07-11T17:03:11.194Z"
+    },
+    {
+      "id": "a52eca40-e2b6-41ae-9edc-e8215436ae54",
+      "scopeId": "c2c33b37-bfa3-4037-b3ca-c83d9f2d5d2c",
+      "title": "Install two new P-traps for the vanity",
+      "order": 5,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:18:43.643Z",
+      "updatedAt": "2026-07-11T17:18:43.643Z"
     },
     {
       "id": "a7057642-dab3-4226-b9fa-c7c56c5fc257",
@@ -743,6 +998,26 @@
       "status": "pending",
       "createdAt": "2026-07-11T17:03:12.309Z",
       "updatedAt": "2026-07-11T17:03:12.309Z"
+    },
+    {
+      "id": "aba2e820-298e-4bb2-b63b-58581ea213b4",
+      "scopeId": "f6a2caf3-4bbc-4bea-b77f-ec2c2a51a1c8",
+      "title": "Verify fixture alignment and connection integrity",
+      "order": 5,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:18:43.643Z",
+      "updatedAt": "2026-07-11T17:18:43.643Z"
+    },
+    {
+      "id": "b2dad991-a4cd-48fd-b502-0c1146e664ed",
+      "scopeId": "f1c4b98b-516c-4af2-85b0-7e72881d2e8a",
+      "title": "Complete final jobsite cleanup for the plumbing scope",
+      "order": 5,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:18:43.643Z",
+      "updatedAt": "2026-07-11T17:18:43.643Z"
     },
     {
       "id": "b9a5f0ce-9f9b-4cf0-aacf-cffdc5cc7984",
@@ -797,6 +1072,16 @@
       "updatedAt": "2026-07-11T17:03:12.309Z"
     },
     {
+      "id": "bf6ac012-167a-4a76-a652-c9613e0e90b9",
+      "scopeId": "7112985e-df84-4686-98c8-7d5d5dc4cde9",
+      "title": "Remove demolition debris and leave the work area ready for plumbing installation",
+      "order": 6,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:18:43.643Z",
+      "updatedAt": "2026-07-11T17:18:43.643Z"
+    },
+    {
       "id": "bfbb773c-5dd4-4072-9719-7f46dffd79f3",
       "scopeId": "6550961a-e2f2-4bad-bb81-9b2d292faa1f",
       "title": "Paint Walls",
@@ -805,6 +1090,16 @@
       "status": "pending",
       "createdAt": "2026-07-11T17:03:12.309Z",
       "updatedAt": "2026-07-11T17:03:12.309Z"
+    },
+    {
+      "id": "cc539696-633c-420a-b340-43ab3353326d",
+      "scopeId": "f1c4b98b-516c-4af2-85b0-7e72881d2e8a",
+      "title": "Perform a leak test on all new PVC drainage connections",
+      "order": 2,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:18:43.643Z",
+      "updatedAt": "2026-07-11T17:18:43.643Z"
     },
     {
       "id": "d3d654f8-7fc2-4151-934c-a9c409de5f15",
@@ -836,6 +1131,16 @@
       "status": "pending",
       "createdAt": "2026-07-11T17:03:12.309Z",
       "updatedAt": "2026-07-11T17:03:12.309Z"
+    },
+    {
+      "id": "e1a095f9-e8cd-498b-981e-3f6ea2eb827a",
+      "scopeId": "7112985e-df84-4686-98c8-7d5d5dc4cde9",
+      "title": "Cut and remove the required floor sections to access the plumbing",
+      "order": 3,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:18:43.643Z",
+      "updatedAt": "2026-07-11T17:18:43.643Z"
     },
     {
       "id": "e1d04ba0-59ed-424d-aed7-e95e0e1cde19",
@@ -949,6 +1254,16 @@
       "status": "pending",
       "createdAt": "2026-07-11T17:03:11.194Z",
       "updatedAt": "2026-07-11T17:03:11.194Z"
+    },
+    {
+      "id": "fc9d21bf-a04e-4ae4-a4c6-deb15408b4f7",
+      "scopeId": "f1c4b98b-516c-4af2-85b0-7e72881d2e8a",
+      "title": "Verify that all piping is properly secured and ready for the next construction phase",
+      "order": 4,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:18:43.643Z",
+      "updatedAt": "2026-07-11T17:18:43.643Z"
     },
     {
       "id": "ff69bf4e-2e6b-4c06-97f8-bfb69637e327",
@@ -1068,5 +1383,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-11T17:07:24.543Z"
+  "updatedAt": "2026-07-11T17:18:43.668Z"
 }
