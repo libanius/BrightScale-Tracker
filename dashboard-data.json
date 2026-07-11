@@ -55,11 +55,8 @@
       "unitNumber": "5854",
       "bdBa": "",
       "invoice": "Estimate-e21eddd8-f580-4a66-ba3a-8b6c7ceee149-1783789117865.pdf",
-      "estimateTotal": 0,
-      "contractSummary": "Documento \"Estimate-e21eddd8-f580-4a66-ba3a-8b6c7ceee149-1783789117865.pdf.pdf\" analisado com 1 scope(s): Contract Scope.",
-      "documentId": "e4a4048c-e60c-4f9b-9e11-a82007154416",
       "startDate": "2026-07-11",
-      "deadline": "",
+      "deadline": "2026-07-13",
       "supervisors": {
         "demo": "",
         "painter": "",
@@ -67,7 +64,7 @@
         "assembler": ""
       },
       "createdAt": "2026-07-11T17:00:47.419Z",
-      "updatedAt": "2026-07-11T17:00:47.419Z"
+      "updatedAt": "2026-07-11T17:03:02.290Z"
     },
     {
       "id": "7cdd0873-9d3f-4c3c-8212-cc853f2db2af",
@@ -522,5 +519,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-11T17:02:28.534Z"
+  "updatedAt": "2026-07-11T17:03:02.297Z"
 }
