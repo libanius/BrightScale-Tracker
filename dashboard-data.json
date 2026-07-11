@@ -197,11 +197,11 @@
       "scopeId": "08ea42c8-5212-4f70-82b6-f98e9e06495f",
       "title": "Texture",
       "order": 3,
-      "progress": 5,
+      "progress": 100,
       "deadline": "",
-      "status": "in_progress",
+      "status": "completed",
       "createdAt": "2026-06-15T23:09:59.956Z",
-      "updatedAt": "2026-06-16T04:10:09.624Z"
+      "updatedAt": "2026-07-11T16:54:52.469Z"
     },
     {
       "id": "5a24dd2d-623f-476e-829e-96284f07d470",
@@ -454,5 +454,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-11T16:54:45.298Z"
+  "updatedAt": "2026-07-11T16:54:52.479Z"
 }
