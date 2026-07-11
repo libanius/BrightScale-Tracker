@@ -208,15 +208,6 @@
       "updatedAt": "2026-07-11T17:18:43.643Z"
     },
     {
-      "id": "d45b4271-ca06-4ef0-bda8-cd897240db57",
-      "unitId": "6603538e-b6ea-4ade-8734-3d796a9d10fc",
-      "title": "Assemblers",
-      "order": 11,
-      "weight": 0.2,
-      "createdAt": "2026-07-11T17:03:12.309Z",
-      "updatedAt": "2026-07-11T17:03:12.309Z"
-    },
-    {
       "id": "f1c4b98b-516c-4af2-85b0-7e72881d2e8a",
       "unitId": "6603538e-b6ea-4ade-8734-3d796a9d10fc",
       "title": "Testing and Final Plumbing Verification",
@@ -264,16 +255,6 @@
       "status": "pending",
       "createdAt": "2026-07-11T17:18:43.643Z",
       "updatedAt": "2026-07-11T17:18:43.643Z"
-    },
-    {
-      "id": "089f823a-8cfd-4955-9ae2-9569c0e5499d",
-      "scopeId": "d45b4271-ca06-4ef0-bda8-cd897240db57",
-      "title": "Install Fixtures",
-      "order": 4,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:12.309Z",
-      "updatedAt": "2026-07-11T17:03:12.309Z"
     },
     {
       "id": "08f83eca-040e-4968-b5dc-d47a3db03112",
@@ -376,16 +357,6 @@
       "status": "completed",
       "createdAt": "2026-06-14T22:16:24.705Z",
       "updatedAt": "2026-06-22T14:35:42.171Z"
-    },
-    {
-      "id": "2c57b14d-8c06-4545-b465-0f992380f5c5",
-      "scopeId": "d45b4271-ca06-4ef0-bda8-cd897240db57",
-      "title": "Install Thermostat",
-      "order": 5,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:12.309Z",
-      "updatedAt": "2026-07-11T17:03:12.309Z"
     },
     {
       "id": "3613e93b-af7e-46ef-9e98-e3bde8aa7f19",
@@ -577,16 +548,6 @@
       "updatedAt": "2026-06-15T23:08:05.220Z"
     },
     {
-      "id": "865cdc22-c26c-41e8-b9c4-af7906a73955",
-      "scopeId": "d45b4271-ca06-4ef0-bda8-cd897240db57",
-      "title": "Install Ceiling Fan",
-      "order": 3,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:12.309Z",
-      "updatedAt": "2026-07-11T17:03:12.309Z"
-    },
-    {
       "id": "8f6ea882-0503-48f8-9259-0f5e8ea83e14",
       "scopeId": "77625b84-d9fd-4025-8034-13a39f91521f",
       "title": "Tile Flooring Installation",
@@ -607,16 +568,6 @@
       "status": "completed",
       "createdAt": "2026-06-14T21:53:43.297Z",
       "updatedAt": "2026-06-18T16:53:43.669Z"
-    },
-    {
-      "id": "97313d2a-f530-42c8-8594-dcfd367f8339",
-      "scopeId": "d45b4271-ca06-4ef0-bda8-cd897240db57",
-      "title": "Install Pedestal Sink",
-      "order": 2,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:12.309Z",
-      "updatedAt": "2026-07-11T17:03:12.309Z"
     },
     {
       "id": "9dea0c9d-4605-48cc-89b9-6e8829b497bd",
@@ -642,16 +593,6 @@
       "id": "a7bad5ef-6ed5-4184-a044-8255b74b86e4",
       "scopeId": "a867ba3f-6140-4858-91e3-fcf705fc3991",
       "title": "Punch List",
-      "order": 1,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:12.309Z",
-      "updatedAt": "2026-07-11T17:03:12.309Z"
-    },
-    {
-      "id": "a85b2db0-882d-4a25-93d7-69ec67425b6e",
-      "scopeId": "d45b4271-ca06-4ef0-bda8-cd897240db57",
-      "title": "Install Plates",
       "order": 1,
       "progress": 0,
       "status": "pending",
@@ -902,5 +843,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-11T17:19:15.428Z"
+  "updatedAt": "2026-07-11T17:19:18.164Z"
 }
