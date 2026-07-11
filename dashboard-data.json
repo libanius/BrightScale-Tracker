@@ -208,11 +208,11 @@
       "scopeId": "fe09f0f5-445a-4dfe-9d14-bbb92cc5f5b2",
       "title": "Vanity Installation",
       "order": 1,
-      "progress": 0,
+      "progress": 100,
       "deadline": "2026-06-21",
-      "status": "pending",
+      "status": "completed",
       "createdAt": "2026-06-14T21:53:43.297Z",
-      "updatedAt": "2026-06-14T22:14:53.871Z"
+      "updatedAt": "2026-07-11T16:55:17.584Z"
     },
     {
       "id": "5f957ea6-cd6a-4afb-9c13-3ab0d431cded",
@@ -454,5 +454,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-11T16:55:07.511Z"
+  "updatedAt": "2026-07-11T16:55:17.595Z"
 }
