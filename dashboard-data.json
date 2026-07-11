@@ -307,11 +307,11 @@
       "scopeId": "91f5386e-a6b8-46ad-9d0a-52afbb9bee28",
       "title": "Install approximately 16 LF of baseboard",
       "order": 4,
-      "progress": 0,
+      "progress": 100,
       "deadline": "",
-      "status": "pending",
+      "status": "completed",
       "createdAt": "2026-06-15T02:37:56.235Z",
-      "updatedAt": "2026-06-15T02:37:56.235Z"
+      "updatedAt": "2026-07-11T16:54:14.503Z"
     },
     {
       "id": "d76d8ec3-47de-409a-80da-73a83138eef0",
@@ -454,5 +454,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-11T16:54:07.917Z"
+  "updatedAt": "2026-07-11T16:54:14.517Z"
 }
