@@ -129,15 +129,6 @@
       "updatedAt": "2026-07-11T17:03:12.309Z"
     },
     {
-      "id": "32bd3d20-69f9-4b2d-8be0-a53369b36327",
-      "unitId": "6603538e-b6ea-4ade-8734-3d796a9d10fc",
-      "title": "Demolition",
-      "order": 2,
-      "weight": 0.1,
-      "createdAt": "2026-07-11T17:03:11.194Z",
-      "updatedAt": "2026-07-11T17:03:11.194Z"
-    },
-    {
       "id": "52e4aab4-97de-4953-8608-cff5d3b99c52",
       "unitId": "6603538e-b6ea-4ade-8734-3d796a9d10fc",
       "title": "Final Phase",
@@ -387,16 +378,6 @@
       "scopeId": "87335e82-847a-49f5-84fb-c831ed16c876",
       "title": "Paint Doors",
       "order": 7,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:11.194Z",
-      "updatedAt": "2026-07-11T17:03:11.194Z"
-    },
-    {
-      "id": "2bdc497f-28c4-4330-9389-0e4e68af1daf",
-      "scopeId": "32bd3d20-69f9-4b2d-8be0-a53369b36327",
-      "title": "Dumpster Cleanup",
-      "order": 3,
       "progress": 0,
       "status": "pending",
       "createdAt": "2026-07-11T17:03:11.194Z",
@@ -857,16 +838,6 @@
       "updatedAt": "2026-07-11T17:03:12.309Z"
     },
     {
-      "id": "de0e9a35-fc23-49ab-a05b-88853298b9e8",
-      "scopeId": "32bd3d20-69f9-4b2d-8be0-a53369b36327",
-      "title": "Demo Floor",
-      "order": 2,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:11.194Z",
-      "updatedAt": "2026-07-11T17:03:11.194Z"
-    },
-    {
       "id": "e1d04ba0-59ed-424d-aed7-e95e0e1cde19",
       "scopeId": "77625b84-d9fd-4025-8034-13a39f91521f",
       "title": "Marble curb Installation",
@@ -964,16 +935,6 @@
       "scopeId": "a92f4025-a961-4200-80dc-20426af87870",
       "title": "Grout Mosaic",
       "order": 4,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:11.194Z",
-      "updatedAt": "2026-07-11T17:03:11.194Z"
-    },
-    {
-      "id": "f84eaede-e5e8-41c5-871f-7bf29ac2752b",
-      "scopeId": "32bd3d20-69f9-4b2d-8be0-a53369b36327",
-      "title": "Move Furniture",
-      "order": 1,
       "progress": 0,
       "status": "pending",
       "createdAt": "2026-07-11T17:03:11.194Z",
@@ -1107,5 +1068,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-11T17:04:21.814Z"
+  "updatedAt": "2026-07-11T17:07:24.543Z"
 }
