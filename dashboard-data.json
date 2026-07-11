@@ -120,6 +120,24 @@
       "updatedAt": "2026-06-16T04:26:50.591Z"
     },
     {
+      "id": "32bd3d20-69f9-4b2d-8be0-a53369b36327",
+      "unitId": "6603538e-b6ea-4ade-8734-3d796a9d10fc",
+      "title": "Demolition",
+      "order": 2,
+      "weight": 0.1,
+      "createdAt": "2026-07-11T17:03:11.194Z",
+      "updatedAt": "2026-07-11T17:03:11.194Z"
+    },
+    {
+      "id": "52e4aab4-97de-4953-8608-cff5d3b99c52",
+      "unitId": "6603538e-b6ea-4ade-8734-3d796a9d10fc",
+      "title": "Final Phase",
+      "order": 7,
+      "weight": 0.1,
+      "createdAt": "2026-07-11T17:03:11.194Z",
+      "updatedAt": "2026-07-11T17:03:11.194Z"
+    },
+    {
       "id": "6285ebea-8eac-49b2-bd9e-43f4cb0e7b06",
       "unitId": "7cdd0873-9d3f-4c3c-8212-cc853f2db2af",
       "title": "Plumbing",
@@ -155,6 +173,15 @@
       "updatedAt": "2026-06-15T04:25:27.123Z"
     },
     {
+      "id": "87335e82-847a-49f5-84fb-c831ed16c876",
+      "unitId": "6603538e-b6ea-4ade-8734-3d796a9d10fc",
+      "title": "Painting",
+      "order": 3,
+      "weight": 0.25,
+      "createdAt": "2026-07-11T17:03:11.194Z",
+      "updatedAt": "2026-07-11T17:03:11.194Z"
+    },
+    {
       "id": "91f5386e-a6b8-46ad-9d0a-52afbb9bee28",
       "unitId": "a275da81-2605-417c-9e33-90c9b5b6b944",
       "title": "Change Orders",
@@ -166,6 +193,15 @@
       "subcontractPaid": 0,
       "createdAt": "2026-06-15T02:37:56.235Z",
       "updatedAt": "2026-06-15T04:20:10.521Z"
+    },
+    {
+      "id": "a92f4025-a961-4200-80dc-20426af87870",
+      "unitId": "6603538e-b6ea-4ade-8734-3d796a9d10fc",
+      "title": "Tile Work",
+      "order": 4,
+      "weight": 0.25,
+      "createdAt": "2026-07-11T17:03:11.194Z",
+      "updatedAt": "2026-07-11T17:03:11.194Z"
     },
     {
       "id": "ad164760-5e83-47c0-9222-f4e751c20168",
@@ -181,6 +217,24 @@
       "updatedAt": "2026-06-15T04:26:57.674Z"
     },
     {
+      "id": "b4069250-9986-4b7e-bba7-0f126d5f0f4b",
+      "unitId": "6603538e-b6ea-4ade-8734-3d796a9d10fc",
+      "title": "Electrical",
+      "order": 6,
+      "weight": 0.1,
+      "createdAt": "2026-07-11T17:03:11.194Z",
+      "updatedAt": "2026-07-11T17:03:11.194Z"
+    },
+    {
+      "id": "ce2f26b2-e92e-439c-b97d-3414cac19ac5",
+      "unitId": "6603538e-b6ea-4ade-8734-3d796a9d10fc",
+      "title": "Assemblers",
+      "order": 5,
+      "weight": 0.2,
+      "createdAt": "2026-07-11T17:03:11.194Z",
+      "updatedAt": "2026-07-11T17:03:11.194Z"
+    },
+    {
       "id": "fe09f0f5-445a-4dfe-9d14-bbb92cc5f5b2",
       "unitId": "7cdd0873-9d3f-4c3c-8212-cc853f2db2af",
       "title": "Vanity and Glass Door",
@@ -192,6 +246,16 @@
   ],
   "tasks": [
     {
+      "id": "066d2b41-65ca-42ec-8167-8ec95880051d",
+      "scopeId": "87335e82-847a-49f5-84fb-c831ed16c876",
+      "title": "Paint Walls",
+      "order": 6,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:03:11.194Z",
+      "updatedAt": "2026-07-11T17:03:11.194Z"
+    },
+    {
       "id": "08f83eca-040e-4968-b5dc-d47a3db03112",
       "scopeId": "6285ebea-8eac-49b2-bd9e-43f4cb0e7b06",
       "title": "Shower Valve",
@@ -201,6 +265,26 @@
       "status": "completed",
       "createdAt": "2026-06-14T21:53:43.297Z",
       "updatedAt": "2026-06-15T23:07:58.418Z"
+    },
+    {
+      "id": "1bab2d94-75c3-47ed-b07e-71b2d32ad02c",
+      "scopeId": "b4069250-9986-4b7e-bba7-0f126d5f0f4b",
+      "title": "Kitchen Electrical",
+      "order": 1,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:03:11.194Z",
+      "updatedAt": "2026-07-11T17:03:11.194Z"
+    },
+    {
+      "id": "1fa5f32f-696e-4ebf-bd3f-4d70113cb09a",
+      "scopeId": "87335e82-847a-49f5-84fb-c831ed16c876",
+      "title": "Drywall Patch",
+      "order": 2,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:03:11.194Z",
+      "updatedAt": "2026-07-11T17:03:11.194Z"
     },
     {
       "id": "24988086-df02-44f6-9161-bea67b0afda6",
@@ -214,6 +298,36 @@
       "updatedAt": "2026-06-22T14:35:42.171Z"
     },
     {
+      "id": "25287c8a-5787-4895-aa46-121b24212711",
+      "scopeId": "87335e82-847a-49f5-84fb-c831ed16c876",
+      "title": "Paint Doors",
+      "order": 7,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:03:11.194Z",
+      "updatedAt": "2026-07-11T17:03:11.194Z"
+    },
+    {
+      "id": "2bdc497f-28c4-4330-9389-0e4e68af1daf",
+      "scopeId": "32bd3d20-69f9-4b2d-8be0-a53369b36327",
+      "title": "Dumpster Cleanup",
+      "order": 3,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:03:11.194Z",
+      "updatedAt": "2026-07-11T17:03:11.194Z"
+    },
+    {
+      "id": "2c65b0f4-9189-4d15-be48-0f5b66a8739d",
+      "scopeId": "ce2f26b2-e92e-439c-b97d-3414cac19ac5",
+      "title": "Install Thermostat",
+      "order": 5,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:03:11.194Z",
+      "updatedAt": "2026-07-11T17:03:11.194Z"
+    },
+    {
       "id": "42cf09cb-89b9-4943-bb97-3901276e4174",
       "scopeId": "ad164760-5e83-47c0-9222-f4e751c20168",
       "title": "Mirror Installation",
@@ -223,6 +337,26 @@
       "status": "completed",
       "createdAt": "2026-06-15T04:25:07.310Z",
       "updatedAt": "2026-07-11T16:55:07.500Z"
+    },
+    {
+      "id": "48fcbaf9-f8d4-45c6-9e9f-31734d05131a",
+      "scopeId": "87335e82-847a-49f5-84fb-c831ed16c876",
+      "title": "Priming",
+      "order": 4,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:03:11.194Z",
+      "updatedAt": "2026-07-11T17:03:11.194Z"
+    },
+    {
+      "id": "575d9f57-0ee9-4cf5-90ce-77d445d9d693",
+      "scopeId": "ce2f26b2-e92e-439c-b97d-3414cac19ac5",
+      "title": "Install Fixtures",
+      "order": 4,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:03:11.194Z",
+      "updatedAt": "2026-07-11T17:03:11.194Z"
     },
     {
       "id": "58c6ecad-abba-4349-936a-f1b31b90be29",
@@ -280,6 +414,26 @@
       "updatedAt": "2026-06-22T14:35:30.608Z"
     },
     {
+      "id": "6384d56a-0dcb-4f1a-a43f-3d9813b7bfa3",
+      "scopeId": "ce2f26b2-e92e-439c-b97d-3414cac19ac5",
+      "title": "Install Plates",
+      "order": 1,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:03:11.194Z",
+      "updatedAt": "2026-07-11T17:03:11.194Z"
+    },
+    {
+      "id": "653d9c8b-8cd3-43d7-be64-997fec86b693",
+      "scopeId": "b4069250-9986-4b7e-bba7-0f126d5f0f4b",
+      "title": "Bathroom Electrical",
+      "order": 2,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:03:11.194Z",
+      "updatedAt": "2026-07-11T17:03:11.194Z"
+    },
+    {
       "id": "657c8e3b-e219-4421-b537-cda97297811d",
       "scopeId": "ad164760-5e83-47c0-9222-f4e751c20168",
       "title": "Vanity Light Installation",
@@ -291,6 +445,16 @@
       "updatedAt": "2026-07-11T16:55:02.366Z"
     },
     {
+      "id": "6a066f40-c92c-4128-98a7-0fe29cfda217",
+      "scopeId": "52e4aab4-97de-4953-8608-cff5d3b99c52",
+      "title": "Punch List",
+      "order": 1,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:03:11.194Z",
+      "updatedAt": "2026-07-11T17:03:11.194Z"
+    },
+    {
       "id": "6f3845ea-522f-4a30-9d4a-5b15f992e6ac",
       "scopeId": "91f5386e-a6b8-46ad-9d0a-52afbb9bee28",
       "title": "Install pet door on existing door",
@@ -300,6 +464,16 @@
       "status": "completed",
       "createdAt": "2026-06-15T02:37:56.235Z",
       "updatedAt": "2026-07-11T16:53:56.718Z"
+    },
+    {
+      "id": "7172aa1b-bcd5-4c99-897f-d6154f2325c6",
+      "scopeId": "a92f4025-a961-4200-80dc-20426af87870",
+      "title": "Grout Flooring",
+      "order": 2,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:03:11.194Z",
+      "updatedAt": "2026-07-11T17:03:11.194Z"
     },
     {
       "id": "860d0e31-d31f-4d22-9f88-a9cc35ab8ebc",
@@ -324,6 +498,16 @@
       "updatedAt": "2026-06-22T14:35:47.122Z"
     },
     {
+      "id": "93b1c585-5fa9-4da8-9841-4ec08fc29fe4",
+      "scopeId": "87335e82-847a-49f5-84fb-c831ed16c876",
+      "title": "Baseboard",
+      "order": 8,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:03:11.194Z",
+      "updatedAt": "2026-07-11T17:03:11.194Z"
+    },
+    {
       "id": "945a278f-bb8d-4277-8d93-d1b185f94290",
       "scopeId": "08ea42c8-5212-4f70-82b6-f98e9e06495f",
       "title": "Drywall Repair & Finishing",
@@ -333,6 +517,26 @@
       "status": "completed",
       "createdAt": "2026-06-14T21:53:43.297Z",
       "updatedAt": "2026-06-18T16:53:43.669Z"
+    },
+    {
+      "id": "a2c8a6f7-b12a-4a91-9432-e03cfcd1fb03",
+      "scopeId": "87335e82-847a-49f5-84fb-c831ed16c876",
+      "title": "Sanding",
+      "order": 3,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:03:11.194Z",
+      "updatedAt": "2026-07-11T17:03:11.194Z"
+    },
+    {
+      "id": "a7057642-dab3-4226-b9fa-c7c56c5fc257",
+      "scopeId": "a92f4025-a961-4200-80dc-20426af87870",
+      "title": "Install Flooring Tile",
+      "order": 1,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:03:11.194Z",
+      "updatedAt": "2026-07-11T17:03:11.194Z"
     },
     {
       "id": "bc01ddd9-4f88-4a40-946c-a4ded7a4cc53",
@@ -357,6 +561,26 @@
       "updatedAt": "2026-07-11T16:54:14.503Z"
     },
     {
+      "id": "bd5da161-cad3-42c7-890b-30c34cf585c2",
+      "scopeId": "52e4aab4-97de-4953-8608-cff5d3b99c52",
+      "title": "Final Cleaning",
+      "order": 2,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:03:11.194Z",
+      "updatedAt": "2026-07-11T17:03:11.194Z"
+    },
+    {
+      "id": "d3d654f8-7fc2-4151-934c-a9c409de5f15",
+      "scopeId": "a92f4025-a961-4200-80dc-20426af87870",
+      "title": "Install Kitchen Backsplash",
+      "order": 5,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:03:11.194Z",
+      "updatedAt": "2026-07-11T17:03:11.194Z"
+    },
+    {
       "id": "d6c6ff85-3035-4ac4-8efd-2dc67cb15456",
       "scopeId": "697e56e5-5858-4b1a-a81f-1dcf0a2f6013",
       "title": "Review original contract and define work items",
@@ -377,6 +601,16 @@
       "status": "completed",
       "createdAt": "2026-06-15T02:37:56.235Z",
       "updatedAt": "2026-07-11T16:54:01.886Z"
+    },
+    {
+      "id": "de0e9a35-fc23-49ab-a05b-88853298b9e8",
+      "scopeId": "32bd3d20-69f9-4b2d-8be0-a53369b36327",
+      "title": "Demo Floor",
+      "order": 2,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:03:11.194Z",
+      "updatedAt": "2026-07-11T17:03:11.194Z"
     },
     {
       "id": "e1d04ba0-59ed-424d-aed7-e95e0e1cde19",
@@ -401,6 +635,46 @@
       "updatedAt": "2026-07-11T16:54:07.903Z"
     },
     {
+      "id": "e9b702bf-8eba-4d29-8108-5307e52100de",
+      "scopeId": "ce2f26b2-e92e-439c-b97d-3414cac19ac5",
+      "title": "Install Pedestal Sink",
+      "order": 2,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:03:11.194Z",
+      "updatedAt": "2026-07-11T17:03:11.194Z"
+    },
+    {
+      "id": "ec9f03fd-bd75-4214-b595-1a3aa4fb3239",
+      "scopeId": "87335e82-847a-49f5-84fb-c831ed16c876",
+      "title": "Paint Ceiling",
+      "order": 5,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:03:11.194Z",
+      "updatedAt": "2026-07-11T17:03:11.194Z"
+    },
+    {
+      "id": "ecd82e1a-8043-43a7-970d-c9a95c8fd018",
+      "scopeId": "87335e82-847a-49f5-84fb-c831ed16c876",
+      "title": "Preparation",
+      "order": 1,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:03:11.194Z",
+      "updatedAt": "2026-07-11T17:03:11.194Z"
+    },
+    {
+      "id": "ee5afa1c-859d-4818-a8e5-6f1c307d65a9",
+      "scopeId": "ce2f26b2-e92e-439c-b97d-3414cac19ac5",
+      "title": "Install Ceiling Fan",
+      "order": 3,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:03:11.194Z",
+      "updatedAt": "2026-07-11T17:03:11.194Z"
+    },
+    {
       "id": "f02fab30-7bbb-40a0-ae80-dbbc9bc14267",
       "scopeId": "77625b84-d9fd-4025-8034-13a39f91521f",
       "title": "Grout",
@@ -410,6 +684,36 @@
       "status": "completed",
       "createdAt": "2026-06-14T22:17:00.666Z",
       "updatedAt": "2026-06-22T14:35:54.273Z"
+    },
+    {
+      "id": "f6ef2d40-d6ca-4ce0-9081-bb9c299fa5b6",
+      "scopeId": "a92f4025-a961-4200-80dc-20426af87870",
+      "title": "Grout Mosaic",
+      "order": 4,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:03:11.194Z",
+      "updatedAt": "2026-07-11T17:03:11.194Z"
+    },
+    {
+      "id": "f84eaede-e5e8-41c5-871f-7bf29ac2752b",
+      "scopeId": "32bd3d20-69f9-4b2d-8be0-a53369b36327",
+      "title": "Move Furniture",
+      "order": 1,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:03:11.194Z",
+      "updatedAt": "2026-07-11T17:03:11.194Z"
+    },
+    {
+      "id": "f932ebe8-3e59-4192-914a-f921355aa37a",
+      "scopeId": "a92f4025-a961-4200-80dc-20426af87870",
+      "title": "Install Mosaic",
+      "order": 3,
+      "progress": 0,
+      "status": "pending",
+      "createdAt": "2026-07-11T17:03:11.194Z",
+      "updatedAt": "2026-07-11T17:03:11.194Z"
     }
   ],
   "expenses": [
@@ -519,5 +823,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-11T17:03:02.297Z"
+  "updatedAt": "2026-07-11T17:03:11.211Z"
 }
