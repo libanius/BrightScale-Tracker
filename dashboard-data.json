@@ -213,15 +213,6 @@
       "updatedAt": "2026-07-11T17:03:12.309Z"
     },
     {
-      "id": "a92f4025-a961-4200-80dc-20426af87870",
-      "unitId": "6603538e-b6ea-4ade-8734-3d796a9d10fc",
-      "title": "Tile Work",
-      "order": 4,
-      "weight": 0.25,
-      "createdAt": "2026-07-11T17:03:11.194Z",
-      "updatedAt": "2026-07-11T17:03:11.194Z"
-    },
-    {
       "id": "ad164760-5e83-47c0-9222-f4e751c20168",
       "unitId": "7cdd0873-9d3f-4c3c-8212-cc853f2db2af",
       "title": "Electrical",
@@ -729,16 +720,6 @@
       "updatedAt": "2026-07-11T16:53:56.718Z"
     },
     {
-      "id": "7172aa1b-bcd5-4c99-897f-d6154f2325c6",
-      "scopeId": "a92f4025-a961-4200-80dc-20426af87870",
-      "title": "Grout Flooring",
-      "order": 2,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:11.194Z",
-      "updatedAt": "2026-07-11T17:03:11.194Z"
-    },
-    {
       "id": "79edee6f-1b65-429b-b623-d1c6513aedd3",
       "scopeId": "6550961a-e2f2-4bad-bb81-9b2d292faa1f",
       "title": "Baseboard",
@@ -882,16 +863,6 @@
       "updatedAt": "2026-07-11T17:18:43.643Z"
     },
     {
-      "id": "a7057642-dab3-4226-b9fa-c7c56c5fc257",
-      "scopeId": "a92f4025-a961-4200-80dc-20426af87870",
-      "title": "Install Flooring Tile",
-      "order": 1,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:11.194Z",
-      "updatedAt": "2026-07-11T17:03:11.194Z"
-    },
-    {
       "id": "a7bad5ef-6ed5-4184-a044-8255b74b86e4",
       "scopeId": "a867ba3f-6140-4858-91e3-fcf705fc3991",
       "title": "Punch List",
@@ -1014,16 +985,6 @@
       "updatedAt": "2026-07-11T17:18:43.643Z"
     },
     {
-      "id": "d3d654f8-7fc2-4151-934c-a9c409de5f15",
-      "scopeId": "a92f4025-a961-4200-80dc-20426af87870",
-      "title": "Install Kitchen Backsplash",
-      "order": 5,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:11.194Z",
-      "updatedAt": "2026-07-11T17:03:11.194Z"
-    },
-    {
       "id": "d76d8ec3-47de-409a-80da-73a83138eef0",
       "scopeId": "91f5386e-a6b8-46ad-9d0a-52afbb9bee28",
       "title": "Replace weather stripping / door seals on entry door",
@@ -1116,26 +1077,6 @@
       "status": "completed",
       "createdAt": "2026-06-14T22:17:00.666Z",
       "updatedAt": "2026-06-22T14:35:54.273Z"
-    },
-    {
-      "id": "f6ef2d40-d6ca-4ce0-9081-bb9c299fa5b6",
-      "scopeId": "a92f4025-a961-4200-80dc-20426af87870",
-      "title": "Grout Mosaic",
-      "order": 4,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:11.194Z",
-      "updatedAt": "2026-07-11T17:03:11.194Z"
-    },
-    {
-      "id": "f932ebe8-3e59-4192-914a-f921355aa37a",
-      "scopeId": "a92f4025-a961-4200-80dc-20426af87870",
-      "title": "Install Mosaic",
-      "order": 3,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:11.194Z",
-      "updatedAt": "2026-07-11T17:03:11.194Z"
     },
     {
       "id": "fc9d21bf-a04e-4ae4-a4c6-deb15408b4f7",
@@ -1265,5 +1206,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-11T17:19:01.219Z"
+  "updatedAt": "2026-07-11T17:19:03.100Z"
 }
