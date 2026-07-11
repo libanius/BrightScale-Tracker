@@ -319,16 +319,6 @@
       "updatedAt": "2026-07-11T17:18:43.643Z"
     },
     {
-      "id": "1f908f9a-c9f0-4a1f-9a6c-f46cd194db83",
-      "scopeId": "7112985e-df84-4686-98c8-7d5d5dc4cde9",
-      "title": "Protect adjacent finished areas and establish the work zone",
-      "order": 1,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:18:43.643Z",
-      "updatedAt": "2026-07-11T17:18:43.643Z"
-    },
-    {
       "id": "22e0759e-a737-4d82-94e2-365562043c19",
       "scopeId": "c2c33b37-bfa3-4037-b3ca-c83d9f2d5d2c",
       "title": "Install the new shower drain assembly at the specified location",
@@ -814,5 +804,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-11T17:19:25.140Z"
+  "updatedAt": "2026-07-11T17:19:34.562Z"
 }
