@@ -151,15 +151,6 @@
       "updatedAt": "2026-06-16T04:27:27.545Z"
     },
     {
-      "id": "6550961a-e2f2-4bad-bb81-9b2d292faa1f",
-      "unitId": "6603538e-b6ea-4ade-8734-3d796a9d10fc",
-      "title": "Painting",
-      "order": 9,
-      "weight": 0.25,
-      "createdAt": "2026-07-11T17:03:12.309Z",
-      "updatedAt": "2026-07-11T17:03:12.309Z"
-    },
-    {
       "id": "7112985e-df84-4686-98c8-7d5d5dc4cde9",
       "unitId": "6603538e-b6ea-4ade-8734-3d796a9d10fc",
       "title": "Demolition and Floor Access",
@@ -264,16 +255,6 @@
   ],
   "tasks": [
     {
-      "id": "01d5e42e-c390-4cd7-9d56-445b61f19ba0",
-      "scopeId": "6550961a-e2f2-4bad-bb81-9b2d292faa1f",
-      "title": "Paint Doors",
-      "order": 7,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:12.309Z",
-      "updatedAt": "2026-07-11T17:03:12.309Z"
-    },
-    {
       "id": "01f8a489-40ce-461b-b075-f79d60a23e7c",
       "scopeId": "c2c33b37-bfa3-4037-b3ca-c83d9f2d5d2c",
       "title": "Install the new PVC Schedule 40 drain line for the bidet",
@@ -369,16 +350,6 @@
       "scopeId": "141bff4e-82c3-4755-93e6-e8b31e18b57f",
       "title": "Install Mosaic",
       "order": 3,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:12.309Z",
-      "updatedAt": "2026-07-11T17:03:12.309Z"
-    },
-    {
-      "id": "163c4c21-44b4-4831-b57a-695189cf219d",
-      "scopeId": "6550961a-e2f2-4bad-bb81-9b2d292faa1f",
-      "title": "Preparation",
-      "order": 1,
       "progress": 0,
       "status": "pending",
       "createdAt": "2026-07-11T17:03:12.309Z",
@@ -507,16 +478,6 @@
       "updatedAt": "2026-07-11T17:18:43.643Z"
     },
     {
-      "id": "56f42697-6cfc-40b3-94df-c07d07b7bb2b",
-      "scopeId": "6550961a-e2f2-4bad-bb81-9b2d292faa1f",
-      "title": "Priming",
-      "order": 4,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:12.309Z",
-      "updatedAt": "2026-07-11T17:03:12.309Z"
-    },
-    {
       "id": "58c6ecad-abba-4349-936a-f1b31b90be29",
       "scopeId": "08ea42c8-5212-4f70-82b6-f98e9e06495f",
       "title": "Painting",
@@ -593,16 +554,6 @@
       "updatedAt": "2026-07-11T17:03:12.309Z"
     },
     {
-      "id": "69c7f98d-424d-4020-a2ad-705f2a0f287b",
-      "scopeId": "6550961a-e2f2-4bad-bb81-9b2d292faa1f",
-      "title": "Drywall Patch",
-      "order": 2,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:12.309Z",
-      "updatedAt": "2026-07-11T17:03:12.309Z"
-    },
-    {
       "id": "6f1efab2-0fb9-46f4-90b8-bc8a524ad87b",
       "scopeId": "141bff4e-82c3-4755-93e6-e8b31e18b57f",
       "title": "Install Flooring Tile",
@@ -622,16 +573,6 @@
       "status": "completed",
       "createdAt": "2026-06-15T02:37:56.235Z",
       "updatedAt": "2026-07-11T16:53:56.718Z"
-    },
-    {
-      "id": "79edee6f-1b65-429b-b623-d1c6513aedd3",
-      "scopeId": "6550961a-e2f2-4bad-bb81-9b2d292faa1f",
-      "title": "Baseboard",
-      "order": 8,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:12.309Z",
-      "updatedAt": "2026-07-11T17:03:12.309Z"
     },
     {
       "id": "7a9b59b0-ecf0-4541-867f-f3e694a32ef8",
@@ -721,16 +662,6 @@
       "scopeId": "d45b4271-ca06-4ef0-bda8-cd897240db57",
       "title": "Install Pedestal Sink",
       "order": 2,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:12.309Z",
-      "updatedAt": "2026-07-11T17:03:12.309Z"
-    },
-    {
-      "id": "9cb7c5f6-207d-4102-b81c-1413c46a162d",
-      "scopeId": "6550961a-e2f2-4bad-bb81-9b2d292faa1f",
-      "title": "Sanding",
-      "order": 3,
       "progress": 0,
       "status": "pending",
       "createdAt": "2026-07-11T17:03:12.309Z",
@@ -839,16 +770,6 @@
       "updatedAt": "2026-07-11T17:18:43.643Z"
     },
     {
-      "id": "bfbb773c-5dd4-4072-9719-7f46dffd79f3",
-      "scopeId": "6550961a-e2f2-4bad-bb81-9b2d292faa1f",
-      "title": "Paint Walls",
-      "order": 6,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:12.309Z",
-      "updatedAt": "2026-07-11T17:03:12.309Z"
-    },
-    {
       "id": "cc539696-633c-420a-b340-43ab3353326d",
       "scopeId": "f1c4b98b-516c-4af2-85b0-7e72881d2e8a",
       "title": "Perform a leak test on all new PVC drainage connections",
@@ -931,16 +852,6 @@
       "status": "pending",
       "createdAt": "2026-07-11T17:18:43.643Z",
       "updatedAt": "2026-07-11T17:18:43.643Z"
-    },
-    {
-      "id": "ff69bf4e-2e6b-4c06-97f8-bfb69637e327",
-      "scopeId": "6550961a-e2f2-4bad-bb81-9b2d292faa1f",
-      "title": "Paint Ceiling",
-      "order": 5,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:12.309Z",
-      "updatedAt": "2026-07-11T17:03:12.309Z"
     }
   ],
   "expenses": [
@@ -1050,5 +961,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-11T17:19:11.871Z"
+  "updatedAt": "2026-07-11T17:19:13.919Z"
 }
