@@ -296,11 +296,11 @@
       "scopeId": "fe09f0f5-445a-4dfe-9d14-bbb92cc5f5b2",
       "title": "Frameless Glass Door",
       "order": 2,
-      "progress": 0,
+      "progress": 100,
       "deadline": "",
-      "status": "pending",
+      "status": "completed",
       "createdAt": "2026-06-14T21:53:43.297Z",
-      "updatedAt": "2026-06-14T21:53:43.297Z"
+      "updatedAt": "2026-07-11T16:55:22.384Z"
     },
     {
       "id": "bc3f5987-3a4a-468d-bce6-1a0949f425e3",
@@ -454,5 +454,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-11T16:55:17.595Z"
+  "updatedAt": "2026-07-11T16:55:22.394Z"
 }
