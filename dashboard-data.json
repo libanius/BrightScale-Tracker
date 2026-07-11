@@ -396,10 +396,11 @@
       "scopeId": "7112985e-df84-4686-98c8-7d5d5dc4cde9",
       "title": "Locate and clear the area around the existing main drain connection",
       "order": 5,
-      "progress": 0,
-      "status": "pending",
+      "progress": 100,
+      "deadline": "",
+      "status": "completed",
       "createdAt": "2026-07-11T17:18:43.643Z",
-      "updatedAt": "2026-07-11T17:18:43.643Z"
+      "updatedAt": "2026-07-11T17:20:26.515Z"
     },
     {
       "id": "58c6ecad-abba-4349-936a-f1b31b90be29",
@@ -807,5 +808,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-11T17:20:16.957Z"
+  "updatedAt": "2026-07-11T17:20:26.525Z"
 }
