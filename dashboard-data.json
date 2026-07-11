@@ -186,11 +186,11 @@
       "scopeId": "08ea42c8-5212-4f70-82b6-f98e9e06495f",
       "title": "Painting",
       "order": 2,
-      "progress": 0,
+      "progress": 100,
       "deadline": "",
-      "status": "pending",
+      "status": "completed",
       "createdAt": "2026-06-15T04:22:51.628Z",
-      "updatedAt": "2026-06-16T04:09:47.898Z"
+      "updatedAt": "2026-07-11T16:54:45.285Z"
     },
     {
       "id": "594b2f63-ab30-45fa-8644-2bd5f353ff71",
@@ -454,5 +454,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-11T16:54:14.517Z"
+  "updatedAt": "2026-07-11T16:54:45.298Z"
 }
