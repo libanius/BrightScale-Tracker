@@ -649,10 +649,11 @@
       "scopeId": "7112985e-df84-4686-98c8-7d5d5dc4cde9",
       "title": "Cut and remove the required floor sections to access the plumbing",
       "order": 3,
-      "progress": 0,
-      "status": "pending",
+      "progress": 100,
+      "deadline": "",
+      "status": "completed",
       "createdAt": "2026-07-11T17:18:43.643Z",
-      "updatedAt": "2026-07-11T17:18:43.643Z"
+      "updatedAt": "2026-07-11T17:20:09.363Z"
     },
     {
       "id": "e1d04ba0-59ed-424d-aed7-e95e0e1cde19",
@@ -805,5 +806,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-11T17:19:59.589Z"
+  "updatedAt": "2026-07-11T17:20:09.378Z"
 }
