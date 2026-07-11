@@ -3,9 +3,9 @@
     {
       "id": "cb065def-bb30-48e2-9b5a-281ee03caa21",
       "name": "Maritsa - Plumbing MasterBathroom",
-      "address": "5854 NW 126th Terr Coral Springs FL 33076 United States Estimate # EST 6 e 5 a Issued Jul 11, 2026 Total $3,300.09 Status Pending PROJECT BREAKDOWN DEMOLITION AND FLOOR ACCESS Cut and remove floor sections to a depth of 5 to 10 cm at the designated locations for the new bidet, free- standing tub, and shower area. • Expose the existing drainage system and copper water supply lines to allow for new connections. • Remove all debris resulting from the floor cutting to ensure a clean workspace for pipe installation. • Locate and clear the area around the main drain line to facilitate the tie-in for the new bidet and tub drainage. •",
+      "address": "5854 NW 126th Terr Coral Springs FL 33076",
       "client": {
-        "name": "Maristela 5854 NW 126th Terr Coral Springs FL 33076 United States Feline727@aol.com +1 (239) 747-3152 SITE ADDRESS 5854 NW 126th Terr Coral Springs FL 33076 United States Estimate # EST 6 e 5 a Issued Jul 11, 2026 Total $3,300.09 Status Pending PROJECT BREAKDOWN DEMOLITION AND FLOOR ACCESS Cut and remove floor sections to a depth of 5 to 10 cm at the designated locations for the new bidet, free- standing tub, and shower area. • Expose the existing drainage system and copper water supply lines to allow for new connections. • Remove all debris resulting from the floor cutting to ensure a clean workspace for pipe installation. • Locate and clear the area around the main drain line to facilitate the tie-in for the new bidet and tub drainage. •",
+        "name": "Maritsa",
         "contact": "+1 (239) 747-3152"
       },
       "contractTotal": 3300,
@@ -15,7 +15,7 @@
         "e4a4048c-e60c-4f9b-9e11-a82007154416"
       ],
       "createdAt": "2026-07-11T17:00:47.419Z",
-      "updatedAt": "2026-07-11T17:24:01.544Z"
+      "updatedAt": "2026-07-11T17:40:49.224Z"
     },
     {
       "id": "aba2a76a-e157-4f9a-a88c-9c73f0dfb8ab",
@@ -820,5 +820,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-11T17:35:46.615Z"
+  "updatedAt": "2026-07-11T17:40:49.266Z"
 }
