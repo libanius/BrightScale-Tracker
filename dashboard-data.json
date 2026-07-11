@@ -318,11 +318,11 @@
       "scopeId": "91f5386e-a6b8-46ad-9d0a-52afbb9bee28",
       "title": "Replace weather stripping / door seals on entry door",
       "order": 2,
-      "progress": 0,
+      "progress": 100,
       "deadline": "",
-      "status": "pending",
+      "status": "completed",
       "createdAt": "2026-06-15T02:37:56.235Z",
-      "updatedAt": "2026-06-15T02:37:56.235Z"
+      "updatedAt": "2026-07-11T16:54:01.886Z"
     },
     {
       "id": "e1d04ba0-59ed-424d-aed7-e95e0e1cde19",
@@ -454,5 +454,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-11T16:53:57.195Z"
+  "updatedAt": "2026-07-11T16:54:01.898Z"
 }
