@@ -120,15 +120,6 @@
       "updatedAt": "2026-06-16T04:26:50.591Z"
     },
     {
-      "id": "141bff4e-82c3-4755-93e6-e8b31e18b57f",
-      "unitId": "6603538e-b6ea-4ade-8734-3d796a9d10fc",
-      "title": "Tile Work",
-      "order": 10,
-      "weight": 0.25,
-      "createdAt": "2026-07-11T17:03:12.309Z",
-      "updatedAt": "2026-07-11T17:03:12.309Z"
-    },
-    {
       "id": "6172d778-9b60-4f78-97de-68f5bb8b5209",
       "unitId": "6603538e-b6ea-4ade-8734-3d796a9d10fc",
       "title": "Hot and Cold Water Rough-In",
@@ -346,16 +337,6 @@
       "updatedAt": "2026-07-11T17:18:43.643Z"
     },
     {
-      "id": "1446c30a-eac8-48c9-9761-2ce886acf041",
-      "scopeId": "141bff4e-82c3-4755-93e6-e8b31e18b57f",
-      "title": "Install Mosaic",
-      "order": 3,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:12.309Z",
-      "updatedAt": "2026-07-11T17:03:12.309Z"
-    },
-    {
       "id": "1e1e3518-dc34-4156-9923-d1120b8a2e20",
       "scopeId": "f6a2caf3-4bbc-4bea-b77f-ec2c2a51a1c8",
       "title": "Mount and connect the client-provided freestanding bathtub faucet",
@@ -415,16 +396,6 @@
       "status": "pending",
       "createdAt": "2026-07-11T17:18:43.643Z",
       "updatedAt": "2026-07-11T17:18:43.643Z"
-    },
-    {
-      "id": "364fa4e2-637e-4612-b279-4b8242ef9bc4",
-      "scopeId": "141bff4e-82c3-4755-93e6-e8b31e18b57f",
-      "title": "Grout Flooring",
-      "order": 2,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:12.309Z",
-      "updatedAt": "2026-07-11T17:03:12.309Z"
     },
     {
       "id": "40de92ef-e97e-436a-8f25-eeeaeb2e5ad5",
@@ -542,26 +513,6 @@
       "status": "completed",
       "createdAt": "2026-06-14T21:53:43.297Z",
       "updatedAt": "2026-07-11T16:55:02.366Z"
-    },
-    {
-      "id": "6972bdf2-6fb1-4362-bdce-59de8731e168",
-      "scopeId": "141bff4e-82c3-4755-93e6-e8b31e18b57f",
-      "title": "Install Kitchen Backsplash",
-      "order": 5,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:12.309Z",
-      "updatedAt": "2026-07-11T17:03:12.309Z"
-    },
-    {
-      "id": "6f1efab2-0fb9-46f4-90b8-bc8a524ad87b",
-      "scopeId": "141bff4e-82c3-4755-93e6-e8b31e18b57f",
-      "title": "Install Flooring Tile",
-      "order": 1,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:12.309Z",
-      "updatedAt": "2026-07-11T17:03:12.309Z"
     },
     {
       "id": "6f3845ea-522f-4a30-9d4a-5b15f992e6ac",
@@ -726,16 +677,6 @@
       "status": "pending",
       "createdAt": "2026-07-11T17:18:43.643Z",
       "updatedAt": "2026-07-11T17:18:43.643Z"
-    },
-    {
-      "id": "b9a5f0ce-9f9b-4cf0-aacf-cffdc5cc7984",
-      "scopeId": "141bff4e-82c3-4755-93e6-e8b31e18b57f",
-      "title": "Grout Mosaic",
-      "order": 4,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:12.309Z",
-      "updatedAt": "2026-07-11T17:03:12.309Z"
     },
     {
       "id": "bc01ddd9-4f88-4a40-946c-a4ded7a4cc53",
@@ -961,5 +902,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-11T17:19:13.919Z"
+  "updatedAt": "2026-07-11T17:19:15.428Z"
 }
