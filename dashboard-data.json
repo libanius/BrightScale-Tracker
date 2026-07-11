@@ -776,6 +776,17 @@
   ],
   "notes": [
     {
+      "id": "4aaeb15a-48de-44bf-b117-14db1ede07e8",
+      "projectId": "cb065def-bb30-48e2-9b5a-281ee03caa21",
+      "scopeId": "",
+      "type": "progress",
+      "text": "We cut the slab to expose the toilet drain to connect to the bidet",
+      "date": "2026-07-11",
+      "internalOnly": true,
+      "createdAt": "2026-07-11T17:25:44.378Z",
+      "updatedAt": "2026-07-11T17:25:44.378Z"
+    },
+    {
       "id": "279c5116-18db-41ea-9e28-46e0e929e219",
       "projectId": "cb065def-bb30-48e2-9b5a-281ee03caa21",
       "scopeId": "",
@@ -820,5 +831,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-11T17:25:43.079Z"
+  "updatedAt": "2026-07-11T17:25:44.576Z"
 }
