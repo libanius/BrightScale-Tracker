@@ -178,15 +178,6 @@
       "updatedAt": "2026-07-11T17:03:12.309Z"
     },
     {
-      "id": "697e56e5-5858-4b1a-a81f-1dcf0a2f6013",
-      "unitId": "6603538e-b6ea-4ade-8734-3d796a9d10fc",
-      "title": "Contract Scope",
-      "order": 1,
-      "weight": 1,
-      "createdAt": "2026-07-11T17:00:47.419Z",
-      "updatedAt": "2026-07-11T17:00:47.419Z"
-    },
-    {
       "id": "77625b84-d9fd-4025-8034-13a39f91521f",
       "unitId": "7cdd0873-9d3f-4c3c-8212-cc853f2db2af",
       "title": "Tile Work",
@@ -845,17 +836,6 @@
       "updatedAt": "2026-07-11T17:03:11.194Z"
     },
     {
-      "id": "d6c6ff85-3035-4ac4-8efd-2dc67cb15456",
-      "scopeId": "697e56e5-5858-4b1a-a81f-1dcf0a2f6013",
-      "title": "Review original contract and define work items",
-      "order": 1,
-      "progress": 0,
-      "deadline": "",
-      "status": "pending",
-      "createdAt": "2026-07-11T17:00:47.419Z",
-      "updatedAt": "2026-07-11T17:00:47.419Z"
-    },
-    {
       "id": "d76d8ec3-47de-409a-80da-73a83138eef0",
       "scopeId": "91f5386e-a6b8-46ad-9d0a-52afbb9bee28",
       "title": "Replace weather stripping / door seals on entry door",
@@ -1127,5 +1107,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-11T17:03:12.382Z"
+  "updatedAt": "2026-07-11T17:03:20.960Z"
 }
