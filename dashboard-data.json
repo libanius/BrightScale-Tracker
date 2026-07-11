@@ -129,15 +129,6 @@
       "updatedAt": "2026-07-11T17:03:12.309Z"
     },
     {
-      "id": "52e4aab4-97de-4953-8608-cff5d3b99c52",
-      "unitId": "6603538e-b6ea-4ade-8734-3d796a9d10fc",
-      "title": "Final Phase",
-      "order": 7,
-      "weight": 0.1,
-      "createdAt": "2026-07-11T17:03:11.194Z",
-      "updatedAt": "2026-07-11T17:03:11.194Z"
-    },
-    {
       "id": "6172d778-9b60-4f78-97de-68f5bb8b5209",
       "unitId": "6603538e-b6ea-4ade-8734-3d796a9d10fc",
       "title": "Hot and Cold Water Rough-In",
@@ -226,15 +217,6 @@
       "updatedAt": "2026-06-15T04:26:57.674Z"
     },
     {
-      "id": "b4069250-9986-4b7e-bba7-0f126d5f0f4b",
-      "unitId": "6603538e-b6ea-4ade-8734-3d796a9d10fc",
-      "title": "Electrical",
-      "order": 6,
-      "weight": 0.1,
-      "createdAt": "2026-07-11T17:03:11.194Z",
-      "updatedAt": "2026-07-11T17:03:11.194Z"
-    },
-    {
       "id": "c2c33b37-bfa3-4037-b3ca-c83d9f2d5d2c",
       "unitId": "6603538e-b6ea-4ade-8734-3d796a9d10fc",
       "title": "Drainage Rough-In",
@@ -244,29 +226,11 @@
       "updatedAt": "2026-07-11T17:18:43.643Z"
     },
     {
-      "id": "ce2f26b2-e92e-439c-b97d-3414cac19ac5",
-      "unitId": "6603538e-b6ea-4ade-8734-3d796a9d10fc",
-      "title": "Assemblers",
-      "order": 5,
-      "weight": 0.2,
-      "createdAt": "2026-07-11T17:03:11.194Z",
-      "updatedAt": "2026-07-11T17:03:11.194Z"
-    },
-    {
       "id": "d45b4271-ca06-4ef0-bda8-cd897240db57",
       "unitId": "6603538e-b6ea-4ade-8734-3d796a9d10fc",
       "title": "Assemblers",
       "order": 11,
       "weight": 0.2,
-      "createdAt": "2026-07-11T17:03:12.309Z",
-      "updatedAt": "2026-07-11T17:03:12.309Z"
-    },
-    {
-      "id": "ef5c63b4-4f9c-4656-b202-29490ba00d73",
-      "unitId": "6603538e-b6ea-4ade-8734-3d796a9d10fc",
-      "title": "Demolition",
-      "order": 8,
-      "weight": 0.1,
       "createdAt": "2026-07-11T17:03:12.309Z",
       "updatedAt": "2026-07-11T17:03:12.309Z"
     },
@@ -421,16 +385,6 @@
       "updatedAt": "2026-07-11T17:03:12.309Z"
     },
     {
-      "id": "1bab2d94-75c3-47ed-b07e-71b2d32ad02c",
-      "scopeId": "b4069250-9986-4b7e-bba7-0f126d5f0f4b",
-      "title": "Kitchen Electrical",
-      "order": 1,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:11.194Z",
-      "updatedAt": "2026-07-11T17:03:11.194Z"
-    },
-    {
       "id": "1e1e3518-dc34-4156-9923-d1120b8a2e20",
       "scopeId": "f6a2caf3-4bbc-4bea-b77f-ec2c2a51a1c8",
       "title": "Mount and connect the client-provided freestanding bathtub faucet",
@@ -480,16 +434,6 @@
       "status": "pending",
       "createdAt": "2026-07-11T17:03:12.309Z",
       "updatedAt": "2026-07-11T17:03:12.309Z"
-    },
-    {
-      "id": "2c65b0f4-9189-4d15-be48-0f5b66a8739d",
-      "scopeId": "ce2f26b2-e92e-439c-b97d-3414cac19ac5",
-      "title": "Install Thermostat",
-      "order": 5,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:11.194Z",
-      "updatedAt": "2026-07-11T17:03:11.194Z"
     },
     {
       "id": "3613e93b-af7e-46ef-9e98-e3bde8aa7f19",
@@ -573,16 +517,6 @@
       "updatedAt": "2026-07-11T17:03:12.309Z"
     },
     {
-      "id": "575d9f57-0ee9-4cf5-90ce-77d445d9d693",
-      "scopeId": "ce2f26b2-e92e-439c-b97d-3414cac19ac5",
-      "title": "Install Fixtures",
-      "order": 4,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:11.194Z",
-      "updatedAt": "2026-07-11T17:03:11.194Z"
-    },
-    {
       "id": "58c6ecad-abba-4349-936a-f1b31b90be29",
       "scopeId": "08ea42c8-5212-4f70-82b6-f98e9e06495f",
       "title": "Painting",
@@ -638,26 +572,6 @@
       "updatedAt": "2026-06-22T14:35:30.608Z"
     },
     {
-      "id": "6384d56a-0dcb-4f1a-a43f-3d9813b7bfa3",
-      "scopeId": "ce2f26b2-e92e-439c-b97d-3414cac19ac5",
-      "title": "Install Plates",
-      "order": 1,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:11.194Z",
-      "updatedAt": "2026-07-11T17:03:11.194Z"
-    },
-    {
-      "id": "653d9c8b-8cd3-43d7-be64-997fec86b693",
-      "scopeId": "b4069250-9986-4b7e-bba7-0f126d5f0f4b",
-      "title": "Bathroom Electrical",
-      "order": 2,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:11.194Z",
-      "updatedAt": "2026-07-11T17:03:11.194Z"
-    },
-    {
       "id": "657c8e3b-e219-4421-b537-cda97297811d",
       "scopeId": "ad164760-5e83-47c0-9222-f4e751c20168",
       "title": "Vanity Light Installation",
@@ -687,16 +601,6 @@
       "status": "pending",
       "createdAt": "2026-07-11T17:03:12.309Z",
       "updatedAt": "2026-07-11T17:03:12.309Z"
-    },
-    {
-      "id": "6a066f40-c92c-4128-98a7-0fe29cfda217",
-      "scopeId": "52e4aab4-97de-4953-8608-cff5d3b99c52",
-      "title": "Punch List",
-      "order": 1,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:11.194Z",
-      "updatedAt": "2026-07-11T17:03:11.194Z"
     },
     {
       "id": "6f1efab2-0fb9-46f4-90b8-bc8a524ad87b",
@@ -785,16 +689,6 @@
       "scopeId": "d45b4271-ca06-4ef0-bda8-cd897240db57",
       "title": "Install Ceiling Fan",
       "order": 3,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:12.309Z",
-      "updatedAt": "2026-07-11T17:03:12.309Z"
-    },
-    {
-      "id": "883ecea6-d689-46c6-8ea5-10e6f5166f9c",
-      "scopeId": "ef5c63b4-4f9c-4656-b202-29490ba00d73",
-      "title": "Demo Floor",
-      "order": 2,
       "progress": 0,
       "status": "pending",
       "createdAt": "2026-07-11T17:03:12.309Z",
@@ -935,26 +829,6 @@
       "updatedAt": "2026-07-11T16:54:14.503Z"
     },
     {
-      "id": "bd5da161-cad3-42c7-890b-30c34cf585c2",
-      "scopeId": "52e4aab4-97de-4953-8608-cff5d3b99c52",
-      "title": "Final Cleaning",
-      "order": 2,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:11.194Z",
-      "updatedAt": "2026-07-11T17:03:11.194Z"
-    },
-    {
-      "id": "bd7167c5-1089-4db0-885d-2d7a6019ac8d",
-      "scopeId": "ef5c63b4-4f9c-4656-b202-29490ba00d73",
-      "title": "Dumpster Cleanup",
-      "order": 3,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:12.309Z",
-      "updatedAt": "2026-07-11T17:03:12.309Z"
-    },
-    {
       "id": "bf6ac012-167a-4a76-a652-c9613e0e90b9",
       "scopeId": "7112985e-df84-4686-98c8-7d5d5dc4cde9",
       "title": "Remove demolition debris and leave the work area ready for plumbing installation",
@@ -994,16 +868,6 @@
       "status": "completed",
       "createdAt": "2026-06-15T02:37:56.235Z",
       "updatedAt": "2026-07-11T16:54:01.886Z"
-    },
-    {
-      "id": "db27e8ed-71b2-4272-b078-1a9c9c034a31",
-      "scopeId": "ef5c63b4-4f9c-4656-b202-29490ba00d73",
-      "title": "Move Furniture",
-      "order": 1,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:12.309Z",
-      "updatedAt": "2026-07-11T17:03:12.309Z"
     },
     {
       "id": "e1a095f9-e8cd-498b-981e-3f6ea2eb827a",
@@ -1046,26 +910,6 @@
       "status": "pending",
       "createdAt": "2026-07-11T17:03:12.309Z",
       "updatedAt": "2026-07-11T17:03:12.309Z"
-    },
-    {
-      "id": "e9b702bf-8eba-4d29-8108-5307e52100de",
-      "scopeId": "ce2f26b2-e92e-439c-b97d-3414cac19ac5",
-      "title": "Install Pedestal Sink",
-      "order": 2,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:11.194Z",
-      "updatedAt": "2026-07-11T17:03:11.194Z"
-    },
-    {
-      "id": "ee5afa1c-859d-4818-a8e5-6f1c307d65a9",
-      "scopeId": "ce2f26b2-e92e-439c-b97d-3414cac19ac5",
-      "title": "Install Ceiling Fan",
-      "order": 3,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:11.194Z",
-      "updatedAt": "2026-07-11T17:03:11.194Z"
     },
     {
       "id": "f02fab30-7bbb-40a0-ae80-dbbc9bc14267",
@@ -1206,5 +1050,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-11T17:19:03.100Z"
+  "updatedAt": "2026-07-11T17:19:11.871Z"
 }
