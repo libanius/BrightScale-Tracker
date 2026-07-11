@@ -177,15 +177,6 @@
       "updatedAt": "2026-06-15T04:20:10.521Z"
     },
     {
-      "id": "a867ba3f-6140-4858-91e3-fcf705fc3991",
-      "unitId": "6603538e-b6ea-4ade-8734-3d796a9d10fc",
-      "title": "Final Phase",
-      "order": 13,
-      "weight": 0.1,
-      "createdAt": "2026-07-11T17:03:12.309Z",
-      "updatedAt": "2026-07-11T17:03:12.309Z"
-    },
-    {
       "id": "ad164760-5e83-47c0-9222-f4e751c20168",
       "unitId": "7cdd0873-9d3f-4c3c-8212-cc853f2db2af",
       "title": "Electrical",
@@ -590,16 +581,6 @@
       "updatedAt": "2026-07-11T17:18:43.643Z"
     },
     {
-      "id": "a7bad5ef-6ed5-4184-a044-8255b74b86e4",
-      "scopeId": "a867ba3f-6140-4858-91e3-fcf705fc3991",
-      "title": "Punch List",
-      "order": 1,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:12.309Z",
-      "updatedAt": "2026-07-11T17:03:12.309Z"
-    },
-    {
       "id": "aba2e820-298e-4bb2-b63b-58581ea213b4",
       "scopeId": "f6a2caf3-4bbc-4bea-b77f-ec2c2a51a1c8",
       "title": "Verify fixture alignment and connection integrity",
@@ -703,16 +684,6 @@
       "status": "completed",
       "createdAt": "2026-06-15T02:37:56.235Z",
       "updatedAt": "2026-07-11T16:54:07.903Z"
-    },
-    {
-      "id": "e59c3d6f-de33-4321-b961-e9636615e603",
-      "scopeId": "a867ba3f-6140-4858-91e3-fcf705fc3991",
-      "title": "Final Cleaning",
-      "order": 2,
-      "progress": 0,
-      "status": "pending",
-      "createdAt": "2026-07-11T17:03:12.309Z",
-      "updatedAt": "2026-07-11T17:03:12.309Z"
     },
     {
       "id": "f02fab30-7bbb-40a0-ae80-dbbc9bc14267",
@@ -843,5 +814,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-11T17:19:18.164Z"
+  "updatedAt": "2026-07-11T17:19:25.140Z"
 }
