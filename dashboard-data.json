@@ -252,11 +252,11 @@
       "scopeId": "91f5386e-a6b8-46ad-9d0a-52afbb9bee28",
       "title": "Install pet door on existing door",
       "order": 1,
-      "progress": 0,
+      "progress": 100,
       "deadline": "",
-      "status": "pending",
+      "status": "completed",
       "createdAt": "2026-06-15T02:37:56.235Z",
-      "updatedAt": "2026-06-15T04:20:32.186Z"
+      "updatedAt": "2026-07-11T16:53:55.853Z"
     },
     {
       "id": "860d0e31-d31f-4d22-9f88-a9cc35ab8ebc",
@@ -454,5 +454,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-06-22T14:36:00.103Z"
+  "updatedAt": "2026-07-11T16:53:55.876Z"
 }
