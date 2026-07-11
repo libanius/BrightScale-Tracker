@@ -241,11 +241,11 @@
       "scopeId": "ad164760-5e83-47c0-9222-f4e751c20168",
       "title": "Vanity Light Installation",
       "order": 1,
-      "progress": 0,
+      "progress": 100,
       "deadline": "2026-06-21",
-      "status": "pending",
+      "status": "completed",
       "createdAt": "2026-06-14T21:53:43.297Z",
-      "updatedAt": "2026-06-14T22:14:12.284Z"
+      "updatedAt": "2026-07-11T16:55:02.366Z"
     },
     {
       "id": "6f3845ea-522f-4a30-9d4a-5b15f992e6ac",
@@ -454,5 +454,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-11T16:54:52.479Z"
+  "updatedAt": "2026-07-11T16:55:02.379Z"
 }
