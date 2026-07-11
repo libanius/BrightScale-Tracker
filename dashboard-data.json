@@ -354,10 +354,11 @@
       "scopeId": "7112985e-df84-4686-98c8-7d5d5dc4cde9",
       "title": "Mark the designated floor access locations for the bidet, freestanding tub, and shower",
       "order": 2,
-      "progress": 0,
-      "status": "pending",
+      "progress": 50,
+      "deadline": "",
+      "status": "in_progress",
       "createdAt": "2026-07-11T17:18:43.643Z",
-      "updatedAt": "2026-07-11T17:18:43.643Z"
+      "updatedAt": "2026-07-11T17:19:53.048Z"
     },
     {
       "id": "42cf09cb-89b9-4943-bb97-3901276e4174",
@@ -804,5 +805,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-11T17:19:34.562Z"
+  "updatedAt": "2026-07-11T17:19:53.064Z"
 }
