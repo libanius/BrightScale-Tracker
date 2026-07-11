@@ -556,10 +556,11 @@
       "scopeId": "7112985e-df84-4686-98c8-7d5d5dc4cde9",
       "title": "Expose the existing drainage system and copper water supply lines",
       "order": 4,
-      "progress": 0,
-      "status": "pending",
+      "progress": 100,
+      "deadline": "",
+      "status": "completed",
       "createdAt": "2026-07-11T17:18:43.643Z",
-      "updatedAt": "2026-07-11T17:18:43.643Z"
+      "updatedAt": "2026-07-11T17:20:16.948Z"
     },
     {
       "id": "a52eca40-e2b6-41ae-9edc-e8215436ae54",
@@ -806,5 +807,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-11T17:20:09.378Z"
+  "updatedAt": "2026-07-11T17:20:16.957Z"
 }
