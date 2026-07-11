@@ -1,6 +1,23 @@
 {
   "projects": [
     {
+      "id": "cb065def-bb30-48e2-9b5a-281ee03caa21",
+      "name": "BREAKDOWN DEMOLITION AND FLOOR ACCESS Cut and remove floor sections to a depth of 5 to 10 cm at the designated locations for the new bidet, free- standing tub, and shower area. • Expose the existing drainage system and copper water supply lines to allow for new connections. • Remove all debris resulting from the floor cutting to ensure a clean workspace for pipe installation. • Locate and clear the area around the main drain line to facilitate the tie-in for the new bidet and tub drainage. •",
+      "address": "5854 NW 126th Terr Coral Springs FL 33076 United States Estimate # EST 6 e 5 a Issued Jul 11, 2026 Total $3,300.09 Status Pending PROJECT BREAKDOWN DEMOLITION AND FLOOR ACCESS Cut and remove floor sections to a depth of 5 to 10 cm at the designated locations for the new bidet, free- standing tub, and shower area. • Expose the existing drainage system and copper water supply lines to allow for new connections. • Remove all debris resulting from the floor cutting to ensure a clean workspace for pipe installation. • Locate and clear the area around the main drain line to facilitate the tie-in for the new bidet and tub drainage. •",
+      "client": {
+        "name": "Maristela 5854 NW 126th Terr Coral Springs FL 33076 United States Feline727@aol.com +1 (239) 747-3152 SITE ADDRESS 5854 NW 126th Terr Coral Springs FL 33076 United States Estimate # EST 6 e 5 a Issued Jul 11, 2026 Total $3,300.09 Status Pending PROJECT BREAKDOWN DEMOLITION AND FLOOR ACCESS Cut and remove floor sections to a depth of 5 to 10 cm at the designated locations for the new bidet, free- standing tub, and shower area. • Expose the existing drainage system and copper water supply lines to allow for new connections. • Remove all debris resulting from the floor cutting to ensure a clean workspace for pipe installation. • Locate and clear the area around the main drain line to facilitate the tie-in for the new bidet and tub drainage. •",
+        "contact": ""
+      },
+      "contractTotal": 0,
+      "contractSummary": "Documento \"Estimate-e21eddd8-f580-4a66-ba3a-8b6c7ceee149-1783789117865.pdf.pdf\" analisado com 1 scope(s): Contract Scope.",
+      "documentId": "e4a4048c-e60c-4f9b-9e11-a82007154416",
+      "documentIds": [
+        "e4a4048c-e60c-4f9b-9e11-a82007154416"
+      ],
+      "createdAt": "2026-07-11T17:00:47.419Z",
+      "updatedAt": "2026-07-11T17:00:47.419Z"
+    },
+    {
       "id": "aba2a76a-e157-4f9a-a88c-9c73f0dfb8ab",
       "name": "Marjory Horwin",
       "address": "Marjory Horwin",
@@ -32,6 +49,26 @@
     }
   ],
   "units": [
+    {
+      "id": "6603538e-b6ea-4ade-8734-3d796a9d10fc",
+      "projectId": "cb065def-bb30-48e2-9b5a-281ee03caa21",
+      "unitNumber": "5854",
+      "bdBa": "",
+      "invoice": "Estimate-e21eddd8-f580-4a66-ba3a-8b6c7ceee149-1783789117865.pdf",
+      "estimateTotal": 0,
+      "contractSummary": "Documento \"Estimate-e21eddd8-f580-4a66-ba3a-8b6c7ceee149-1783789117865.pdf.pdf\" analisado com 1 scope(s): Contract Scope.",
+      "documentId": "e4a4048c-e60c-4f9b-9e11-a82007154416",
+      "startDate": "2026-07-11",
+      "deadline": "",
+      "supervisors": {
+        "demo": "",
+        "painter": "",
+        "tile": "",
+        "assembler": ""
+      },
+      "createdAt": "2026-07-11T17:00:47.419Z",
+      "updatedAt": "2026-07-11T17:00:47.419Z"
+    },
     {
       "id": "7cdd0873-9d3f-4c3c-8212-cc853f2db2af",
       "projectId": "3db2664f-4027-46db-970b-f7c354e37fad",
@@ -97,6 +134,15 @@
       "subcontractPaid": 0,
       "createdAt": "2026-06-14T21:53:43.297Z",
       "updatedAt": "2026-06-16T04:27:27.545Z"
+    },
+    {
+      "id": "697e56e5-5858-4b1a-a81f-1dcf0a2f6013",
+      "unitId": "6603538e-b6ea-4ade-8734-3d796a9d10fc",
+      "title": "Contract Scope",
+      "order": 1,
+      "weight": 1,
+      "createdAt": "2026-07-11T17:00:47.419Z",
+      "updatedAt": "2026-07-11T17:00:47.419Z"
     },
     {
       "id": "77625b84-d9fd-4025-8034-13a39f91521f",
@@ -314,6 +360,17 @@
       "updatedAt": "2026-07-11T16:54:14.503Z"
     },
     {
+      "id": "d6c6ff85-3035-4ac4-8efd-2dc67cb15456",
+      "scopeId": "697e56e5-5858-4b1a-a81f-1dcf0a2f6013",
+      "title": "Review original contract and define work items",
+      "order": 1,
+      "progress": 0,
+      "deadline": "",
+      "status": "pending",
+      "createdAt": "2026-07-11T17:00:47.419Z",
+      "updatedAt": "2026-07-11T17:00:47.419Z"
+    },
+    {
       "id": "d76d8ec3-47de-409a-80da-73a83138eef0",
       "scopeId": "91f5386e-a6b8-46ad-9d0a-52afbb9bee28",
       "title": "Replace weather stripping / door seals on entry door",
@@ -454,5 +511,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-11T16:55:22.394Z"
+  "updatedAt": "2026-07-11T17:00:47.441Z"
 }
