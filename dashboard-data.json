@@ -719,6 +719,17 @@
       "updatedAt": "2026-06-16T04:29:52.392Z"
     },
     {
+      "id": "88ece793-83d9-45e7-9696-6102ff1b8a1a",
+      "projectId": "cb065def-bb30-48e2-9b5a-281ee03caa21",
+      "type": "material",
+      "description": "Plumbing Materials",
+      "vendor": "Home Depot",
+      "amount": 263,
+      "date": "2026-07-13",
+      "createdAt": "2026-07-13T21:25:16.822Z",
+      "updatedAt": "2026-07-13T21:25:16.822Z"
+    },
+    {
       "id": "bbecf687-e477-4e0e-baa5-3155e6505d62",
       "projectId": "3db2664f-4027-46db-970b-f7c354e37fad",
       "type": "labor",
@@ -820,5 +831,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-11T17:40:49.266Z"
+  "updatedAt": "2026-07-13T21:25:16.859Z"
 }
