@@ -704,6 +704,21 @@
   ],
   "expenses": [
     {
+      "id": "170d7da2-a519-491d-8d9a-81b04b82618d",
+      "projectId": "cb065def-bb30-48e2-9b5a-281ee03caa21",
+      "type": "labor",
+      "description": "Paulo",
+      "workerName": "Paulo",
+      "note": "Pro",
+      "scopeId": "",
+      "hourlyRate": 618.5,
+      "hours": 1,
+      "amount": 618.5,
+      "date": "2026-07-15",
+      "createdAt": "2026-07-15T23:51:44.966Z",
+      "updatedAt": "2026-07-15T23:51:44.966Z"
+    },
+    {
       "id": "29d714ef-47ad-4305-b531-82766159d208",
       "projectId": "3db2664f-4027-46db-970b-f7c354e37fad",
       "type": "labor",
@@ -831,5 +846,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-13T21:25:16.859Z"
+  "updatedAt": "2026-07-15T23:51:45.000Z"
 }
