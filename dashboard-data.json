@@ -734,6 +734,21 @@
       "updatedAt": "2026-06-16T04:29:52.392Z"
     },
     {
+      "id": "5be4cea2-881a-4f09-ad9b-9f1589436de9",
+      "projectId": "cb065def-bb30-48e2-9b5a-281ee03caa21",
+      "type": "labor",
+      "description": "Eduardo",
+      "workerName": "Eduardo",
+      "note": "Pro",
+      "scopeId": "",
+      "hourlyRate": 618.5,
+      "hours": 1,
+      "amount": 618.5,
+      "date": "2026-07-15",
+      "createdAt": "2026-07-15T23:52:07.663Z",
+      "updatedAt": "2026-07-15T23:52:07.663Z"
+    },
+    {
       "id": "88ece793-83d9-45e7-9696-6102ff1b8a1a",
       "projectId": "cb065def-bb30-48e2-9b5a-281ee03caa21",
       "type": "material",
@@ -861,5 +876,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-15T23:51:46.323Z"
+  "updatedAt": "2026-07-15T23:52:07.692Z"
 }
