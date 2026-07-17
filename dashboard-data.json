@@ -327,10 +327,11 @@
       "scopeId": "c2c33b37-bfa3-4037-b3ca-c83d9f2d5d2c",
       "title": "Install the new shower drain assembly at the specified location",
       "order": 4,
-      "progress": 0,
-      "status": "pending",
+      "progress": 100,
+      "deadline": "",
+      "status": "completed",
       "createdAt": "2026-07-11T17:18:43.643Z",
-      "updatedAt": "2026-07-11T17:18:43.643Z"
+      "updatedAt": "2026-07-17T14:27:33.421Z"
     },
     {
       "id": "24988086-df02-44f6-9161-bea67b0afda6",
@@ -868,5 +869,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-17T14:27:22.317Z"
+  "updatedAt": "2026-07-17T14:27:33.432Z"
 }
