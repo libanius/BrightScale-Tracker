@@ -274,10 +274,11 @@
       "scopeId": "6172d778-9b60-4f78-97de-68f5bb8b5209",
       "title": "Install the hot and cold water rough-in for the shower",
       "order": 3,
-      "progress": 0,
-      "status": "pending",
+      "progress": 100,
+      "deadline": "",
+      "status": "completed",
       "createdAt": "2026-07-11T17:18:43.643Z",
-      "updatedAt": "2026-07-11T17:18:43.643Z"
+      "updatedAt": "2026-07-17T14:26:54.968Z"
     },
     {
       "id": "0e725343-3eeb-4ed7-8575-880bb5ae3481",
@@ -863,5 +864,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-17T14:26:48.896Z"
+  "updatedAt": "2026-07-17T14:26:54.979Z"
 }
