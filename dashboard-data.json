@@ -232,10 +232,11 @@
       "scopeId": "c2c33b37-bfa3-4037-b3ca-c83d9f2d5d2c",
       "title": "Install the new PVC Schedule 40 drain line for the bidet",
       "order": 1,
-      "progress": 0,
-      "status": "pending",
+      "progress": 100,
+      "deadline": "",
+      "status": "completed",
       "createdAt": "2026-07-11T17:18:43.643Z",
-      "updatedAt": "2026-07-11T17:18:43.643Z"
+      "updatedAt": "2026-07-17T14:27:15.836Z"
     },
     {
       "id": "062007f5-e8f6-4982-8b5b-3dd4422e5d67",
@@ -866,5 +867,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-17T14:27:07.586Z"
+  "updatedAt": "2026-07-17T14:27:15.848Z"
 }
