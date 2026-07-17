@@ -640,10 +640,11 @@
       "scopeId": "f1c4b98b-516c-4af2-85b0-7e72881d2e8a",
       "title": "Perform a leak test on all new PVC drainage connections",
       "order": 2,
-      "progress": 0,
-      "status": "pending",
+      "progress": 50,
+      "deadline": "",
+      "status": "in_progress",
       "createdAt": "2026-07-11T17:18:43.643Z",
-      "updatedAt": "2026-07-11T17:18:43.643Z"
+      "updatedAt": "2026-07-17T14:28:16.667Z"
     },
     {
       "id": "d76d8ec3-47de-409a-80da-73a83138eef0",
@@ -870,5 +871,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-17T14:28:07.061Z"
+  "updatedAt": "2026-07-17T14:28:16.679Z"
 }
