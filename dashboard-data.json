@@ -520,10 +520,11 @@
       "scopeId": "c2c33b37-bfa3-4037-b3ca-c83d9f2d5d2c",
       "title": "Connect the bidet drain to the exposed existing main drain",
       "order": 2,
-      "progress": 0,
-      "status": "pending",
+      "progress": 100,
+      "deadline": "",
+      "status": "completed",
       "createdAt": "2026-07-11T17:18:43.643Z",
-      "updatedAt": "2026-07-11T17:18:43.643Z"
+      "updatedAt": "2026-07-17T14:27:22.304Z"
     },
     {
       "id": "860d0e31-d31f-4d22-9f88-a9cc35ab8ebc",
@@ -867,5 +868,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-17T14:27:15.848Z"
+  "updatedAt": "2026-07-17T14:27:22.317Z"
 }
