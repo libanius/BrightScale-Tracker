@@ -487,10 +487,11 @@
       "scopeId": "6172d778-9b60-4f78-97de-68f5bb8b5209",
       "title": "Install the new shower mixing valve at the specified location",
       "order": 4,
-      "progress": 0,
-      "status": "pending",
+      "progress": 100,
+      "deadline": "",
+      "status": "completed",
       "createdAt": "2026-07-11T17:18:43.643Z",
-      "updatedAt": "2026-07-11T17:18:43.643Z"
+      "updatedAt": "2026-07-17T14:27:00.623Z"
     },
     {
       "id": "7efd5cc6-5cdb-4ede-a426-d5315528af6c",
@@ -864,5 +865,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-17T14:26:54.979Z"
+  "updatedAt": "2026-07-17T14:27:00.635Z"
 }
