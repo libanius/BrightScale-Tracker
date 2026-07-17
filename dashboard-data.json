@@ -827,6 +827,17 @@
   ],
   "notes": [
     {
+      "id": "7fe87ebc-8252-47b8-84a2-0c3e8cbbda2d",
+      "projectId": "cb065def-bb30-48e2-9b5a-281ee03caa21",
+      "scopeId": "",
+      "type": "progress",
+      "text": "Go back to install the drain with bathtub Ptrap and install the bathtub faucet valve",
+      "date": "2026-07-18",
+      "internalOnly": true,
+      "createdAt": "2026-07-17T14:30:20.669Z",
+      "updatedAt": "2026-07-17T14:30:20.669Z"
+    },
+    {
       "id": "279c5116-18db-41ea-9e28-46e0e929e219",
       "projectId": "cb065def-bb30-48e2-9b5a-281ee03caa21",
       "scopeId": "",
@@ -871,5 +882,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-17T14:28:36.020Z"
+  "updatedAt": "2026-07-17T14:30:20.678Z"
 }
