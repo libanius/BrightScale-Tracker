@@ -293,10 +293,11 @@
       "scopeId": "6172d778-9b60-4f78-97de-68f5bb8b5209",
       "title": "Install new Type L copper hot and cold water supply lines for the bidet",
       "order": 1,
-      "progress": 0,
-      "status": "pending",
+      "progress": 100,
+      "deadline": "",
+      "status": "completed",
       "createdAt": "2026-07-11T17:18:43.643Z",
-      "updatedAt": "2026-07-11T17:18:43.643Z"
+      "updatedAt": "2026-07-17T14:26:38.225Z"
     },
     {
       "id": "0ec4bd2c-9541-4806-a004-6b48712526fd",
@@ -861,5 +862,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-17T14:26:28.837Z"
+  "updatedAt": "2026-07-17T14:26:38.236Z"
 }
