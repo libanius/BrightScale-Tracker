@@ -263,10 +263,11 @@
       "scopeId": "6172d778-9b60-4f78-97de-68f5bb8b5209",
       "title": "Relocate and refabricate the hot and cold water lines for the freestanding tub",
       "order": 2,
-      "progress": 0,
-      "status": "pending",
+      "progress": 80,
+      "deadline": "",
+      "status": "in_progress",
       "createdAt": "2026-07-11T17:18:43.643Z",
-      "updatedAt": "2026-07-11T17:18:43.643Z"
+      "updatedAt": "2026-07-17T14:26:48.884Z"
     },
     {
       "id": "0e6bb400-2085-46fd-9a51-e75a30ca1390",
@@ -862,5 +863,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-17T14:26:38.236Z"
+  "updatedAt": "2026-07-17T14:26:48.896Z"
 }
