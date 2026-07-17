@@ -391,10 +391,11 @@
       "scopeId": "f1c4b98b-516c-4af2-85b0-7e72881d2e8a",
       "title": "Perform a pressure test on all new copper water supply lines",
       "order": 1,
-      "progress": 0,
-      "status": "pending",
+      "progress": 100,
+      "deadline": "",
+      "status": "completed",
       "createdAt": "2026-07-11T17:18:43.643Z",
-      "updatedAt": "2026-07-11T17:18:43.643Z"
+      "updatedAt": "2026-07-17T14:28:07.049Z"
     },
     {
       "id": "555f4639-3138-4a1e-8456-dae5597b8378",
@@ -869,5 +870,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-17T14:27:33.432Z"
+  "updatedAt": "2026-07-17T14:28:07.061Z"
 }
