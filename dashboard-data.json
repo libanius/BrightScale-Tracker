@@ -620,11 +620,11 @@
       "scopeId": "7112985e-df84-4686-98c8-7d5d5dc4cde9",
       "title": "Remove demolition debris and leave the work area ready for plumbing installation",
       "order": 6,
-      "progress": 90,
+      "progress": 100,
       "deadline": "",
-      "status": "in_progress",
+      "status": "completed",
       "createdAt": "2026-07-11T17:18:43.643Z",
-      "updatedAt": "2026-07-11T17:20:37.649Z"
+      "updatedAt": "2026-07-17T14:26:28.811Z"
     },
     {
       "id": "cc539696-633c-420a-b340-43ab3353326d",
@@ -861,5 +861,5 @@
       "updatedAt": "2026-06-16T04:56:28.412Z"
     }
   ],
-  "updatedAt": "2026-07-17T14:26:18.819Z"
+  "updatedAt": "2026-07-17T14:26:28.837Z"
 }
