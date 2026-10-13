@@ -6,7 +6,7 @@
   <a href="https://libanius.github.io/BrightScale-Tracker/"><b>Open the app</b></a> ·
   <a href="#how-it-works">How it works</a> ·
   <a href="#the-smart-remodeling-method">Smart Remodeling</a> ·
-  <a href="#technical-documentation-pt-br">Technical docs</a>
+  <a href="#technical-documentation">Technical docs</a>
 </p>
 
 ---
@@ -108,76 +108,53 @@ Serving Miami-Dade, Broward and Palm Beach.
 
 ---
 
-## Technical documentation (PT-BR)
+## Technical documentation
 
-Projeto isolado do TimeTrack.
+The app's interface is currently in Portuguese; UI labels are shown as **English (Portuguese)**.
+Guides: [GitHub sync setup](GITHUB-SYNC-GUIDE.md) · [Creating custom templates](TEMPLATES-GUIDE.md)
 
-- Repositório: `libanius/BrightScale-Tracker`
-- Dados publicados: `dashboard-data.json`
-- Backups versionados no GitHub: `backups/brightscale-backup-*.json`
-- Backups exportados manualmente: `brightscale-backup-*.json`
-- Configuração local: chaves `brightscale_*` no navegador
+**Repository layout**
 
-Arquivos antigos, planilhas e backups ficam fora deste repositório, na pasta
-`BrightScale Tracker - Legacy and Backups`.
+- Repository: `libanius/BrightScale-Tracker`
+- Published data: `dashboard-data.json`
+- Versioned backups on GitHub: `backups/brightscale-backup-*.json`
+- Manually exported backups: `brightscale-backup-*.json`
+- Local settings: `brightscale_*` keys in the browser
 
-### Importação de contratos
+Older files, spreadsheets and backups live outside this repository, in the `BrightScale Tracker - Legacy and Backups` folder.
 
-Na página inicial, `Upload de Contrato / Estimate` aceita:
+### Importing contracts and estimates
 
-- PDF com texto selecionável;
-- DOCX;
-- TXT ou Markdown.
+On the home screen, **Upload Contract / Estimate (Upload de Contrato / Estimate)** accepts:
 
-O app extrai cliente, endereço, total e itens de trabalho, permite revisar os
-campos e cria automaticamente projeto, unit, scopes e tasks. O arquivo original
-fica armazenado localmente no IndexedDB do aparelho e não é publicado no
-dashboard GitHub.
+- PDF with selectable text
+- DOCX
+- TXT or Markdown
 
-PDFs escaneados como imagem ainda exigem OCR antes da importação.
+The app extracts the client, address, total and work items, lets you review the fields, and then creates the project, unit, scopes and tasks automatically. The original file is stored only in the device's IndexedDB and is never published to the GitHub dashboard.
 
-### Dados entre dispositivos
+Scanned (image-only) PDFs still need OCR before they can be imported.
 
-Ao salvar edições no tracker, o app atualiza automaticamente
-`dashboard-data.json`, mantendo o dashboard geral e os links por cliente em
-sincronia. Em Ajustes, `Criar Backup Agora` continua criando uma cópia imutável
-com data e hora. `Escolher e Restaurar Backup` lista o histórico do GitHub para
-restauração. O app bloqueia uploads de aparelhos baseados em uma versão remota
-antiga, evitando sobrescrever mudanças feitas em outro aparelho.
+### Data across devices
 
-### Dashboard por cliente
+Saving an edit in the tracker automatically updates `dashboard-data.json`, keeping the team dashboard and the per-client links in sync. In Settings, **Create Backup Now (Criar Backup Agora)** creates an immutable, timestamped copy, and **Choose and Restore Backup (Escolher e Restaurar Backup)** lists the backup history on GitHub for restoring. The app blocks uploads from devices working on an outdated remote version, so one device can't overwrite changes made on another.
 
-O dashboard geral mostra todos os projetos para a equipe. Cada card possui
-`Compartilhar Dashboard com Cliente`, que gera um link atualizado mostrando
-somente o projeto selecionado. Como solução de MVP, o link não possui login:
-qualquer pessoa que receber ou encaminhar o endereço poderá visualizar aquele
-projeto.
+### Client dashboard
 
-Notas do `Journey de Hoje` são internas e aparecem somente no dashboard geral
-da equipe. Elas não são renderizadas no link filtrado para cliente.
+The team dashboard shows every project. Each project card has **Share Dashboard with Client (Compartilhar Dashboard com Cliente)**, which creates an always-current link showing only that project. As an MVP, the link has no login: anyone who receives or forwards it can view that project.
 
-### Financeiro de projetos
+**Today's Journey (Journey de Hoje)** notes are internal and appear only on the team dashboard. They are never rendered on the client link.
 
-Cada projeto possui um extrato com receita do contrato, compromissos com
-subcontractors, despesas de material, horas trabalhadas e saldo projetado. No
-scope é possível informar responsável, valor acordado e valor já pago. Horas de
-helpers podem ser lançadas por nome, preço/hora, quantidade, data e scope
-opcional. O crédito produzido é calculado automaticamente pelo progresso do
-scope:
+### Project financials
 
-`crédito produzido = (valor acordado × progresso do scope) + horas trabalhadas`
+Each project has a statement with contract revenue, subcontractor commitments, material expenses, hours worked and projected balance. On each scope you can set the responsible subcontractor, the agreed amount and the amount already paid. Helper hours can be logged by name, hourly rate, quantity, date and an optional scope. Produced credit is calculated automatically from scope progress:
 
-As despesas financeiras fazem parte dos backups locais e versionados no
-GitHub.
+`produced credit = (agreed amount × scope progress) + hours worked`
 
-### Responsáveis
+Financial records are included in both local and versioned GitHub backups.
 
-Subcontractors são cadastrados somente em Ajustes, com nome, empresa, e-mail e
-status Ativo/Inativo. Cada scope pode selecionar apenas um subcontractor ativo
-da lista; todas as tasks daquele scope ficam sob a responsabilidade dele.
-Tasks não possuem responsável próprio.
+### Subcontractors
 
-Em Ajustes, `Abrir Cadastro de Subcontractors` permite consultar, editar,
-ativar/desativar e abrir a ficha financeira consolidada. Cadastros e vínculos
-também fazem parte dos backups. Nomes antigos gravados diretamente nos scopes
-são migrados automaticamente como ativos.
+Subcontractors are registered only in Settings, with name, company, email and Active/Inactive status. Each scope can select a single active subcontractor from the list, and every task in that scope falls under that subcontractor. Tasks have no owner of their own.
+
+In Settings, **Open Subcontractor Registry (Abrir Cadastro de Subcontractors)** lets you look up, edit, activate or deactivate subcontractors and open their consolidated financial statement. Registrations and assignments are also included in backups. Names previously typed directly on scopes are migrated automatically as active subcontractors.
