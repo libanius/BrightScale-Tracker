@@ -7,3 +7,5 @@ node_modules
 *.md
 docs
 supabase
+.claude
+skills-lock.json
