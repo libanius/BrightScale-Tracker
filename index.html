@@ -1275,6 +1275,91 @@ function analyzeContractText(text, file) {
   };
 }
 
+/* Estimate → Smart Remodeling plan (AI on the server). Falls back to the local parser. */
+function analyzeEstimateWithAI(text, file) {
+  if (!navigator.onLine || !window.TrackerCloud) return Promise.resolve(analyzeContractText(text, file));
+  toast('Analisando o escopo com IA (até 1 min)...', '', 60000);
+  return TrackerCloud.analyzeEstimate(text, file.name).then(function(res) {
+    var plan = res.plan || {};
+    var est = plan.estimate || {};
+    var client = plan.client || {};
+    var tcEl = document.getElementById('tc'); if (tcEl) tcEl.innerHTML = '';
+    return {
+      projectName: plan.project_title || client.name || file.name.replace(/\.[^.]+$/, ''),
+      clientName: client.name || '',
+      clientPhone: client.phone || '',
+      clientEmail: client.email || '',
+      address: plan.site_address || client.billing_address || '',
+      total: Number(est.total) || 0,
+      estimateNumber: est.number || '',
+      summary: plan.trade_summary || '',
+      unitNumber: ((plan.site_address || '').match(/^\d+/) || ['Main'])[0],
+      scopes: (plan.scopes || []).map(function(sc) {
+        return {
+          title: sc.title,
+          order: sc.sequence,
+          weight: (Number(sc.weight_percent) || 0) / 100,
+          description: sc.description || '',
+          tasks: (sc.tasks || []).map(function(t) {
+            return { title: t.title, order: t.sequence, acceptanceCriteria: t.acceptance_criteria || '' };
+          })
+        };
+      }),
+      plan: plan,
+      intakeId: res.intake_id,
+      rawText: text
+    };
+  }).catch(function(err) {
+    console.warn('AI analysis failed, using local parser:', err);
+    toast('IA indisponível — usando leitura básica', 'w', 4000);
+    return analyzeContractText(text, file);
+  });
+}
+
+function renderPlanSummary(mo, analysis) {
+  var plan = analysis.plan;
+  if (!plan) return;
+  var box = div('card');
+  box.style.cssText = 'background:var(--sf2);margin-bottom:16px;';
+  var est = plan.estimate || {};
+  var html = '<div class="ct">Smart Remodeling · análise do estimate</div>';
+  html += '<div style="font-size:12px;color:var(--mu);line-height:1.6;margin-bottom:10px">' +
+    (est.number ? 'Estimate <b style="color:var(--tx)">' + esc(est.number) + '</b> · ' : '') +
+    (est.total ? formatUsd(est.total) + ' · ' : '') +
+    (plan.estimated_duration_days ? '~' + plan.estimated_duration_days + ' dias de obra' : '') + '</div>';
+  html += '<div style="font-size:11px;font-weight:700;color:var(--ac);margin:10px 0 6px">S · ESCOPO (' + (plan.scopes || []).length + ' fases)</div>';
+  (plan.scopes || []).forEach(function(sc) {
+    html += '<div style="font-size:13px;margin-bottom:4px"><b>' + sc.sequence + '. ' + esc(sc.title) + '</b> <span style="color:var(--mu)">· ' +
+      (sc.tasks || []).length + ' tarefas · ' + sc.weight_percent + '%</span></div>';
+  });
+  if ((plan.materials || []).length) {
+    html += '<div style="font-size:11px;font-weight:700;color:var(--ac);margin:12px 0 6px">M · MATERIAIS</div>';
+    plan.materials.forEach(function(m) {
+      var qty = m.quantity != null ? m.quantity + (m.unit ? ' ' + m.unit : '') + ' · ' : '';
+      var who = m.supplied_by === 'owner' ? 'cliente fornece' : m.supplied_by === 'contractor' ? 'BrightScale fornece' : 'quem fornece?';
+      html += '<div style="font-size:12px;margin-bottom:3px">• ' + esc(m.item) + ' <span style="color:var(--mu)">(' + esc(qty + who) + ')</span></div>';
+    });
+  }
+  if ((plan.milestones || []).length) {
+    html += '<div style="font-size:11px;font-weight:700;color:var(--ac);margin:12px 0 6px">T · MILESTONES DE PAGAMENTO</div>';
+    plan.milestones.forEach(function(m) {
+      var amount = est.total ? ' · ' + formatUsd(Math.round(est.total * m.percent_of_contract) / 100) : '';
+      html += '<div style="font-size:12px;margin-bottom:6px"><b>' + m.sequence + '. ' + esc(m.title) + '</b> — ' + m.percent_of_contract + '%' + amount +
+        '<div style="color:var(--mu)">Quando: ' + esc(m.trigger) + '</div></div>';
+    });
+  }
+  if ((plan.open_questions || []).length) {
+    html += '<div style="font-size:11px;font-weight:700;color:#ffb93c;margin:12px 0 6px">PERGUNTAS EM ABERTO (confirmar com o cliente)</div>';
+    plan.open_questions.forEach(function(q) { html += '<div style="font-size:12px;margin-bottom:4px">• ' + esc(q) + '</div>'; });
+  }
+  if ((plan.risks || []).length) {
+    html += '<div style="font-size:11px;font-weight:700;color:var(--ac3);margin:12px 0 6px">RISCOS PARA ACOMPANHAR</div>';
+    plan.risks.forEach(function(r) { html += '<div style="font-size:12px;margin-bottom:4px">• ' + esc(r) + '</div>'; });
+  }
+  box.innerHTML = html;
+  mo.appendChild(box);
+}
+
 function openContractImport() {
   var input = document.createElement('input');
   input.type = 'file';
@@ -1286,9 +1371,9 @@ function openContractImport() {
       toast('O arquivo deve ter no máximo 20 MB', 'w', 5000);
       return;
     }
-    toast('Lendo contrato...', '', 3000);
+    toast('Lendo o estimate...', '', 3000);
     extractDocumentText(file)
-      .then(function(text) { return analyzeContractText(text, file); })
+      .then(function(text) { return analyzeEstimateWithAI(text, file); })
       .then(function(analysis) { openContractReview(file, analysis); })
       .catch(function(err) {
         console.error('Contract import error:', err);
@@ -1334,6 +1419,8 @@ function openContractReview(file, analysis) {
     }
     mo.appendChild(destinationField);
 
+    renderPlanSummary(mo, analysis);
+
     var nameInput = addField('Nome do Projeto', analysis.projectName);
     var clientInput = addField('Cliente', analysis.clientName);
     var addressInput = addField('Endereço', analysis.address);
@@ -1342,6 +1429,15 @@ function openContractReview(file, analysis) {
     var unitInput = addField('Unit / Identificação', analysis.unitNumber);
     var scopesInput = addField('Template gerado (JSON)', JSON.stringify(analysis.scopes, null, 2), 'textarea');
     scopesInput.style.minHeight = '220px';
+    if (analysis.plan) {
+      var jsonField = scopesInput.parentNode;
+      jsonField.style.display = 'none';
+      var toggleJson = btn('btn bs bsm', 'Editar fases e tarefas (avançado)', function() {
+        jsonField.style.display = jsonField.style.display === 'none' ? '' : 'none';
+      });
+      toggleJson.style.marginBottom = '12px';
+      mo.insertBefore(toggleJson, jsonField);
+    }
 
     var row = div('brow');
     var cancel = btn('btn bs', 'Cancelar', close);
@@ -1380,8 +1476,31 @@ function openContractReview(file, analysis) {
         total: Number(totalInput.value) || 0,
         summary: summaryInput.value.trim(),
         unitNumber: unitInput.value.trim() || 'Main',
-        scopes: scopes
+        scopes: scopes,
+        clientPhone: analysis.clientPhone || '',
+        clientEmail: analysis.clientEmail || '',
+        estimateNumber: analysis.estimateNumber || ''
       }, targetProjectId).then(function(projectId) {
+        if (analysis.plan && analysis.intakeId) {
+          var created = window.__lastImportScopeIds || {};
+          var milestones = (analysis.plan.milestones || []).map(function(m) {
+            return {
+              title: m.title,
+              percent_of_contract: m.percent_of_contract,
+              trigger: m.trigger,
+              acceptance_criteria: m.acceptance_criteria,
+              scope_ids: (m.scope_titles || []).map(function(t) { return created[t]; }).filter(Boolean)
+            };
+          });
+          return TrackerCloud.flush().then(function() {
+            return TrackerCloud.linkEstimateProject(analysis.intakeId, targetProjectId || projectId, milestones);
+          }).catch(function(err) {
+            console.warn('Milestones not saved:', err);
+            toast('Projeto criado, mas os milestones não foram salvos: ' + err.message, 'w', 6000);
+          }).then(function() { return projectId; });
+        }
+        return projectId;
+      }).then(function(projectId) {
         close();
         S.currentProjectId = projectId;
         S.currentUnitId = null;
@@ -1466,7 +1585,8 @@ function importContractToProject(file, rawText, data, targetProjectId) {
       id: projectId,
       name: data.projectName,
       address: data.address,
-      client: {name: data.clientName, contact: ''},
+      client: {name: data.clientName, contact: data.clientPhone || '', phone: data.clientPhone || '', email: data.clientEmail || ''},
+      estimateNumber: data.estimateNumber || '',
       contractTotal: data.total,
       contractSummary: data.summary,
       documentId: documentId,
@@ -1476,8 +1596,10 @@ function importContractToProject(file, rawText, data, targetProjectId) {
     }));
   }
 
+  window.__lastImportScopeIds = {};
   data.scopes.forEach(function(scopeTpl, scopeIndex) {
     var scopeId = uid();
+    window.__lastImportScopeIds[scopeTpl.title || ('Scope ' + (scopeIndex + 1))] = scopeId;
     var normalizedWeight = weightTotal
       ? rawWeights[scopeIndex] / weightTotal
       : 1 / data.scopes.length;
@@ -1487,6 +1609,7 @@ function importContractToProject(file, rawText, data, targetProjectId) {
       title: scopeTpl.title || ('Scope ' + (scopeIndex + 1)),
       order: scopeTpl.order || scopeIndex + 1,
       weight: normalizedWeight,
+      description: scopeTpl.description || '',
       createdAt: now,
       updatedAt: now
     }));
@@ -1499,6 +1622,7 @@ function importContractToProject(file, rawText, data, targetProjectId) {
         progress: 0,
         deadline: '',
         status: 'pending',
+        acceptanceCriteria: taskTpl.acceptanceCriteria || '',
         createdAt: now,
         updatedAt: now
       }));

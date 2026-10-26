@@ -53,11 +53,13 @@
         var c = p.client || {};
         return { id: p.id, company_id: CFG.companyId, name: p.name || 'Projeto', address: nz(p.address), client_name: nz(c.name),
           client_contact: nz(c.contact), client_email: nz(c.email || p.clientEmail), contract_total: num(p.contractTotal),
-          contract_summary: nz(p.contractSummary), created_at: nz(p.createdAt) || undefined };
+          contract_summary: nz(p.contractSummary), estimate_number: nz(p.estimateNumber), client_phone: nz(c.phone),
+          created_at: nz(p.createdAt) || undefined };
       },
       toApp: function (r, local) {
         return { id: r.id, name: r.name, address: str(r.address),
-          client: { name: str(r.client_name), contact: str(r.client_contact), email: str(r.client_email) },
+          client: { name: str(r.client_name), contact: str(r.client_contact), email: str(r.client_email), phone: str(r.client_phone) },
+          estimateNumber: str(r.estimate_number),
           contractTotal: num(r.contract_total, 0), contractSummary: str(r.contract_summary),
           documentId: local ? (local.documentId || '') : '', documentIds: local ? (local.documentIds || []) : [],
           createdAt: r.created_at, updatedAt: r.updated_at };
@@ -81,12 +83,13 @@
       toDb: function (s) {
         return { id: s.id, unit_id: s.unitId, title: s.title || 'Scope', sort_order: num(s.order, 0), weight: num(s.weight, 0),
           person_id: nz(s.personId), subcontract_amount: num(s.subcontractAmount, 0), subcontract_paid: num(s.subcontractPaid, 0),
-          created_at: nz(s.createdAt) || undefined };
+          description: nz(s.description), created_at: nz(s.createdAt) || undefined };
       },
       toApp: function (r) {
         return { id: r.id, unitId: r.unit_id, title: r.title, order: num(r.sort_order, 0), weight: num(r.weight, 0),
           personId: str(r.person_id), subcontractorName: '', subcontractAmount: num(r.subcontract_amount, 0),
-          subcontractPaid: num(r.subcontract_paid, 0), createdAt: r.created_at, updatedAt: r.updated_at };
+          subcontractPaid: num(r.subcontract_paid, 0), description: str(r.description),
+          createdAt: r.created_at, updatedAt: r.updated_at };
       }
     },
     tasks: {
@@ -95,11 +98,13 @@
         var st = ['pending', 'in_progress', 'completed'].indexOf(t.status) >= 0 ? t.status
           : (p === 0 ? 'pending' : p === 100 ? 'completed' : 'in_progress');
         return { id: t.id, scope_id: t.scopeId, title: t.title || 'Task', sort_order: num(t.order, 0), progress: p,
-          deadline: dateOnly(t.deadline), status: st, created_at: nz(t.createdAt) || undefined };
+          deadline: dateOnly(t.deadline), status: st, acceptance_criteria: nz(t.acceptanceCriteria),
+          created_at: nz(t.createdAt) || undefined };
       },
       toApp: function (r) {
         return { id: r.id, scopeId: r.scope_id, title: r.title, order: num(r.sort_order, 0), progress: num(r.progress, 0),
-          deadline: str(r.deadline), status: r.status, createdAt: r.created_at, updatedAt: r.updated_at };
+          deadline: str(r.deadline), status: r.status, acceptanceCriteria: str(r.acceptance_criteria),
+          createdAt: r.created_at, updatedAt: r.updated_at };
       }
     },
     expenses: {
@@ -390,6 +395,23 @@
       .then(function (r) { return r.json().then(function (d) { if (!r.ok || !d.ok) throw new Error(d.error || ('HTTP ' + r.status)); return d.data; }); });
   }
 
+  /* ── estimate pipeline ──────────────────────────────── */
+  var intakeFn = CFG.url + '/functions/v1/tracker-estimate-intake';
+  function callIntake(payload) {
+    return getSession().then(function (session) {
+      if (!session) throw new Error('Faça login primeiro');
+      return fetch(intakeFn, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', authorization: 'Bearer ' + session.access_token, apikey: CFG.key },
+        body: JSON.stringify(payload)
+      }).then(function (r) { return r.json().then(function (d) { if (!r.ok || !d.ok) throw new Error(d.error || ('HTTP ' + r.status)); return d; }); });
+    });
+  }
+  function analyzeEstimate(text, filename) { return callIntake({ action: 'analyze', text: text, filename: filename, source: 'upload' }); }
+  function linkEstimateProject(intakeId, projectId, milestones) {
+    return callIntake({ action: 'link_project', intake_id: intakeId, project_id: projectId, milestones: milestones });
+  }
+
   global.addEventListener('online', function () { emit(); scheduleFlush(100); });
   global.addEventListener('offline', emit);
 
@@ -410,6 +432,8 @@
     requireLogin: requireLogin,
     signOut: signOut,
     createShareLink: createShareLink,
-    fetchSharedProject: fetchSharedProject
+    fetchSharedProject: fetchSharedProject,
+    analyzeEstimate: analyzeEstimate,
+    linkEstimateProject: linkEstimateProject
   };
 })(window);
