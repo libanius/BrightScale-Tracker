@@ -132,16 +132,27 @@ Nota: Essa divisão é uma **proposta de implementação**, não uma revogação
 ## Checkpoint operacional (fonte atual para próxima IA)
 
 - **Atualizado em:** 2026-10-26.
-- **Branch:** `main`; **documentação verificada neste checkpoint:** [Protocolo](CONTINUITY_PROTOCOL.md), [AGENTS.md](../AGENTS.md), [CLAUDE.md](../CLAUDE.md), [Copilot instructions](../.github/copilot-instructions.md) e [PR template](../.github/pull_request_template.md).
-- **Decisões confirmadas:** 1–34 (**DECIDED**); decisão 35 permanece **não respondida**. A entrevista está encerrada por solicitação do usuário.
-- **Último resultado verificado:** documentação do protocolo inter-LLMs criada no GitHub; nenhum código da aplicação alterado nesta sessão.
-- **Situação do MVP (funcionalidade):** `NOT VERIFIED` neste checkpoint. Repositório e handoff foram lidos parcialmente para integrar documentação, mas **não** foi feita auditoria técnica, execução de teste, migração ou deploy. Não inferir que MVP está ausente ou completo.
-- **Produção:** URL conhecida `https://tracker.brightscalegroup.com`, funcionamento **não testado** nesta sessão.
-- **Testes:** verificação por leitura dos novos arquivos no GitHub após commits (documentação); **nenhum teste funcional**.
-- **Bloqueios/riscos:** necessidade de auditoria de RLS, fluxo de cliente/sub, segregação financeira e comparativo P0; repositório público com eventual histórico sensível a inspecionar com cuidado.
-- **Próxima ação única:** auditar o estado técnico real das capacidades P0 no repositório atual e entregar quadro **IMPLEMENTED / PARTIAL / MISSING / NOT VERIFIED** antes de iniciar implementação. Em seguida executar menor fluxo ponta a ponta de uma obra real.
+- **Branch:** `main`; **auditoria detalhada:** [MVP_TECHNICAL_AUDIT_2026-10-26.md](MVP_TECHNICAL_AUDIT_2026-10-26.md).
+- **Decisões confirmadas:** 1–34 (`DECIDED`), entrevista encerrada; decisão 35 não tomada.
+- **Último resultado comprovado:** revisão estática do código GitHub e leitura de metadados Supabase live (`tracker`/`tracker_private`) sem escrita de dados. Auditoria de capacidades P0 publicada.
+- **MVP:** importação + IA + estrutura projeto + portal cliente somente leitura **PARTIAL/EXISTS**; sub reporta/PM valida **MISSING**; crédito reconhecido e fluxo de CO **PARTIAL/MISSING**; relatório diário estratégico **PARTIAL**; níveis de roles para subs **NOT IMPLEMENTED / RISK**. Ver matriz detalhada da auditoria.
+- **Supabase:** `tracker` com 15 tabelas e RLS ligado em todas; funções `tracker-share`, `tracker-estimate-intake`, `tracker-ops` aparecem `ACTIVE`. Há 1 intake `project_created`, 2 milestones `pending`, 1 backup `ok`. Isso não comprova teste ponta a ponta.
+- **Produção:** `https://tracker.brightscalegroup.com` conhecida, porém navegador público nesta sessão não conseguiu verificar UI. **NOT VERIFIED**; não alegar outage.
+- **Testes:** inspeção estática e queries SELECT em catálogo/contadores; **nenhum teste automatizado executado**, fluxo no navegador ou teste de campo.
+- **Riscos P0 identificados:** edição da tarefa pode apagar `acceptance_criteria`; importação de estimate em projeto existente soma ao contrato sem CO; progresso direto já alimenta crédito financeiro sem validação PM; RLS member amplo é inadequado para login de sub/cliente.
+- **Próximo passo único:** implementar **Incremento 0 — guardrails** em branch/PR: preservar `acceptanceCriteria` ao salvar tarefa, proteger importação em projeto existente e adicionar testes com dados fictícios. Só depois iniciar sub report/PM validation com autorização por papel.
+- **Segurança:** não alterar `public`/`private` schemas do Supabase compartilhado; nenhum código de aplicação, deploy ou dados reais foram alterados nesta auditoria.
 
 ## Log de continuidade
+
+### 2026-10-26 — Fase 2: auditoria técnica inicial do MVP
+- **Estado:** `AUDITED / DOCS-ONLY`. Não marcar como `TESTED` ou `IMPLEMENTED`.
+- **Mudança:** revisou fonte do Tracker, dashboard, cloud layer, Edge Functions existentes, catálogos de banco e políticas RLS read-only. Publicou [auditoria técnica](MVP_TECHNICAL_AUDIT_2026-10-26.md), com matriz P0, riscos e ordem de incrementos.
+- **Evidência:** código `index.html` (linhas 791–807, 1386–1632, 4813–4890), `tracker-cloud.js`, `dashboard.html` e metadados de `tracker` via conexão Supabase; a auditoria traz detalhes e limites da verificação.
+- **Teste:** apenas revisão estática e queries SELECT, sem testes de app/usuário.
+- **Segurança/contratos:** nenhum dado ou schema modificado. Riscos principais: aceite de tarefa perdido em edição, importação que soma contrato sem CO, validação/privacidade de sub ausente.
+- **Próximo passo:** Incremento 0 via branch/PR; registrar testes e atualizar este handoff.
+
 
 ### 2026-10-26 — Protocolo inter-LLMs e preservação das decisões
 - **Estado:** `DOCS-ONLY` (documentado e gravado, sem alteração de código de aplicação).
