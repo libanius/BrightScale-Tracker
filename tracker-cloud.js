@@ -210,7 +210,11 @@
       });
       writeOutbox(current);
       state.lastError = failed.length ? (failed[0].lastError || 'Falha ao sincronizar') : '';
-      if (dropped.length) console.error('[cloud] descartados após várias tentativas:', dropped);
+      if (dropped.length) {
+        console.error('[cloud] descartados após várias tentativas:', dropped);
+        reportEvent('error', 'Sync dropped ' + dropped.length + ' change(s): ' + (dropped[0].lastError || ''),
+          { items: dropped.map(function (d) { return d.op + ' ' + d.store + ' ' + d.id; }).slice(0, 10) });
+      }
       state.flushing = false; emit();
       if (state.again) { state.again = false; scheduleFlush(50); }
       else if (current.length) scheduleFlush(Math.min(60000, 3000 * Math.pow(2, Math.min(4, current[0].tries || 0))));
@@ -412,6 +416,29 @@
     return callIntake({ action: 'link_project', intake_id: intakeId, project_id: projectId, milestones: milestones });
   }
 
+  /* ── error reporting (tracker.app_events) ───────────── */
+  var reported = 0, lastMsg = '';
+  function reportEvent(level, message, context) {
+    try {
+      message = String(message || '').slice(0, 1500);
+      if (!message || reported >= 20 || message === lastMsg) return; // cap per page load, skip repeats
+      reported++; lastMsg = message;
+      getSession().then(function (session) {
+        if (!session || !navigator.onLine) return;
+        client.from('app_events').insert({ level: level || 'error', source: 'app', message: message,
+          context: context || {}, url: global.location.pathname }).then(function () {}, function () {});
+      });
+    } catch (e) {}
+  }
+  global.addEventListener('error', function (e) {
+    reportEvent('error', e.message || 'error', { file: e.filename, line: e.lineno, col: e.colno,
+      stack: e.error && e.error.stack ? String(e.error.stack).slice(0, 1500) : '' });
+  });
+  global.addEventListener('unhandledrejection', function (e) {
+    var r = e.reason || {};
+    reportEvent('error', 'Unhandled: ' + (r.message || String(r)), { stack: r.stack ? String(r.stack).slice(0, 1500) : '' });
+  });
+
   global.addEventListener('online', function () { emit(); scheduleFlush(100); });
   global.addEventListener('offline', emit);
 
@@ -434,6 +461,7 @@
     createShareLink: createShareLink,
     fetchSharedProject: fetchSharedProject,
     analyzeEstimate: analyzeEstimate,
-    linkEstimateProject: linkEstimateProject
+    linkEstimateProject: linkEstimateProject,
+    reportEvent: reportEvent
   };
 })(window);

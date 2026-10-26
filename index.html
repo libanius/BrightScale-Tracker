@@ -194,7 +194,7 @@ window.onerror = function(msg, url, line, col, error) {
   if (el) {
     el.innerHTML = '<div class="empty"><div class="ei">⚠️</div>' +
       '<div class="et">JavaScript Error<br><br>' +
-      '<b>' + msg + '</b><br>' +
+      '<b>' + esc(String(msg)) + '</b><br>' +
       'Line: ' + line + ', Col: ' + col + '<br><br>' +
       '<button class="btn bp bfull" onclick="location.reload()">Reload</button></div></div>';
   }
