@@ -108,6 +108,12 @@ Serving Miami-Dade, Broward and Palm Beach.
 
 ---
 
+## AI project continuity — Smart Remodeling 2.0
+
+**For ChatGPT, Claude, Codex, GitHub Copilot and future contributors:** read the [canonical living handoff (34 approved decisions, MVP checkpoint, next step)](docs/SMART_REMODELING_HANDOFF_2026-10-26.md) and the [cross-LLM continuity protocol](docs/CONTINUITY_PROTOCOL.md) **before changing the application**. [AGENTS.md](AGENTS.md) provides concise operating rules for coding agents.
+
+The product-planning interview is closed. Focus on a small field-tested MVP. Update the **same canonical handoff** with verifiable implementation, test results, blockers, and next step after meaningful sessions. Documentation is **not** automatic background monitoring.
+
 ## Technical documentation
 
 The app's interface is currently in Portuguese; UI labels are shown as **English (Portuguese)**.
