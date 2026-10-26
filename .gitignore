@@ -1,3 +1,9 @@
 # Contracts and estimates are private local inputs.
 *.pdf
 *.docx
+
+# Project data lives in Supabase (schema tracker). Never commit exports or backups.
+dashboard-data.json
+backups/
+brightscale-backup-*.json
+*.backup.json

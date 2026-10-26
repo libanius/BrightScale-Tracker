@@ -88,6 +88,8 @@ body{background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSyst
   <div class="version-badge">v7.5</div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="tracker-cloud.js"></script>
 <script>
 'use strict';
 
@@ -99,73 +101,41 @@ function esc(s) {
 var dashboardData = null;
 var isClientView = false;
 
-function decodeDashboardData(value) {
-  var base64 = value.replace(/-/g, '+').replace(/_/g, '/');
-  while (base64.length % 4) base64 += '=';
-  var binary = atob(base64);
-  var bytes = Uint8Array.from(binary, function(char) { return char.charCodeAt(0); });
-  return JSON.parse(new TextDecoder().decode(bytes));
+var shareToken = new URLSearchParams(window.location.search).get('t');
+
+function legacyLinkNotice() {
+  var p = new URLSearchParams(window.location.search);
+  return !shareToken && (p.get('project') || p.get('data'));
 }
 
 function loadData() {
-  var params = new URLSearchParams(window.location.search);
-  var dataParam = params.get('data');
-  var projectId = params.get('project');
-  
-  if (dataParam) {
-    try {
-      isClientView = true;
-      return Promise.resolve(decodeDashboardData(dataParam));
-    } catch(e) {
-      try {
-        isClientView = true;
-        return Promise.resolve(JSON.parse(atob(dataParam)));
-      } catch(legacyError) {
-        console.error('Error parsing client dashboard data:', legacyError);
-      }
-    }
+  var content = document.getElementById('content');
+  if (legacyLinkNotice()) {
+    content.innerHTML = '<div class="empty"><div class="empty-icon">🔒</div>' +
+      '<div style="font-size:18px;font-weight:700;margin-bottom:12px">This link is no longer active</div>' +
+      '<div style="max-width:420px;margin:0 auto;line-height:1.7">For your privacy, project links were upgraded. ' +
+      'Please ask BrightScale for your new project link.<br><br>📞 954-553-9535</div></div>';
+    return Promise.resolve(undefined);
   }
-  
-  // Load from GitHub JSON file
-  var jsonUrl = window.location.origin + window.location.pathname.replace('dashboard.html', 'dashboard-data.json');
-  
-  return fetch(jsonUrl + '?t=' + Date.now()) // Cache buster
-    .then(function(res) {
-      if (!res.ok) throw new Error('Failed to load data');
-      return res.json();
-    })
-    .then(function(data) {
-      if (!projectId) return data;
-      isClientView = true;
-      var project = (data.projects || []).filter(function(item) {
-        return item.id === projectId;
-      })[0];
-      if (!project) return {
-        projects: [],
-        units: [],
-        scopes: [],
-        tasks: [],
-        updatedAt: data.updatedAt,
-        clientView: true
-      };
-      var units = (data.units || []).filter(function(unit) {
-        return unit.projectId === projectId;
-      });
-      var unitIds = units.map(function(unit) { return unit.id; });
-      var scopes = (data.scopes || []).filter(function(scope) {
-        return unitIds.indexOf(scope.unitId) >= 0;
-      });
-      var scopeIds = scopes.map(function(scope) { return scope.id; });
-      return {
-        projects: [project],
-        units: units,
-        scopes: scopes,
-        tasks: (data.tasks || []).filter(function(task) {
-          return scopeIds.indexOf(task.scopeId) >= 0;
-        }),
-        updatedAt: data.updatedAt,
-        clientView: true
-      };
+  if (shareToken) {
+    isClientView = true;
+    return TrackerCloud.fetchSharedProject(shareToken).catch(function(err) {
+      console.error('Shared project error:', err);
+      content.innerHTML = '<div class="empty"><div class="empty-icon">🔒</div>' +
+        '<div style="font-size:18px;font-weight:700;margin-bottom:12px">Link unavailable</div>' +
+        '<div style="max-width:420px;margin:0 auto;line-height:1.7">This project link has expired or was turned off. ' +
+        'Please contact BrightScale for a new one.<br><br>📞 954-553-9535</div></div>';
+      return undefined;
+    });
+  }
+  return TrackerCloud.requireLogin(content, { title: 'Dashboard da equipe' })
+    .then(function() { return TrackerCloud.isMember(); })
+    .then(function(member) {
+      if (!member) {
+        content.innerHTML = '<div class="empty"><div class="empty-icon">🔒</div><div>Este e-mail não tem acesso.</div></div>';
+        return undefined;
+      }
+      return TrackerCloud.fetchSnapshot();
     })
     .catch(function(err) {
       console.error('Error loading dashboard data:', err);
@@ -173,32 +143,38 @@ function loadData() {
     });
 }
 
-function shareProjectDashboard(projectId) {
+function shareProjectDashboard(projectId, button) {
   var project = dashboardData.projects.filter(function(item) {
     return item.id === projectId;
   })[0];
   if (!project) return;
-  var baseUrl = window.location.origin + window.location.pathname;
-  var url = baseUrl + '?project=' + encodeURIComponent(projectId);
-  var shareData = {
-    title: 'BrightScale - ' + project.name,
-    text: 'Acompanhe o progresso do seu projeto:',
-    url: url
-  };
-
-  if (navigator.share) {
-    navigator.share(shareData).catch(function() {});
-    return;
-  }
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(url).then(function() {
-      alert('Link do projeto copiado. Envie-o ao cliente.');
-    }).catch(function() {
-      window.prompt('Copie o link do projeto:', url);
-    });
-    return;
-  }
-  window.prompt('Copie o link do projeto:', url);
+  var original = button ? button.textContent : '';
+  if (button) { button.disabled = true; button.textContent = 'Gerando link...'; }
+  TrackerCloud.createShareLink(projectId, 'owner', project.client && project.client.name).then(function(res) {
+    if (button) { button.disabled = false; button.textContent = original; }
+    var url = window.location.origin + window.location.pathname + '?t=' + encodeURIComponent(res.token);
+    var shareData = {
+      title: 'BrightScale - ' + project.name,
+      text: 'Follow your project progress live:',
+      url: url
+    };
+    if (navigator.share) {
+      navigator.share(shareData).catch(function() { window.prompt('Copie o link do projeto:', url); });
+      return;
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(function() {
+        alert('Link do projeto copiado. Envie-o ao cliente.');
+      }).catch(function() {
+        window.prompt('Copie o link do projeto:', url);
+      });
+      return;
+    }
+    window.prompt('Copie o link do projeto:', url);
+  }).catch(function(err) {
+    if (button) { button.disabled = false; button.textContent = original; }
+    alert('Não foi possível gerar o link: ' + err.message);
+  });
 }
 
 function calcScopeProgress(scopes, tasks, scopeId) {
@@ -287,18 +263,12 @@ function renderTodayJourney(data, projects, scopes) {
 function render(data) {
   var content = document.getElementById('content');
   
+  if (data === undefined) return;
   if (!data || !data.projects) {
     content.innerHTML = '<div class="empty">' +
       '<div class="empty-icon">📊</div>' +
-      '<div style="font-size:18px;font-weight:700;margin-bottom:12px">Dashboard Setup Required</div>' +
-      '<div style="max-width:500px;margin:0 auto;line-height:1.7">' +
-      'To display project data, you need to:<br><br>' +
-      '1. Open the <b>BrightScale Tracker</b> app<br>' +
-      '2. Configure your <b>GitHub Token</b> in Settings<br>' +
-      '3. Go to <b>Reports</b> and click <b>"☁️ Sync Now"</b><br><br>' +
-      'Or manually create a <code>dashboard-data.json</code> file in your repository.<br><br>' +
-      '<a href="index.html" style="color:var(--ac);text-decoration:none;font-weight:700">→ Open BrightScale Tracker App</a>' +
-      '</div></div>';
+      '<div style="font-size:18px;font-weight:700;margin-bottom:12px">Could not load the dashboard</div>' +
+      '<div style="max-width:500px;margin:0 auto;line-height:1.7">Check your connection and reload the page.</div></div>';
     return;
   }
   
@@ -487,16 +457,32 @@ function render(data) {
   content.innerHTML = html;
   Array.from(content.querySelectorAll('.share-project')).forEach(function(button) {
     button.addEventListener('click', function() {
-      shareProjectDashboard(button.getAttribute('data-project-id'));
+      shareProjectDashboard(button.getAttribute('data-project-id'), button);
     });
   });
 }
 
 // Boot
+function refreshDashboard() {
+  return (shareToken ? TrackerCloud.fetchSharedProject(shareToken) : TrackerCloud.fetchSnapshot()).then(function(data) {
+    dashboardData = data;
+    render(data);
+  }).catch(function(err) { console.warn('Refresh failed:', err); });
+}
+
 loadData().then(function(data) {
   dashboardData = data;
   if (data && data.clientView) isClientView = true;
   render(data);
+  if (!data || !data.projects) return;
+  if (shareToken) {
+    setInterval(function() { if (document.visibilityState === 'visible') refreshDashboard(); }, 60000);
+  } else {
+    TrackerCloud.subscribe(refreshDashboard);
+  }
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') refreshDashboard();
+  });
 });
 </script>
 </body>

@@ -176,6 +176,8 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;background:var(--ac);
   <nav class="nav" id="nav"></nav>
 </div>
 <div id="tc"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="tracker-cloud.js"></script>
 <script>
 'use strict';
 
@@ -361,7 +363,7 @@ function dbAll(store) {
     r.onerror = function() { rej(r.error); };
   });
 }
-function dbPut(store, obj) {
+function dbPutLocal(store, obj) {
   return new Promise(function(res, rej) {
     var t = DB.transaction(store, 'readwrite');
     var r = t.objectStore(store).put(obj);
@@ -377,12 +379,24 @@ function dbGet(store, id) {
     r.onerror = function() { rej(r.error); };
   });
 }
-function dbDel(store, id) {
+function dbDelLocal(store, id) {
   return new Promise(function(res, rej) {
     var t = DB.transaction(store, 'readwrite');
     var r = t.objectStore(store).delete(id);
     r.onsuccess = function() { res(); };
     r.onerror = function() { rej(r.error); };
+  });
+}
+function dbPut(store, obj) {
+  return dbPutLocal(store, obj).then(function(r) {
+    if (window.TrackerCloud) TrackerCloud.enqueue('upsert', store, obj && obj.id, obj);
+    return r;
+  });
+}
+function dbDel(store, id) {
+  return dbDelLocal(store, id).then(function(r) {
+    if (window.TrackerCloud) TrackerCloud.enqueue('delete', store, id);
+    return r;
   });
 }
 function dbClear(store) {
@@ -2171,7 +2185,7 @@ function openDailyNoteForm(defaultProjectId, note, onSaved) {
     var f4 = div('fg');
     f4.appendChild(mkLbl('Nota interna'));
     var textInput = el('textarea', '');
-    textInput.placeholder = 'ex: Hoje finalizamos drywall no Rami e aguardamos material no projeto X.';
+    textInput.placeholder = 'ex: Hoje finalizamos o drywall do banheiro e aguardamos material.';
     textInput.value = note ? (note.text || '') : '';
     textInput.style.minHeight = '110px';
     f4.appendChild(textInput);
@@ -2911,305 +2925,57 @@ function renderUnitDetail(main) {
 }
 
 /* ═══════════════════════════════════════════
-   GITHUB SYNC
+   CLOUD SYNC (Supabase — schema tracker)
 ═══════════════════════════════════════════ */
-var BRIGHTSCALE_GITHUB = {
-  user: 'libanius',
-  repo: 'BrightScale-Tracker',
-  tokenKey: 'brightscale_gh_token',
-  lastSyncKey: 'brightscale_last_sync',
-  syncBaseKey: 'brightscale_sync_base_updated_at',
-  backupDirectory: 'backups'
-};
+var CLOUD = { pulling: false, lastPullAt: 0 };
 
-function getBrightScaleGitHubConfig() {
-  var token = localStorage.getItem(BRIGHTSCALE_GITHUB.tokenKey) || '';
-
-  // One-time migration from the old shared keys, only when they point here.
-  if (!token) {
-    var oldUser = localStorage.getItem('gh_user') || '';
-    var oldRepo = localStorage.getItem('gh_repo') || '';
-    if (oldUser.toLowerCase() === BRIGHTSCALE_GITHUB.user.toLowerCase() &&
-        oldRepo.toLowerCase() === BRIGHTSCALE_GITHUB.repo.toLowerCase()) {
-      token = localStorage.getItem('gh_token') || '';
-      if (token) localStorage.setItem(BRIGHTSCALE_GITHUB.tokenKey, token);
-    }
-  }
-
-  return {
-    user: BRIGHTSCALE_GITHUB.user,
-    repo: BRIGHTSCALE_GITHUB.repo,
-    token: token
-  };
-}
-
-function decodeGitHubContent(content) {
-  var clean = (content || '').replace(/\n/g, '');
-  try { return decodeURIComponent(escape(atob(clean))); }
-  catch(e) { return atob(clean); }
-}
-
-function countBackupRecords(data) {
-  return ['projects', 'units', 'scopes', 'tasks', 'expenses', 'people', 'notes'].reduce(function(total, key) {
-    return total + (Array.isArray(data[key]) ? data[key].length : 0);
-  }, 0);
-}
-
-function getLocalSyncData() {
-  return {
-    projects: S.projects.slice(),
-    units: S.units.slice(),
-    scopes: S.scopes.slice(),
-    tasks: S.tasks.slice(),
-    expenses: S.expenses.slice(),
-    people: S.people.slice(),
-    notes: S.notes.slice()
-  };
-}
-
-function buildSyncPayload(localData, updatedAt) {
-  return {
-    projects: localData.projects,
-    units: localData.units,
-    scopes: localData.scopes,
-    tasks: localData.tasks,
-    expenses: localData.expenses,
-    people: localData.people,
-    notes: localData.notes,
-    updatedAt: updatedAt
-  };
-}
-
-function validateGitHubBackup(data) {
-  if (!Array.isArray(data.projects) || !Array.isArray(data.units) ||
-      !Array.isArray(data.scopes) || !Array.isArray(data.tasks)) {
-    throw new Error('O arquivo remoto não é um backup válido do BrightScale');
-  }
-  if (!Array.isArray(data.expenses)) data.expenses = [];
-  if (!Array.isArray(data.people)) data.people = [];
-  if (!Array.isArray(data.notes)) data.notes = [];
-  return data;
-}
-
-function githubApiHeaders(includeJson) {
-  var config = getBrightScaleGitHubConfig();
-  var headers = {
-    'Authorization': 'token ' + config.token,
-    'Accept': 'application/vnd.github.v3+json'
-  };
-  if (includeJson) headers['Content-Type'] = 'application/json';
-  return headers;
-}
-
-function fetchGitHubBackup(path) {
-  var config = getBrightScaleGitHubConfig();
-  if (!config.token) return Promise.reject(new Error('Configure o token do BrightScale em Ajustes primeiro'));
-  path = path || 'dashboard-data.json';
-  var apiUrl = 'https://api.github.com/repos/' + config.user + '/' + config.repo +
-    '/contents/' + path + '?read=' + Date.now();
-
-  return fetch(apiUrl, {
-    cache: 'no-store',
-    headers: githubApiHeaders()
-  }).then(function(res) {
-    if (res.status === 404) throw new Error('Backup não encontrado no GitHub');
-    if (!res.ok) throw new Error('GitHub API error: ' + res.status);
-    return res.json();
-  }).then(function(fileData) {
-    if (!fileData.content) throw new Error('Backup remoto sem conteúdo');
-    var data = validateGitHubBackup(JSON.parse(decodeGitHubContent(fileData.content)));
-    data._sha = fileData.sha || '';
-    data._path = path;
-    return data;
+function getLocalSnapshot() {
+  return Promise.all(TrackerCloud.STORES.map(function(store) { return dbAll(store); })).then(function(r) {
+    var out = {};
+    TrackerCloud.STORES.forEach(function(store, i) { out[store] = r[i]; });
+    return out;
   });
 }
 
-function listGitHubBackups() {
-  var config = getBrightScaleGitHubConfig();
-  if (!config.token) return Promise.reject(new Error('Configure o token do BrightScale em Ajustes primeiro'));
-  var apiUrl = 'https://api.github.com/repos/' + config.user + '/' + config.repo +
-    '/contents/' + BRIGHTSCALE_GITHUB.backupDirectory + '?list=' + Date.now();
-
-  return fetch(apiUrl, {
-    cache: 'no-store',
-    headers: githubApiHeaders()
-  }).then(function(res) {
-    if (res.status === 404) return [];
-    if (!res.ok) throw new Error('GitHub API error: ' + res.status);
-    return res.json();
-  }).then(function(files) {
-    return (Array.isArray(files) ? files : [])
-      .filter(function(file) {
-        return file.type === 'file' && /^brightscale-backup-.*\.json$/.test(file.name);
-      })
-      .sort(function(a, b) { return b.name.localeCompare(a.name); })
-      .map(function(file) {
-        var timestamp = file.name
-          .replace(/^brightscale-backup-/, '')
-          .replace(/\.json$/, '')
-          .replace(/^(\d{4}-\d{2}-\d{2})T(\d{2})-(\d{2})-(\d{2})-(\d{3})Z$/, '$1T$2:$3:$4.$5Z');
-        return {
-          name: file.name,
-          path: file.path,
-          timestamp: timestamp,
-          sha: file.sha
-        };
-      });
+function applyCloudSnapshot(data) {
+  return Promise.all(TrackerCloud.STORES.map(function(store) { return dbClear(store); })).then(function() {
+    var puts = [];
+    TrackerCloud.STORES.forEach(function(store) {
+      (data[store] || []).forEach(function(item) { puts.push(dbPutLocal(store, item)); });
+    });
+    return Promise.all(puts);
   });
 }
 
-function putGitHubFile(path, json, message, existingSha) {
-  var config = getBrightScaleGitHubConfig();
-  var apiUrl = 'https://api.github.com/repos/' + config.user + '/' + config.repo + '/contents/' + path;
-  var body = {
-    message: message,
-    content: btoa(unescape(encodeURIComponent(json))),
-    branch: 'main'
-  };
-  if (existingSha) body.sha = existingSha;
-
-  return fetch(apiUrl, {
-    method: 'PUT',
-    headers: githubApiHeaders(true),
-    body: JSON.stringify(body)
-  }).then(function(res) {
-    if (!res.ok) {
-      return res.json().then(function(err) {
-        throw new Error(err.message || 'Falha ao enviar backup');
-      });
-    }
-    return res.json();
-  });
+function pullFromCloud(options) {
+  options = options || {};
+  if (CLOUD.pulling || !navigator.onLine) return Promise.resolve(false);
+  if (getDirtyModal() && !options.force) return Promise.resolve(false);
+  CLOUD.pulling = true;
+  return TrackerCloud.flush()
+    .then(getLocalSnapshot)
+    .then(TrackerCloud.pull)
+    .then(applyCloudSnapshot)
+    .then(function() {
+      CLOUD.lastPullAt = Date.now();
+      CLOUD.pulling = false;
+      return options.noReload ? true : reload().then(function() { return true; });
+    })
+    .catch(function(err) {
+      CLOUD.pulling = false;
+      console.error('Cloud pull error:', err);
+      if (!options.silent) toast('Não foi possível atualizar da nuvem: ' + (err.message || err), 'e', 5000);
+      return false;
+    });
 }
-
-function replaceLocalDataFromGitHub(data) {
-  return Promise.all([
-    dbClear('projects'),
-    dbClear('units'),
-    dbClear('scopes'),
-    dbClear('tasks'),
-    dbClear('expenses'),
-    dbClear('people'),
-    dbClear('notes'),
-    dbClear('documents')
-  ]).then(function() {
-    return Promise.all(
-      data.projects.map(function(item) {
-        var project = Object.assign({}, item);
-        project.documentId = '';
-        project.documentIds = [];
-        return dbPut('projects', project);
-      })
-        .concat(data.units.map(function(item) {
-          var unit = Object.assign({}, item);
-          unit.documentId = '';
-          return dbPut('units', unit);
-        }))
-        .concat(data.scopes.map(function(item) { return dbPut('scopes', item); }))
-        .concat(data.tasks.map(function(item) { return dbPut('tasks', item); }))
-        .concat((data.expenses || []).map(function(item) { return dbPut('expenses', item); }))
-        .concat((data.people || []).map(function(item) { return dbPut('people', item); }))
-        .concat((data.notes || []).map(function(item) { return dbPut('notes', item); }))
-    );
-  }).then(function() {
-    localStorage.setItem('brightscale_last_restore', new Date().toISOString());
-    var syncBaseUpdatedAt = data._syncBaseUpdatedAt || data.updatedAt;
-    if (syncBaseUpdatedAt) {
-      localStorage.setItem(BRIGHTSCALE_GITHUB.syncBaseKey, syncBaseUpdatedAt);
-    }
-    S.currentProjectId = null;
-    S.currentUnitId = null;
-    clearOpenScopes();
-    return migrateResponsibilityData().then(reload);
-  });
-}
-
-var AUTO_DASHBOARD_SYNC = {
-  inFlight: false,
-  pending: false,
-  warnedNoToken: false
-};
 
 function autoPublishDashboardData() {
-  var config = getBrightScaleGitHubConfig();
-  if (!config.token) {
-    if (!AUTO_DASHBOARD_SYNC.warnedNoToken) {
-      AUTO_DASHBOARD_SYNC.warnedNoToken = true;
-      toast('Dashboard não atualizado: configure o token do GitHub em Ajustes', 'w', 5000);
+  return TrackerCloud.flush().then(function(ok) {
+    var st = TrackerCloud.status();
+    if (!ok && st.lastError && navigator.onLine) {
+      toast('Salvo no aparelho. Nuvem pendente: ' + st.lastError, 'w', 5000);
     }
-    return Promise.resolve(false);
-  }
-  if (AUTO_DASHBOARD_SYNC.inFlight) {
-    AUTO_DASHBOARD_SYNC.pending = true;
-    return Promise.resolve(false);
-  }
-
-  var localData = getLocalSyncData();
-  if (countBackupRecords(localData) === 0) return Promise.resolve(false);
-
-  AUTO_DASHBOARD_SYNC.inFlight = true;
-  AUTO_DASHBOARD_SYNC.pending = false;
-
-  var updatedAt = new Date().toISOString();
-  var data = buildSyncPayload(localData, updatedAt);
-  var json = JSON.stringify(data, null, 2);
-  var latestPath = 'dashboard-data.json';
-  var latestSha = '';
-  var syncBase = localStorage.getItem(BRIGHTSCALE_GITHUB.syncBaseKey) ||
-    localStorage.getItem(BRIGHTSCALE_GITHUB.lastSyncKey) || '';
-
-  return fetchGitHubBackup(latestPath)
-  .catch(function(err) {
-    if (err.message === 'Backup não encontrado no GitHub') return null;
-    throw err;
-  })
-  .then(function(remoteData) {
-    if (remoteData) {
-      latestSha = remoteData._sha || '';
-      if (!syncBase) {
-        var remoteRecords = JSON.stringify({
-          projects: remoteData.projects,
-          units: remoteData.units,
-          scopes: remoteData.scopes,
-          tasks: remoteData.tasks,
-          expenses: remoteData.expenses || [],
-          people: remoteData.people || [],
-          notes: remoteData.notes || []
-        });
-        var localRecords = JSON.stringify(localData);
-        if (remoteRecords !== localRecords) {
-          throw new Error('Restaure o backup atual do GitHub antes de publicar este aparelho.');
-        }
-      }
-      if (syncBase && remoteData.updatedAt &&
-          new Date(remoteData.updatedAt).getTime() > new Date(syncBase).getTime()) {
-        throw new Error('Existe dashboard mais novo no GitHub. Restaure antes de editar.');
-      }
-    }
-    return putGitHubFile(
-      latestPath,
-      json,
-      'Update dashboard data - ' + new Date(updatedAt).toLocaleString('pt-BR'),
-      latestSha
-    );
-  })
-  .then(function() {
-    localStorage.setItem(BRIGHTSCALE_GITHUB.lastSyncKey, updatedAt);
-    localStorage.setItem(BRIGHTSCALE_GITHUB.syncBaseKey, updatedAt);
-    toast('Dashboard atualizado');
-    return true;
-  })
-  .catch(function(err) {
-    console.error('Dashboard auto publish error:', err);
-    toast('Dashboard não atualizado: ' + err.message, 'e', 6000);
-    return false;
-  })
-  .then(function(result) {
-    AUTO_DASHBOARD_SYNC.inFlight = false;
-    if (AUTO_DASHBOARD_SYNC.pending) {
-      return autoPublishDashboardData();
-    }
-    return result;
+    return ok;
   });
 }
 
@@ -3219,185 +2985,22 @@ function reloadAndPublishDashboard() {
   });
 }
 
-function syncToGitHub(callback) {
-  var config = getBrightScaleGitHubConfig();
-  var token = config.token;
-  
-  if (!token) {
-    toast('Configure o token do BrightScale em Ajustes primeiro', 'w', 4000);
-    if (callback) callback(false);
-    return Promise.resolve(false);
-  }
-  
-  var localData = getLocalSyncData();
-  if (countBackupRecords(localData) === 0) {
-    toast('⛔ Upload bloqueado: este aparelho não possui dados. Restaure do GitHub primeiro.', 'e', 7000);
-    if (callback) callback(false);
-    return Promise.resolve(false);
-  }
-
-  var updatedAt = new Date().toISOString();
-  var data = buildSyncPayload(localData, updatedAt);
-  
-  var json = JSON.stringify(data, null, 2);
-  var compactTimestamp = updatedAt.replace(/:/g, '-').replace(/\./g, '-');
-  var archivePath = BRIGHTSCALE_GITHUB.backupDirectory +
-    '/brightscale-backup-' + compactTimestamp + '.json';
-  var latestPath = 'dashboard-data.json';
-  var latestSha = '';
-  var syncBase = localStorage.getItem(BRIGHTSCALE_GITHUB.syncBaseKey) ||
-    localStorage.getItem(BRIGHTSCALE_GITHUB.lastSyncKey) || '';
-
-  return fetchGitHubBackup(latestPath)
-  .catch(function(err) {
-    if (err.message === 'Backup não encontrado no GitHub') return null;
-    throw err;
-  })
-  .then(function(remoteData) {
-    if (remoteData) {
-      latestSha = remoteData._sha || '';
-      if (!syncBase) {
-        var remoteRecords = JSON.stringify({
-          projects: remoteData.projects,
-          units: remoteData.units,
-          scopes: remoteData.scopes,
-          tasks: remoteData.tasks,
-          expenses: remoteData.expenses || [],
-          people: remoteData.people || [],
-          notes: remoteData.notes || []
-        });
-        var localRecords = JSON.stringify(localData);
-        if (remoteRecords !== localRecords) {
-          throw new Error('Este aparelho não conhece a versão atual do GitHub. Restaure um backup antes de enviar.');
-        }
-      }
-      if (syncBase && remoteData.updatedAt &&
-          new Date(remoteData.updatedAt).getTime() > new Date(syncBase).getTime()) {
-        throw new Error('Existe um backup mais novo criado em outro aparelho. Restaure esse backup antes de enviar.');
-      }
-    }
-    return putGitHubFile(
-      archivePath,
-      json,
-      'Create BrightScale backup - ' + new Date(updatedAt).toLocaleString('pt-BR')
-    );
-  })
-  .then(function(res) {
-    return putGitHubFile(
-      latestPath,
-      json,
-      'Update dashboard data - ' + new Date(updatedAt).toLocaleString('pt-BR'),
-      latestSha
-    );
-  })
-  .then(function() {
-    return fetchGitHubBackup(archivePath);
-  })
-  .then(function(remoteBackup) {
-    var remoteJson = JSON.stringify({
-      projects: remoteBackup.projects,
-      units: remoteBackup.units,
-      scopes: remoteBackup.scopes,
-      tasks: remoteBackup.tasks,
-      expenses: remoteBackup.expenses || [],
-      people: remoteBackup.people || [],
-      notes: remoteBackup.notes || [],
-      updatedAt: remoteBackup.updatedAt
-    }, null, 2);
-    if (remoteJson !== json) {
-      throw new Error('O backup remoto não corresponde aos dados locais');
-    }
-  })
-  .then(function() {
-    localStorage.setItem(BRIGHTSCALE_GITHUB.lastSyncKey, updatedAt);
-    localStorage.setItem(BRIGHTSCALE_GITHUB.syncBaseKey, updatedAt);
-    toast('✅ Backup versionado confirmado no GitHub!');
-    if (callback) callback(true);
-    return true;
-  })
-  .catch(function(err) {
-    console.error('GitHub sync error:', err);
-    toast('❌ Erro ao sincronizar: ' + err.message, 'e', 4000);
-    if (callback) callback(false);
-    return false;
-  });
+function cloudStatusText(st) {
+  if (!st.online) return 'Offline — ' + st.pending + ' alteração(ões) aguardando internet';
+  if (st.flushing) return 'Enviando alterações...';
+  if (st.pending) return st.pending + ' alteração(ões) pendente(s)' + (st.lastError ? ' — ' + st.lastError : '');
+  return 'Tudo salvo na nuvem' + (st.lastPull ? ' · atualizado ' + new Date(st.lastPull).toLocaleString('pt-BR') : '');
 }
 
-function openGitHubBackupHistory(onRestored) {
-  showModal(function(mo, close) {
-    mo.appendChild(div('mtit', 'Restaurar Backup'));
-    mo.appendChild(div('', '<div style="font-size:13px;color:var(--mu);margin-bottom:14px;line-height:1.6">' +
-      'Escolha uma cópia por data e hora. Os dados atuais deste aparelho serão substituídos somente após sua confirmação.</div>'));
-    var status = div('');
-    status.style.cssText = 'font-size:12px;color:var(--mu);padding:10px 12px;border-radius:8px;background:var(--sf2);border:1px solid var(--bd);margin-bottom:10px;';
-    status.textContent = 'Buscando histórico no GitHub...';
-    mo.appendChild(status);
-    var list = div('');
-    mo.appendChild(list);
-    mo.appendChild(btn('btn bs bfull', 'Fechar', close));
-
-    function addBackupOption(label, detail, path) {
-      var option = btn('btn bs bfull', label, function() {
-        option.disabled = true;
-        option.textContent = 'Carregando backup...';
-        var selectedBackup = fetchGitHubBackup(path);
-        var currentBackup = path === 'dashboard-data.json'
-          ? selectedBackup
-          : fetchGitHubBackup('dashboard-data.json');
-        Promise.all([selectedBackup, currentBackup]).then(function(results) {
-          var data = results[0];
-          var currentData = results[1];
-          data._syncBaseUpdatedAt = currentData.updatedAt || data.updatedAt;
-          option.disabled = false;
-          option.textContent = label;
-          var projects = data.projects.length;
-          var units = data.units.length;
-          showConfirm({
-            title: 'Confirmar restauração',
-            msg: 'Restaurar o backup de ' +
-              (data.updatedAt ? new Date(data.updatedAt).toLocaleString('pt-BR') : detail) +
-              ' com ' + projects + ' projeto(s) e ' + units + ' unit(s)? ' +
-              'Os dados locais atuais serão substituídos. PDFs originais não fazem parte do backup remoto.',
-            yesL: 'Restaurar',
-            onYes: function() {
-              status.innerHTML = '<span style="color:var(--ac)">Restaurando backup selecionado...</span>';
-              replaceLocalDataFromGitHub(data).then(function() {
-                close();
-                toast('Backup restaurado com sucesso!');
-                if (onRestored) onRestored(data);
-              }).catch(function(err) {
-                status.innerHTML = '<span style="color:var(--ac3)">Erro: ' + esc(err.message) + '</span>';
-                toast('Erro ao restaurar: ' + err.message, 'e', 7000);
-              });
-            }
-          });
-        }).catch(function(err) {
-          option.disabled = false;
-          option.textContent = label;
-          toast('Erro ao abrir backup: ' + err.message, 'e', 7000);
-        });
-      });
-      option.style.cssText += 'margin-bottom:8px;text-align:left;white-space:normal;line-height:1.4;';
-      var detailBox = div('');
-      detailBox.style.cssText = 'font-size:11px;color:var(--mu);margin:-4px 8px 10px;';
-      detailBox.textContent = detail;
-      list.appendChild(option);
-      list.appendChild(detailBox);
+function startCloudLiveUpdates() {
+  TrackerCloud.subscribe(function() {
+    if (TrackerCloud.status().flushing) return;
+    pullFromCloud({ silent: true });
+  });
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible' && Date.now() - CLOUD.lastPullAt > 30000) {
+      pullFromCloud({ silent: true });
     }
-
-    listGitHubBackups().then(function(backups) {
-      status.textContent = backups.length
-        ? backups.length + ' backup(s) versionado(s) encontrado(s).'
-        : 'Nenhum backup versionado encontrado. O backup atual ainda pode ser restaurado.';
-      backups.forEach(function(backup) {
-        var date = new Date(backup.timestamp);
-        var detail = isNaN(date.getTime()) ? backup.name : date.toLocaleString('pt-BR');
-        addBackupOption('Backup de ' + detail, backup.name, backup.path);
-      });
-      addBackupOption('Último backup / Dashboard atual', 'dashboard-data.json', 'dashboard-data.json');
-    }).catch(function(err) {
-      status.innerHTML = '<span style="color:var(--ac3)">Erro: ' + esc(err.message) + '</span>';
-    });
   });
 }
 
@@ -3423,49 +3026,21 @@ function renderReports(main) {
   dashCard.appendChild(genDashBtn);
   main.appendChild(dashCard);
   
-  // GitHub Sync Card
+  // Cloud status card
   var syncCard = div('card');
-  syncCard.appendChild(div('ct', 'Backup no GitHub'));
-  syncCard.appendChild(div('', '<div style="font-size:13px;color:var(--mu);margin-bottom:12px">' +
-    'Crie uma cópia com data e hora e atualize o dashboard público automaticamente.</div>'));
-  
-  var syncBtn = btn('btn bp bfull', '☁️ Criar Backup Agora', function() {
-    syncBtn.textContent = '⏳ Criando backup...';
+  syncCard.appendChild(div('ct', 'Nuvem'));
+  var syncInfo = div('');
+  syncInfo.style.cssText = 'font-size:13px;color:var(--mu);margin-bottom:12px;line-height:1.6;';
+  syncInfo.textContent = cloudStatusText(TrackerCloud.status());
+  syncCard.appendChild(syncInfo);
+  var syncBtn = btn('btn bp bfull', 'Sincronizar agora', function() {
     syncBtn.disabled = true;
-    
-    syncToGitHub(function(success) {
-      syncBtn.textContent = '☁️ Criar Backup Agora';
-      syncBtn.disabled = false;
-      
-      if (success) {
-        showModal(function(mo, close) {
-          mo.appendChild(div('mtit', '✅ Backup criado!'));
-          mo.appendChild(div('', '<div style="font-size:14px;color:var(--mu);margin-bottom:16px;line-height:1.7">' +
-            'Cópia versionada e dashboard atualizados com sucesso!<br><br>' +
-            'O dashboard público agora mostra os dados mais recentes.<br><br>' +
-            'Link do dashboard:<br>' +
-            '<code style="background:var(--sf2);padding:8px 12px;border-radius:6px;display:block;margin-top:8px;' +
-            'font-size:11px;word-break:break-all;color:var(--ac)">' +
-            window.location.origin + window.location.pathname.replace('index.html', '') + 'dashboard.html</code>' +
-            '</div>'));
-          
-          var okBtn = btn('btn bp bfull', 'OK', close);
-          mo.appendChild(okBtn);
-        });
-      }
+    syncBtn.textContent = 'Sincronizando...';
+    pullFromCloud({ force: true }).then(function(ok) {
+      if (ok) toast('Dados atualizados');
     });
   });
-  
   syncCard.appendChild(syncBtn);
-  
-  var lastSync = localStorage.getItem(BRIGHTSCALE_GITHUB.lastSyncKey);
-  if (lastSync) {
-    var syncInfo = div('');
-    syncInfo.style.cssText = 'font-size:11px;color:var(--mu);margin-top:8px;text-align:center;';
-    syncInfo.textContent = 'Última sync: ' + new Date(lastSync).toLocaleString('pt-BR');
-    syncCard.appendChild(syncInfo);
-  }
-  
   main.appendChild(syncCard);
   
   var ec = div('card');
@@ -3842,150 +3417,58 @@ function renderSettings(main) {
   hdr.appendChild(el('h1', null, 'Ajustes'));
   main.appendChild(hdr);
   
-  // GitHub Sync Configuration
-  var ghCard = div('card');
-  ghCard.appendChild(div('ct', 'Sincronização GitHub'));
-  ghCard.appendChild(div('', '<div style="font-size:13px;color:var(--mu);margin-bottom:12px;line-height:1.6">' +
-    'Configure sua chave de acesso do GitHub para sincronizar automaticamente o dashboard.<br>' +
-    '<a href="https://github.com/settings/tokens" target="_blank" style="color:var(--ac)">Criar token aqui →</a></div>'));
-  
-  var ghFg1 = div('fg');
-  ghFg1.appendChild(mkLbl('GitHub Username'));
-  var ghUserInp = el('input', '');
-  ghUserInp.type = 'text';
-  ghUserInp.value = BRIGHTSCALE_GITHUB.user;
-  ghUserInp.readOnly = true;
-  ghFg1.appendChild(ghUserInp);
-  ghCard.appendChild(ghFg1);
-  
-  var ghFg2 = div('fg');
-  ghFg2.appendChild(mkLbl('Repository Name'));
-  var ghRepoInp = el('input', '');
-  ghRepoInp.type = 'text';
-  ghRepoInp.value = BRIGHTSCALE_GITHUB.repo;
-  ghRepoInp.readOnly = true;
-  ghFg2.appendChild(ghRepoInp);
-  ghCard.appendChild(ghFg2);
-  
-  var ghFg3 = div('fg');
-  ghFg3.appendChild(mkLbl('GitHub Token (Personal Access Token)'));
-  var ghTokenInp = el('input', '');
-  ghTokenInp.type = 'password';
-  ghTokenInp.placeholder = 'ghp_xxxxxxxxxxxxxxxxxxxx';
-  ghTokenInp.value = getBrightScaleGitHubConfig().token;
-  ghFg3.appendChild(ghTokenInp);
-  ghCard.appendChild(ghFg3);
-  
-  var ghSaveBtn = btn('btn bp bfull', 'Salvar Configuração', function() {
-    var token = ghTokenInp.value.trim();
-    
-    if (!token) {
-      toast('Informe o token do GitHub', 'w');
-      return;
+  // Account & cloud
+  var acctCard = div('card');
+  acctCard.appendChild(div('ct', 'Conta e Nuvem'));
+  var acctInfo = div('');
+  acctInfo.style.cssText = 'font-size:13px;color:var(--mu);margin-bottom:12px;line-height:1.7;';
+  acctInfo.innerHTML = 'Os dados ficam salvos com segurança na nuvem da BrightScale e aparecem em todos os aparelhos em que você entrar com seu e-mail.';
+  acctCard.appendChild(acctInfo);
+  var acctStatus = div('');
+  acctStatus.style.cssText = 'font-size:12px;font-family:monospace;padding:8px 12px;border-radius:8px;background:var(--sf2);border:1px solid var(--bd);margin-bottom:10px;line-height:1.5;';
+  acctStatus.textContent = cloudStatusText(TrackerCloud.status());
+  acctCard.appendChild(acctStatus);
+  TrackerCloud.getSession().then(function(session) {
+    if (session && session.user) {
+      acctInfo.innerHTML += '<br>Conectado como <b style="color:var(--tx)">' + esc(session.user.email || '') + '</b>.';
     }
-    
-    localStorage.setItem(BRIGHTSCALE_GITHUB.tokenKey, token);
-    
-    toast('Configuração do BrightScale salva!');
   });
-  ghSaveBtn.style.marginTop = '4px';
-  ghCard.appendChild(ghSaveBtn);
-  
-  var ghTestBtn = btn('btn bs bfull', 'Testar Conexão', function() {
-    var config = getBrightScaleGitHubConfig();
-    var user = config.user;
-    var repo = config.repo;
-    var token = config.token;
-    
-    if (!token) {
-      toast('Configure o token do BrightScale primeiro', 'w');
-      return;
-    }
-    
-    ghTestBtn.textContent = 'Testando...';
-    ghTestBtn.disabled = true;
-    
-    fetch('https://api.github.com/repos/' + user + '/' + repo, {
-      headers: {
-        'Authorization': 'token ' + token,
-        'Accept': 'application/vnd.github.v3+json'
+  var acctSync = btn('btn bp bfull', 'Sincronizar agora', function() {
+    acctSync.disabled = true;
+    pullFromCloud({ force: true }).then(function(ok) {
+      if (ok) toast('Dados atualizados');
+    });
+  });
+  acctCard.appendChild(acctSync);
+  var acctOut = btn('btn bs bfull', 'Sair desta conta', function() {
+    var st = TrackerCloud.status();
+    showConfirm({
+      title: 'Sair',
+      msg: st.pending ? ('Há ' + st.pending + ' alteração(ões) ainda não enviadas. Conecte-se à internet antes de sair, ou elas serão perdidas neste aparelho.') : 'Sair da conta neste aparelho? Os dados continuam na nuvem.',
+      yesL: 'Sair',
+      onYes: function() {
+        TrackerCloud.signOut().then(function() {
+          return Promise.all(TrackerCloud.STORES.map(function(store) { return dbClear(store); }));
+        }).then(function() { location.reload(); });
       }
-    })
-    .then(function(res) {
-      ghTestBtn.textContent = 'Testar Conexão';
-      ghTestBtn.disabled = false;
-      
-      if (res.ok) {
-        toast('✅ Conexão OK!');
-      } else if (res.status === 401) {
-        toast('❌ Token inválido', 'e');
-      } else if (res.status === 404) {
-        toast('❌ Repositório não encontrado', 'e');
-      } else {
-        toast('❌ Erro: ' + res.status, 'e');
-      }
-    })
-    .catch(function(err) {
-      ghTestBtn.textContent = 'Testar Conexão';
-      ghTestBtn.disabled = false;
-      toast('❌ Erro de conexão', 'e');
-      console.error(err);
     });
   });
-  ghTestBtn.style.marginTop = '8px';
-  ghCard.appendChild(ghTestBtn);
-  
-  main.appendChild(ghCard);
-
-  var deviceDataCard = div('card');
-  deviceDataCard.appendChild(div('ct', 'Dados entre Dispositivos'));
-  deviceDataCard.appendChild(div('', '<div style="font-size:13px;color:var(--mu);margin-bottom:12px;line-height:1.6">' +
-    'Este aparelho possui <b style="color:var(--tx)">' + S.projects.length + ' projeto(s)</b>. ' +
-    'Crie um backup após trabalhar e restaure a cópia mais recente nos outros aparelhos antes de editar. ' +
-    'Cada backup fica salvo com data e hora.</div>'));
-  var deviceStatus = div('');
-  deviceStatus.style.cssText = 'display:none;font-size:12px;font-family:monospace;padding:8px 12px;border-radius:8px;background:var(--sf2);border:1px solid var(--bd);margin-bottom:10px;line-height:1.5;';
-  deviceDataCard.appendChild(deviceStatus);
-
-  var backupBtn = btn('btn bp bfull', 'Criar Backup Agora', function() {
-    backupBtn.disabled = true;
-    backupBtn.textContent = 'Criando backup...';
-    deviceStatus.style.display = '';
-    deviceStatus.textContent = 'Salvando cópia versionada e atualizando o dashboard...';
-    syncToGitHub(function(success) {
-      backupBtn.disabled = false;
-      backupBtn.textContent = 'Criar Backup Agora';
-      deviceStatus.innerHTML = success
-        ? '<span style="color:var(--ac)">Backup confirmado com data e hora no GitHub.</span>'
-        : '<span style="color:var(--ac3)">Backup não criado. Veja a mensagem de erro acima.</span>';
-    });
-  });
-  deviceDataCard.appendChild(backupBtn);
-
-  var restoreBtn = btn('btn bs bfull', 'Escolher e Restaurar Backup', function() {
-    openGitHubBackupHistory(function(data) {
-      deviceStatus.style.display = '';
-      deviceStatus.innerHTML = '<span style="color:var(--ac)">Restaurado: ' +
-        esc(data.updatedAt ? new Date(data.updatedAt).toLocaleString('pt-BR') : 'backup selecionado') +
-        '</span>';
-    });
-  });
-  restoreBtn.style.marginTop = '8px';
-  deviceDataCard.appendChild(restoreBtn);
-  main.appendChild(deviceDataCard);
+  acctOut.style.marginTop = '8px';
+  acctCard.appendChild(acctOut);
+  main.appendChild(acctCard);
 
   var reloadCard = div('card');
   reloadCard.appendChild(div('ct', 'Atualizar App'));
   reloadCard.appendChild(div('', '<div style="font-size:13px;color:var(--mu);margin-bottom:12px;line-height:1.6">' +
     'Limpa somente o cache do BrightScale e abre a versão mais recente. ' +
-    '<b style="color:var(--tx)">Não envia nem restaura dados do GitHub.</b> Os dados locais são mantidos.</div>'));
+    '<b style="color:var(--tx)">Não apaga dados.</b> Tudo continua salvo na nuvem.</div>'));
   var reloadStatus = div('');
   reloadStatus.style.cssText = 'display:none;font-size:12px;font-family:monospace;padding:8px 12px;border-radius:8px;background:var(--sf2);border:1px solid var(--bd);margin-bottom:10px;';
   reloadCard.appendChild(reloadStatus);
   var reloadAppBtn = btn('btn bp bfull', 'Forçar atualizar app', function() {
     showConfirm({
       title: 'Atualizar App',
-      msg: 'Limpar o cache e abrir a versão mais recente? Nenhum dado será enviado ao GitHub.',
+      msg: 'Limpar o cache e abrir a versão mais recente? Seus dados continuam salvos.',
       yesL: 'Forçar atualizar',
       onYes: function() {
         forceRefreshApp({
@@ -5302,18 +4785,37 @@ function openTaskEdit(task) {
 openDB().then(function() {
   F.date = today(); F.useNow = true;
   RS.period = 'today'; RS.df = today(); RS.dt = today();
-  return migrateResponsibilityData();
+  return TrackerCloud.getSession(); // finishes reading a sign-in link before anything reloads the page
 }).then(function() {
   return autoForceRefreshAppOnSplash();
 }).then(function() {
   var remaining = Math.max(0, SPLASH_MIN_MS - (Date.now() - splashStartedAt));
-  return new Promise(function(resolve) {
-    setTimeout(resolve, remaining);
-  }).then(reload);
+  return new Promise(function(resolve) { setTimeout(resolve, remaining); });
+}).then(function() {
+  document.getElementById('nav').style.display = 'none';
+  return TrackerCloud.requireLogin(document.getElementById('main'));
+}).then(function() {
+  return TrackerCloud.isMember();
+}).then(function(member) {
+  if (!member) {
+    document.getElementById('main').innerHTML =
+      '<div class="empty"><div class="ei">🔒</div><div class="et">Este e-mail não tem acesso ao BrightScale Tracker.<br><br>' +
+      '<button class="btn bs bfull" id="bsOut">Entrar com outro e-mail</button></div></div>';
+    document.getElementById('bsOut').onclick = function() { TrackerCloud.signOut().then(function() { location.reload(); }); };
+    throw { handled: true };
+  }
+  document.getElementById('nav').style.display = '';
+  return pullFromCloud({ silent: !navigator.onLine, noReload: true, force: true });
+}).then(function() {
+  return migrateResponsibilityData();
+}).then(function() {
+  startCloudLiveUpdates();
+  return reload();
 }).catch(function(err) {
+  if (err && err.handled) return;
   document.getElementById('main').innerHTML =
     '<div class="empty"><div class="ei">⚠️</div>' +
-    '<div class="et">Erro ao abrir banco.<br>Recarregue a pagina.</div></div>';
+    '<div class="et">Erro ao abrir o app.<br>Recarregue a página.</div></div>';
   console.error(err);
 });
 </script>

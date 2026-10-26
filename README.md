@@ -86,10 +86,10 @@ BrightScale Tracker is the software form of **Smart Remodeling**, the structured
 
 ## Status and roadmap
 
-**Today (MVP, in production use):** installable PWA on iPhone and Android · estimate import · templates · subcontractor registry · project and subcontractor financials · versioned backups and restore · conflict protection between devices · shareable per-project client link.
+**Today (MVP, in production use):** installable PWA on iPhone and Android · estimate import · templates · subcontractor registry · project and subcontractor financials · versioned backups and restore · conflict protection between devices · private, revocable per-project client links · cloud sync with sign-in.
 
 **Next:**
-- Sign-in for client links (today, anyone with the link can view that project)
+- Owner and subcontractor portals with milestone approval, e-signature and Stripe payment links
 - Multi-company accounts so other contractors can use it as SaaS
 - OCR for scanned estimates
 - English and Spanish interface (the app UI is currently in Portuguese)
@@ -97,7 +97,7 @@ BrightScale Tracker is the software form of **Smart Remodeling**, the structured
 
 ## Built with
 
-Vanilla JavaScript PWA · IndexedDB (offline-first) · GitHub API for sync, versioned backups and the published dashboard · GitHub Pages hosting.
+Vanilla JavaScript PWA · IndexedDB (offline-first cache) · Supabase (Postgres with row-level security, email sign-in, realtime, Edge Functions) · Cloudflare Pages hosting.
 
 ## Contact
 
@@ -111,17 +111,14 @@ Serving Miami-Dade, Broward and Palm Beach.
 ## Technical documentation
 
 The app's interface is currently in Portuguese; UI labels are shown as **English (Portuguese)**.
-Guides: [GitHub sync setup](GITHUB-SYNC-GUIDE.md) · [Creating custom templates](TEMPLATES-GUIDE.md)
+Guides: [Cloud and sign-in](CLOUD-GUIDE.md) · [Creating custom templates](TEMPLATES-GUIDE.md)
 
-**Repository layout**
+**Where things live**
 
-- Repository: `libanius/BrightScale-Tracker`
-- Published data: `dashboard-data.json`
-- Versioned backups on GitHub: `backups/brightscale-backup-*.json`
-- Manually exported backups: `brightscale-backup-*.json`
-- Local settings: `brightscale_*` keys in the browser
-
-Older files, spreadsheets and backups live outside this repository, in the `BrightScale Tracker - Legacy and Backups` folder.
+- Code: `libanius/BrightScale-Tracker` (this repository). It contains **no project data**.
+- Data: Supabase project `brightscale-scanner`, schema `tracker` (projects, units, scopes, tasks, expenses, people, notes, share links). See [CLOUD-GUIDE.md](CLOUD-GUIDE.md).
+- `tracker-cloud.js`: the cloud layer shared by the app and the dashboard (sign-in, sync outbox, realtime, share links).
+- Edge Function `tracker-share`: creates per-project links and serves the client-safe view.
 
 ### Importing contracts and estimates
 
@@ -137,13 +134,11 @@ Scanned (image-only) PDFs still need OCR before they can be imported.
 
 ### Data across devices
 
-Saving an edit in the tracker automatically updates `dashboard-data.json`, keeping the team dashboard and the per-client links in sync. In Settings, **Create Backup Now (Criar Backup Agora)** creates an immutable, timestamped copy, and **Choose and Restore Backup (Escolher e Restaurar Backup)** lists the backup history on GitHub for restoring. The app blocks uploads from devices working on an outdated remote version, so one device can't overwrite changes made on another.
+Sign in with your email (magic link or 6-digit code). Every edit is saved on the device first and sent to the cloud right away; if the phone is offline, changes wait in a queue and go out when the connection returns. Other devices and the team dashboard update live. **Settings → Account & Cloud (Conta e Nuvem)** shows the sync status and has **Sync now (Sincronizar agora)**. Local JSON export/import in Reports is still available.
 
 ### Client dashboard
 
-The team dashboard shows every project. Each project card has **Share Dashboard with Client (Compartilhar Dashboard com Cliente)**, which creates an always-current link showing only that project. As an MVP, the link has no login: anyone who receives or forwards it can view that project.
-
-**Today's Journey (Journey de Hoje)** notes are internal and appear only on the team dashboard. They are never rendered on the client link.
+The team dashboard (sign-in required) shows every project. Each project card has **Share Dashboard with Client (Compartilhar Dashboard com Cliente)**, which creates a private link (`dashboard.html?t=…`) for that project only. The link shows scopes, tasks, progress and dates — never money, subcontractor details or internal notes — and can be revoked. Links from the old system (`?project=`) are disabled.
 
 ### Project financials
 
