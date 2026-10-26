@@ -8,6 +8,12 @@
 
 > **INSTRUÇÃO PARA A PRÓXIMA IA:** Não retome a entrevista nem invente novas decisões. O usuário considerou a sequência de perguntas excessiva para um produto ainda não testado em campo. Avance com auditoria do repositório, plano de MVP e implementação incremental, sujeito à autorização do usuário para alterações de produção. Leia este documento antes de planejar ou modificar código. As decisões 1–34 são visão de produto, **não uma obrigação de implementar tudo no MVP**.
 
+## Protocolo permanente de continuidade entre IAs
+
+**Regra vigente:** [CONTINUITY_PROTOCOL.md](CONTINUITY_PROTOCOL.md). O handoff presente é a **única fonte viva** de decisões, progresso do MVP, evidências e próxima ação; atualizá-lo ao fim de sessões com implementação, testes, deploy, decisões ou bloqueios. Instruções de descoberta em [AGENTS.md](../AGENTS.md), [CLAUDE.md](../CLAUDE.md) e [Copilot instructions](../.github/copilot-instructions.md).
+
+Não criar handoffs datados concorrentes, nem marcar proposta como implementada ou implementação como testada. Sem acesso de escrita, sinalizar **NOT SYNCED** e fornecer patch. O protocolo orienta sessões conectadas; não é monitoramento ou atualização automática em background.
+
 ## Objetivo do produto
 
 Smart Remodeling deve oferecer: escopo contratado claro, plano de execução, acompanhamento visual do cliente, progresso reportado pelo subcontratado e validado pelo PM, governança de Change Orders, cronograma confiável e rastreabilidade. SMART = **Scope, Model, Alignment, Rhythm, Time**. Tagline: “A clear plan. A defined standard. A better remodeling experience.”
@@ -120,3 +126,27 @@ Nota: Essa divisão é uma **proposta de implementação**, não uma revogação
 - **BLOCKED**: impedimento confirmado e passo para removê-lo.
 
 **Estado em 2026-10-26:** decisões 1–34 DECIDED, entrevista fechada; funcionalidades do MVP ainda exigem auditoria antes de declarar implementação/testes. Nenhum código de aplicação foi alterado como parte desta documentação.
+
+---
+
+## Checkpoint operacional (fonte atual para próxima IA)
+
+- **Atualizado em:** 2026-10-26.
+- **Branch:** `main`; **documentação verificada neste checkpoint:** [Protocolo](CONTINUITY_PROTOCOL.md), [AGENTS.md](../AGENTS.md), [CLAUDE.md](../CLAUDE.md), [Copilot instructions](../.github/copilot-instructions.md) e [PR template](../.github/pull_request_template.md).
+- **Decisões confirmadas:** 1–34 (**DECIDED**); decisão 35 permanece **não respondida**. A entrevista está encerrada por solicitação do usuário.
+- **Último resultado verificado:** documentação do protocolo inter-LLMs criada no GitHub; nenhum código da aplicação alterado nesta sessão.
+- **Situação do MVP (funcionalidade):** `NOT VERIFIED` neste checkpoint. Repositório e handoff foram lidos parcialmente para integrar documentação, mas **não** foi feita auditoria técnica, execução de teste, migração ou deploy. Não inferir que MVP está ausente ou completo.
+- **Produção:** URL conhecida `https://tracker.brightscalegroup.com`, funcionamento **não testado** nesta sessão.
+- **Testes:** verificação por leitura dos novos arquivos no GitHub após commits (documentação); **nenhum teste funcional**.
+- **Bloqueios/riscos:** necessidade de auditoria de RLS, fluxo de cliente/sub, segregação financeira e comparativo P0; repositório público com eventual histórico sensível a inspecionar com cuidado.
+- **Próxima ação única:** auditar o estado técnico real das capacidades P0 no repositório atual e entregar quadro **IMPLEMENTED / PARTIAL / MISSING / NOT VERIFIED** antes de iniciar implementação. Em seguida executar menor fluxo ponta a ponta de uma obra real.
+
+## Log de continuidade
+
+### 2026-10-26 — Protocolo inter-LLMs e preservação das decisões
+- **Estado:** `DOCS-ONLY` (documentado e gravado, sem alteração de código de aplicação).
+- **Mudança:** consolidou 34 decisões aprovadas neste handoff; estabeleceu protocolo de atualização, descoberta por agentes e checklist de PR.
+- **Evidências:** repositório `libanius/BrightScale-Tracker`, `docs/CONTINUITY_PROTOCOL.md`, `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, `.github/pull_request_template.md`. O histórico do Git registra cada arquivo.
+- **Teste:** leitura de conteúdo via conexão GitHub. Não houve testes do produto, deploy nem migrações.
+- **Segurança/contratos:** sem modificações; instruções explícitas de privacidade, respeito ao PM, COs, e isolamento dos schemas `tracker`/`tracker_private`.
+- **Próximo passo:** auditoria técnica objetiva do MVP existente; não retomar entrevista.
