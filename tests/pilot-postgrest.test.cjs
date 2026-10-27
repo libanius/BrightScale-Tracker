@@ -51,6 +51,8 @@ function one({data}) {
   const project=one(await req('POST','pilot_projects',IDs.pm,{name:'SYNTHETIC JWT API Flooring'},[201]));
   assert.equal(project.owner_id,IDs.pm);
   const pid=project.id;
+  const probe=await req('POST','rpc/pilot_ci_auth_probe',IDs.pm,{p_project:pid});
+  console.log('SYNTHETIC CI JWT authorization probe:',JSON.stringify(probe.data));
   one(await req('POST','pilot_memberships',IDs.pm,{project_id:pid,user_id:IDs.sub,role:'sub'},[201]));
   one(await req('POST','pilot_memberships',IDs.pm,{project_id:pid,user_id:IDs.client,role:'client'},[201]));
   const scope=one(await req('POST','pilot_scopes',IDs.pm,{project_id:pid,name:'SYNTHETIC JWT Flooring'},[201]));
