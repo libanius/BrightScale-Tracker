@@ -267,6 +267,162 @@
       ));
     }
   }
+  function centsFromUsd(value){
+    var n=Number(value);
+    if(!Number.isFinite(n)||n<0||n>1000000000||
+        Math.abs(Math.round(n*100)-n*100)>0.00001)
+      throw Error('Informe valor positivo com até duas casas decimais.');
+    return Math.round(n*100);
+  }
+  function changeOrderSection(v){
+    var co=v.changeOrders||{orders:[],scopes:[],tasks:[],validations:[]};
+    var root=dom('section');
+    root.appendChild(title('Change Orders · contrato adicional separado'));
+    root.appendChild(small('A baseline ORIGINAL e seus créditos continuam independentes. Aprovação no portal piloto não constitui assinatura eletrônica verificada. Nenhuma ação aqui executa pagamento.'));
+    if(v.role==='pm'&&v.project.baseline_frozen_at){
+      root.appendChild(card(form('Novo Change Order (rascunho PM)',[
+        {key:'title',label:'Título do adicional',placeholder:'SYNTHETIC Banheiro'},
+        {key:'description',label:'Descrição do escopo novo',multiline:true,required:false},
+        {key:'clientAmount',label:'Preço do adicional ao cliente (USD)',type:'number',
+          min:0,step:'0.01',value:'3500'}
+      ],function(x){
+        return s.api.createChangeOrder(v.project.id,x.title,x.description,
+          centsFromUsd(x.clientAmount));
+      },'Criar CO separado')));
+    }
+    if(!co.orders.length){
+      root.appendChild(card(small('Nenhum Change Order visível para este perfil. Rascunhos são privados do PM.')));
+      return root;
+    }
+    for(const order of co.orders){
+      var price=(co.clientTerms||[]).find(function(x){return x.co_id===order.id;});
+      var scopes=co.scopes.filter(function(x){return x.co_id===order.id;});
+      var c=card(row(dom('h3',{text:order.title}),dom('span',
+        {text:order.status,className:'pill'+(order.status==='draft'?' wait':'')})),
+        small(order.description||'Sem descrição.'));
+      if(price && v.role!=='sub')
+        c.appendChild(small('Valor adicional para cliente: '+window.PilotGateway.money(price.client_amount_cents)));
+      if(v.role==='pm'){
+        var credit=(co.credits||[]).filter(function(x){return x.co_id===order.id;})
+          .reduce(function(sum,x){return sum+Number(x.delta_cents);},0);
+        c.appendChild(small('Crédito de sub reconhecido NESTE CO: '+
+          window.PilotGateway.money(credit)+' · não é pagamento.'));
+      }
+      if(v.role==='client'){
+        c.appendChild(small('Progresso exibido somente após validação do PM. Preços internos do sub não são compartilhados.'));
+        if(order.status==='submitted') {
+          c.appendChild(actions(
+            button('Aprovar adicional (sem assinatura verificada)',async function(){
+              if(!window.confirm('Confirmar aprovação do adicional de '+window.PilotGateway.money(price?.client_amount_cents)+'? Este piloto registra uma decisão no portal, não uma assinatura digital validada.'))return;
+              await s.api.decideChangeOrder(order.id,true,'');
+              await refresh();
+            },'primary'),
+            button('Solicitar correção / recusar',async function(){
+              var reason=window.prompt('Motivo da recusa ou pedido de ajuste:');
+              if(reason===null)return;
+              if(!reason.trim())throw Error('Descreva o motivo.');
+              await s.api.decideChangeOrder(order.id,false,reason);
+              await refresh();
+            },'danger')
+          ));
+        }
+      }
+      if(v.role==='pm'&&order.status==='draft'){
+        var subMembers=(v.members||[]).filter(function(m){return m.role==='sub';});
+        if(subMembers.length)c.appendChild(form('Adicionar escopo ao CO (sem afetar original)',[
+          {key:'title',label:'Escopo adicional',placeholder:'SYNTHETIC Shower'},
+          {key:'sub',label:'Subcontratado para o adicional',
+            options:subMembers.map(function(x){return {value:x.user_id,label:x.user_id};})},
+          {key:'subCents',label:'Valor do sub para este escopo (USD)',
+            type:'number',step:'0.01',min:0,value:'800'}
+        ],function(x){return s.api.addChangeOrderScope(order.id,x.title,x.sub,centsFromUsd(x.subCents));},
+        'Adicionar escopo do CO'));
+        else c.appendChild(small('Cadastre ao menos um sub de teste antes de adicionar escopo.'));
+      }
+      var allReady=scopes.length>0;
+      for(const sc of scopes){
+        var ts=co.tasks.filter(function(t){return t.scope_id===sc.id;});
+        var totalWeight=ts.reduce(function(n,t){return n+Number(t.weight_pct);},0);
+        if(Math.abs(totalWeight-100)>0.001)allReady=false;
+        var terms=(co.subTerms||[]).find(function(x){return x.scope_id===sc.id;});
+        var scPanel=dom('div',{className:'card'});
+        scPanel.appendChild(dom('h3',{text:sc.title}));
+        scPanel.appendChild(small('Pesos CO: '+totalWeight+'% de 100%.'));
+        if(terms&&v.role!=='client')
+          scPanel.appendChild(small('Valor do sub somente neste CO: '+
+            window.PilotGateway.money(terms.subcontract_cents)));
+        if(v.role==='pm'&&order.status==='draft'&&totalWeight<100){
+          scPanel.appendChild(form('Adicionar tarefa ao Change Order',[
+            {key:'title',label:'Tarefa adicional',placeholder:'Install shower tile'},
+            {key:'weight',label:'Peso (%)',type:'number',step:'0.01',min:0.01,
+              max:100-totalWeight,value:String(Math.min(100-totalWeight,50))}
+          ],function(x){return s.api.addChangeOrderTask(sc.id,x.title,x.weight);},
+          'Adicionar tarefa do CO'));
+        }
+        for(const task of ts){
+          var validation=co.validations.find(function(x){return x.task_id===task.id;});
+          var pct=Number(validation?.validated_pct||0);
+          var t=card(row(dom('h3',{text:task.title}),dom('strong',{text:pct+'%'})),
+            small('Peso: '+task.weight_pct+'% · progresso validado do ADICIONAL'),
+            dom('progress',{value:pct,max:100}));
+          if(v.role==='sub'){
+            var credits=(co.credits||[]).filter(function(x){return x.task_id===task.id;})
+              .reduce(function(n,x){return n+Number(x.delta_cents);},0);
+            t.appendChild(small('Crédito reconhecido neste adicional: '+
+              window.PilotGateway.money(credits)+' (não é pagamento).'));
+            var pending=(co.reports||[]).some(function(x){return x.task_id===task.id&&x.status==='pending';});
+            if(pending)t.appendChild(small('Relatório adicional pendente de validação PM.'));
+            else if(order.status==='active')t.appendChild(form('Informar progresso do adicional',[
+              {key:'pct',label:'Percentual executado (%)',type:'number',min:pct,max:100,step:'0.01',value:pct},
+              {key:'note',label:'Observação (opcional)',multiline:true,required:false}
+            ],function(x){return s.api.reportChangeOrder(task.id,x.pct,x.note);},'Enviar relatório do CO'));
+          }
+          if(v.role==='pm'){
+            for(const report of (co.reports||[]).filter(function(x){
+              return x.task_id===task.id&&x.status==='pending';
+            })){
+              t.appendChild(small('Informado '+report.reported_pct+'% pelo sub · '+(report.note||'Sem nota')));
+              t.appendChild(form('PM valida progresso deste CO',[
+                {key:'pct',label:'Percentual validado (%)',type:'number',min:pct,max:100,step:'0.01',value:report.reported_pct},
+                {key:'reason',label:'Justificativa se diferente do relato',multiline:true,required:false}
+              ],function(x){return s.api.reviewChangeOrderReport(report.id,'approve',x.pct,x.reason);},
+              'Validar e reconhecer crédito deste CO'));
+              t.appendChild(actions(button('Rejeitar relato do CO',async function(){
+                var reason=window.prompt('Justificativa obrigatória:');
+                if(reason===null)return;
+                if(!reason.trim())throw Error('Informe justificativa.');
+                await s.api.reviewChangeOrderReport(report.id,'reject',null,reason);
+                await refresh();
+              },'danger')));
+            }
+          }
+          scPanel.appendChild(t);
+        }
+        c.appendChild(scPanel);
+      }
+      if(v.role==='pm'&&order.status==='draft'){
+        c.appendChild(small(allReady?'Todos os escopos estão completos.':'Complete 100% de pesos em cada escopo antes de enviar ao cliente.'));
+        if(allReady)c.appendChild(actions(button('Enviar CO para aprovação do cliente',async function(){
+          if(!window.confirm('Enviar condições adicionais para decisão do cliente? O rascunho ficará bloqueado para edições.'))return;
+          await s.api.submitChangeOrder(order.id);
+          await refresh();
+        },'primary')));
+      }
+      if(v.role==='pm'&&order.status==='client_approved'){
+        c.appendChild(actions(button('Ativar CO aprovado (PM)',async function(){
+          if(!window.confirm('Publicar ativação operacional do Change Order aprovado pelo cliente?'))return;
+          await s.api.activateChangeOrder(order.id);
+          await refresh();
+        },'primary')));
+      }
+      if(v.role==='pm'&&order.status==='declined')
+        c.appendChild(small('Recusado: '+(order.decision_reason||'Sem justificativa')+
+          '. Crie novo rascunho se o escopo precisar ser renegociado.'));
+      root.appendChild(c);
+    }
+    return root;
+  }
+
   function renderWorkspace(){
     var cfg=getConfig();var who=s.user;var el=card(
       row(title('Sessão de testes autenticada'),button('Sair',async function(){
@@ -303,6 +459,7 @@
       else if(v.role==='sub')panel.appendChild(small('Relatórios enviados precisam ser validados pelo PM. Crédito não é pagamento.'));
       else panel.appendChild(small('Você valida ou rejeita relatórios. O portal não executa pagamentos.'));
       app.push(panel);
+      app.push(changeOrderSection(v));
       var taskSection=dom('section');
       taskSection.appendChild(title('Tarefas e progresso'));
       var list=dom('div',{className:'grid'});
