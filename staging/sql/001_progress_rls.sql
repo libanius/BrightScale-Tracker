@@ -326,7 +326,10 @@ begin
     join public.pilot_projects p on p.id=s.project_id
     where t.id=v_report.task_id;
   if not pilot_priv.is_pm(v_project) then raise exception 'pm_required' using errcode='42501'; end if;
-  perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(v_report.task_id::text,0));
+  -- Different tasks in the SAME scope may be reviewed at the same time.
+  -- Lock the scope before checking its aggregate recognized credit. A per-task
+  -- lock alone would allow concurrent approvals to exceed the subcontract.
+  perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(v_scope::text,2));
   select validated_pct into v_previous from public.pilot_validations where task_id=v_report.task_id for update;
   v_previous := coalesce(v_previous,0);
 
