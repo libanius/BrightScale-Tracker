@@ -56,8 +56,8 @@ begin
 end;
 $$;
 revoke all on function pilot_priv.audit_co_request() from public,anon,authenticated;
-create trigger pilot_co_request_audit on public.pilot_co_requests
- after insert for each row execute function pilot_priv.audit_co_request();
+create trigger pilot_co_request_audit after insert on public.pilot_co_requests
+ for each row execute function pilot_priv.audit_co_request();
 
 create function public.pilot_co_formalize_request(p_request_id uuid,p_client_cents bigint)
 returns jsonb language plpgsql security definer set search_path=''
