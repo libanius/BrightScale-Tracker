@@ -187,6 +187,39 @@ class StagingPortalSmoke(unittest.TestCase):
         self.assertEqual(decision[0]["payload"],{"p_co_id":"co-demo","p_approve":True,"p_reason":""})
         self.assertNotIn("role",decision[0]["payload"])
 
+    def test_client_can_request_change_without_forging_author_or_pricing(self):
+        self.enter("client", co_status="submitted")
+        self.page.get_by_role("heading", name="SYNTHETIC Bathroom Add-on").wait_for()
+        self.page.get_by_label("Assunto da solicitação").fill("SYNTHETIC Change kitchen faucet")
+        self.page.get_by_label("Descrição do pedido").fill("Add faucet after approved original")
+        self.page.get_by_role("button",name="Enviar solicitação ao PM").click()
+        self.page.get_by_text("Registro salvo no ambiente STAGING.").wait_for()
+        writes=self.page.evaluate("window.__pilotWrites")
+        co_requests=[x for x in writes if x["table"]=="pilot_co_requests"]
+        self.assertEqual(len(co_requests),1)
+        self.assertEqual(set(co_requests[0]["data"]),{"project_id","title","description"})
+        self.assertNotIn("client_amount_cents",str(co_requests[0]["data"]))
+        self.assertNotIn("requester_id",str(co_requests[0]["data"]))
+
+    def test_pm_can_formalize_client_request_as_private_co_draft(self):
+        self.enter("pm", co_status="draft")
+        self.page.get_by_role("heading", name="SYNTHETIC Bathroom Add-on").wait_for()
+        self.page.on("dialog",lambda dialog:dialog.accept("200.00"))
+        self.page.get_by_role("button",name="Transformar em CO rascunho").click()
+        self.page.wait_for_function("""() => window.__pilotRpcCalls.some(
+            r=>r.name==='pilot_co_formalize_request')""")
+        calls=self.page.evaluate("window.__pilotRpcCalls")
+        match=[c for c in calls if c["name"]=="pilot_co_formalize_request"]
+        self.assertEqual(match[0]["payload"],{"p_request_id":"co-request-demo","p_client_cents":20000})
+
+    def test_sub_can_request_co_but_sees_no_other_users_requests(self):
+        self.enter("sub", co_status="active")
+        self.page.get_by_role("heading", name="SYNTHETIC Bathroom Add-on").wait_for()
+        body=self.page.locator("#app").inner_text()
+        self.assertIn("Solicitar um Change Order (cliente, sub ou PM)",body)
+        self.assertNotIn("SYNTHETIC Requested faucet",body)
+        self.assertNotIn("Transformar em CO rascunho",body)
+
     def test_production_project_configuration_is_rejected_before_sdk_creation(self):
         self.enter("pm", configured=False)
         self.page.get_by_text("Conectar ao Supabase STAGING").wait_for()
