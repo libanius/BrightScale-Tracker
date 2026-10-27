@@ -190,7 +190,7 @@ commit;
 begin;
 set local role authenticated;
 select set_config('request.jwt.claim.sub','22222222-2222-4222-8222-222222222222',true);
-do $
+do $$
 begin
  begin
    insert into public.pilot_reports(id,task_id,reported_pct,note,author_id)
@@ -211,13 +211,13 @@ begin
    raise exception 'security_fail_sub_updated_subcontract';
  exception when insufficient_privilege then null;
  end;
-end $;
+end $$;
 commit;
 
 begin;
 set local role authenticated;
 select set_config('request.jwt.claim.sub','33333333-3333-4333-8333-333333333333',true);
-do $
+do $$
 begin
  begin
    insert into public.pilot_memberships(project_id,user_id,role)
@@ -232,19 +232,19 @@ begin
    raise exception 'security_fail_client_forged_credit';
  exception when insufficient_privilege then null;
  end;
-end $;
+end $$;
 commit;
 
 begin;
 set local role anon;
-do $
+do $$
 begin
  begin
    perform count(*) from public.pilot_projects;
    raise exception 'security_fail_anon_queried_projects';
  exception when insufficient_privilege then null;
  end;
-end $;
+end $$;
 rollback;
 
 -- No writes to production. This is a throwaway local CI database.
