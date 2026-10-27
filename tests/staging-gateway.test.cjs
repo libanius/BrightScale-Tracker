@@ -151,6 +151,27 @@ test('Change Order rejects invalid prices, untrusted assignment and invalid acti
  await assert.rejects(api.decideChangeOrder('co-1','yes',''),/invalid_client_decision/);
  await assert.rejects(api.reviewChangeOrderReport('report-co-1','pay',50,''),/invalid_review_action/);
 });
+test('CO requests from client/sub cannot forge requester, price or formalization',async()=>{
+ const sb=mockSupabase(mockData),api=Gateway.create(sb);
+ const request=await api.requestChangeOrder(project.id,'SYNTHETIC faucet','Please add fixture');
+ const write=sb.calls.find(c=>c.table==='pilot_co_requests');
+ assert.deepEqual(Object.keys(request).sort(),['description','id','project_id','title']);
+ assert.equal(write.table,'pilot_co_requests');
+ assert.equal(request.requester_id,undefined);
+ assert.equal(request.client_amount_cents,undefined);
+ assert.equal(request.status,undefined);
+ await api.formalizeChangeOrderRequest('request-1',10000);
+ await api.declineChangeOrderRequest('request-2','Needs further review');
+ const calls=sb.calls.filter(c=>c.type==='rpc');
+ assert.equal(calls[0].name,'pilot_co_formalize_request');
+ assert.deepEqual(calls[0].payload,{p_request_id:'request-1',p_client_cents:10000});
+ assert.equal(calls[1].name,'pilot_co_decline_request');
+ assert.deepEqual(calls[1].payload,{p_request_id:'request-2',p_reason:'Needs further review'});
+ for(const call of calls)assert.equal('requester_id' in call.payload,false);
+ assert.throws(()=>api.requestChangeOrder(project.id,'',''),/invalid_change_order_request/);
+ await assert.rejects(api.formalizeChangeOrderRequest('request-1',-1),/invalid_request_price/);
+ await assert.rejects(api.declineChangeOrderRequest('request-2',''),/invalid_decline_reason/);
+});
 test('staging browser files parse and have no embedded role-secret credentials',()=>{
  for(const file of ['pilot-ui.js','pilot-gateway.js']){
   const source=fs.readFileSync(path.join(__dirname,'../staging',file),'utf8');
