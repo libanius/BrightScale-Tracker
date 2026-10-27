@@ -37,7 +37,11 @@
     pilot_co_validations:[{task_id:'co-task-demo',validated_pct:50}],
     pilot_co_reports:[{id:'co-report-demo',task_id:'co-task-demo',author_id:SUB,status:'pending',reported_pct:60,note:'PRIVATE sub CO note',created_at:'2026-10-27'}],
     pilot_co_credit_events:[{id:'co-credit-demo',co_id:'co-demo',scope_id:'co-scope-demo',task_id:'co-task-demo',
-      sub_id:SUB,delta_cents:24000,validated_pct:50}]
+      sub_id:SUB,delta_cents:24000,validated_pct:50}],
+    pilot_co_requests:[{id:'co-request-demo',project_id:'demo-project',requester_id:CLIENT,
+      title:'SYNTHETIC Requested faucet',description:'Fixture upgrade request',status:'pending',created_at:'2026-10-27'}],
+    pilot_co_request_events:[{id:'co-request-event',request_id:'co-request-demo',actor_id:CLIENT,
+      action:'requested',detail:'Fixture requested',created_at:'2026-10-27'}]
   });
   window.__pilotRpcCalls=[];
   function filtered(table,filters){
@@ -45,6 +49,8 @@
       return filters.every(function(f){return f.values.includes(item[f.field]);});
     });
     if(table==='pilot_memberships'&&role!=='pm')items=items.filter(function(m){return m.user_id===id;});
+    if(table==='pilot_co_requests'&&role!=='pm')items=items.filter(function(r){return r.requester_id===id;});
+    if(table==='pilot_co_request_events'&&role!=='pm')items=items.filter(function(e){return e.request_id==='co-request-demo'&&role==='client';});
     if(role==='client'){
       if(['pilot_reports','pilot_credit_events','pilot_scope_terms','pilot_assignments',
         'pilot_co_sub_terms','pilot_co_reports','pilot_co_credit_events','pilot_co_audit_events'].includes(table)){
