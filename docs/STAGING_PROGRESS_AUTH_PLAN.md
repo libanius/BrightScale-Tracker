@@ -4,7 +4,7 @@
 
 ## Por que ainda não foi criado um projeto Supabase?
 
-O conector mostrou **uma organização**, associada à conta `paulolibanioneto@gmail.com`, no plano Free, com **dois projetos já ativos** (Abre-USA e brightscale-scanner). O serviço cotou **US$ 0/mês** para novo projeto nessa organização, mas ainda é necessário o usuário indicar formalmente a organização de destino; podem existir limites de projetos ativos no plano. **Nunca reutilizar brightscale-scanner ou Abre-USA como staging para contornar limite** e nunca pausar projeto vivo sem autorização explícita.
+O conector mostrou **uma organização**, associada à conta Supabase conectada, no plano Free, com **dois projetos já ativos** (Abre-USA e brightscale-scanner). O serviço cotou **US$ 0/mês** para novo projeto nessa organização, mas ainda é necessário o usuário indicar formalmente a organização de destino; podem existir limites de projetos ativos no plano. **Nunca reutilizar brightscale-scanner ou Abre-USA como staging para contornar limite** e nunca pausar projeto vivo sem autorização explícita.
 
 Quando a organização e o limite forem confirmados, criar projeto `BrightScale Tracker STAGING` em `us-east-1` (não pagar automaticamente se a cotação mudar).
 
