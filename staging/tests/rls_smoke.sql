@@ -186,4 +186,65 @@ begin
 end $$;
 commit;
 
+-- Additional negative checks: clients cannot forge author, timestamps or policy grants.
+begin;
+set local role authenticated;
+select set_config('request.jwt.claim.sub','22222222-2222-4222-8222-222222222222',true);
+do $
+begin
+ begin
+   insert into public.pilot_reports(id,task_id,reported_pct,note,author_id)
+    values('dddddddd-dddd-4ddd-8ddd-dddddddddddc','cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+      90,'forged','11111111-1111-4111-8111-111111111111');
+   raise exception 'security_fail_sub_forged_report_author';
+ exception when insufficient_privilege then null;
+ end;
+ begin
+   insert into public.pilot_reports(id,task_id,reported_pct,note,created_at)
+    values('dddddddd-dddd-4ddd-8ddd-dddddddddddb','cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+      90,'forged',timestamp with time zone '1990-01-01');
+   raise exception 'security_fail_sub_forged_report_time';
+ exception when insufficient_privilege then null;
+ end;
+ begin
+   update public.pilot_scope_terms set subcontract_cents=0;
+   raise exception 'security_fail_sub_updated_subcontract';
+ exception when insufficient_privilege then null;
+ end;
+end $;
+commit;
+
+begin;
+set local role authenticated;
+select set_config('request.jwt.claim.sub','33333333-3333-4333-8333-333333333333',true);
+do $
+begin
+ begin
+   insert into public.pilot_memberships(project_id,user_id,role)
+    values('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','44444444-4444-4444-8444-444444444444','sub');
+   raise exception 'security_fail_client_assigned_member';
+ exception when insufficient_privilege then null;
+ end;
+ begin
+   insert into public.pilot_credit_events(report_id,task_id,sub_id,delta_cents,validated_pct,baseline_version)
+    values('dddddddd-dddd-4ddd-8ddd-dddddddddddd','cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+      '33333333-3333-4333-8333-333333333333',999,100,1);
+   raise exception 'security_fail_client_forged_credit';
+ exception when insufficient_privilege then null;
+ end;
+end $;
+commit;
+
+begin;
+set local role anon;
+do $
+begin
+ begin
+   perform count(*) from public.pilot_projects;
+   raise exception 'security_fail_anon_queried_projects';
+ exception when insufficient_privilege then null;
+ end;
+end $;
+rollback;
+
 -- No writes to production. This is a throwaway local CI database.
