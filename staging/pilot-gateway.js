@@ -43,7 +43,7 @@
       return check(await supabase.from(table).insert(payload).select('*').single());
     }
     async function allProjects(){
-      return list('pilot_projects','id,name,owner_id,baseline_version,created_at');
+      return list('pilot_projects','id,name,owner_id,baseline_version,baseline_frozen_at,baseline_frozen_by,created_at');
     }
     async function snapshot(project,user){
       if(!project||!user||!user.id)throw Error('authentication_required');
@@ -70,6 +70,10 @@
     return {
       listProjects:allProjects,
       snapshot:snapshot,
+      freezeBaseline:async function(projectId){
+        if(!projectId)throw Error('project_id_required');
+        return check(await supabase.rpc('pilot_freeze_baseline',{p_project_id:projectId}));
+      },
       createProject:function(name){
         name=String(name||'').trim();
         if(name.length<1||name.length>120)throw Error('project_name_length');
