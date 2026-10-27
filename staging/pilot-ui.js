@@ -279,6 +279,41 @@
     var root=dom('section');
     root.appendChild(title('Change Orders · contrato adicional separado'));
     root.appendChild(small('A baseline ORIGINAL e seus créditos continuam independentes. Aprovação no portal piloto não constitui assinatura eletrônica verificada. Nenhuma ação aqui executa pagamento.'));
+    root.appendChild(card(form('Solicitar um Change Order (cliente, sub ou PM)',[
+      {key:'title',label:'Assunto da solicitação',placeholder:'Pedido de alteração de escopo'},
+      {key:'description',label:'Descrição do pedido',multiline:true,required:false,
+        placeholder:'O que mudou, por que é necessário e fotos/evidências disponíveis'}
+    ],function(x){return s.api.requestChangeOrder(v.project.id,x.title,x.description);},
+    'Enviar solicitação ao PM')));
+    var requests=co.requests||[];
+    if(requests.length){
+      root.appendChild(dom('h3',{text:'Solicitações de alteração'}));
+      for(const req of requests){
+        var rc=card(row(dom('strong',{text:req.title}),
+            dom('span',{text:req.status,className:'pill'+(req.status==='pending'?' wait':'') })),
+          small(req.description||'Sem detalhes.'),
+          small('Solicitante: '+(req.requester_id===s.user.id?'você':req.requester_id)),
+          req.status==='formalized'?small('PM abriu uma proposta separada. Ainda não significa aprovação do cliente.'):null,
+          req.status==='declined'?small('Resposta do PM: '+(req.response_reason||'Sem justificativa')):null);
+        if(v.role==='pm'&&req.status==='pending'&&v.project.baseline_frozen_at){
+          rc.appendChild(actions(
+            button('Transformar em CO rascunho',async function(){
+              var amount=window.prompt('Preço proposto ao cliente (USD). Somente o PM define os termos:', '0.00');
+              if(amount===null)return;
+              await s.api.formalizeChangeOrderRequest(req.id,centsFromUsd(amount));
+              await refresh();
+            },'primary'),
+            button('Recusar solicitação (registrar motivo)',async function(){
+              var reason=window.prompt('Por que o pedido não será formalizado?');
+              if(reason===null)return;
+              await s.api.declineChangeOrderRequest(req.id,reason);
+              await refresh();
+            },'danger')
+          ));
+        }
+        root.appendChild(rc);
+      }
+    }
     if(v.role==='pm'&&v.project.baseline_frozen_at){
       root.appendChild(card(form('Novo Change Order (rascunho PM)',[
         {key:'title',label:'Título do adicional',placeholder:'SYNTHETIC Banheiro'},
