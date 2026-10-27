@@ -126,7 +126,7 @@ class ProgressDemoBrowserTests(unittest.TestCase):
         self.assertIn("$720.00", self.page.locator("#pm-credit").inner_text())
         self.as_client()
         self.assertIn("50%", self.page.locator('[data-task="lvp"]').inner_text())
-        self.assertIn("Original 1.0", self.page.locator("#app").inner_text())
+        self.assertIn("ORIGINAL 1.0", self.page.locator("#app").inner_text())
 
     def test_reset_discards_only_synthetic_in_memory_state(self):
         self.submit("lvp", 25)
