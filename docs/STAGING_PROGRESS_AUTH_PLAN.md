@@ -2,9 +2,23 @@
 
 **Estado (27/10/2026):** infraestrutura, portal e testes de segurança em [PR #5](https://github.com/libanius/BrightScale-Tracker/pull/5). [CI #40581197075](https://github.com/libanius/BrightScale-Tracker/actions/runs/40581197075) **PASS: PostgreSQL 17 + RLS + baseline congelada, 8/8 Node, 6/6 Chrome, requisições HTTP com JWT assinado/PostgREST**. Este é um servidor de teste descartável, **NÃO é Supabase Auth real**. **Sem projeto remoto de staging, sem deploy e sem alteração de bancos de produção**.
 
+## Incremento 3B — solicitações de Change Order por cliente, sub e PM
+
+Aprovado no produto pela decisão **4** e implementado em branch:
+
+- [`staging/sql/004_change_order_requests.sql`](../staging/sql/004_change_order_requests.sql) acrescenta 2 tabelas RLS: `pilot_co_requests` e eventos de auditoria `pilot_co_request_events`.
+- Cliente, sub e PM podem registrar um pedido de alteração com título e descrição, **sem definir preço, autor, status ou aprovação**.
+- Somente o PM pode formalizar uma solicitação via `pilot_co_formalize_request`: a operação cria um novo **rascunho privado** (usando o RPC de CO, com termos em tabela separada), vincula a solicitação e grava evento auditável. Não envia, aprova, ativa nem executa pagamento.
+- PM pode recusar com motivo via `pilot_co_decline_request`, preservando histórico da solicitação e sem atribuir culpa. O solicitante vê sua própria resposta; não vê pedidos de outros usuários. A associação de acesso ao projeto é conferida no banco (RLS).
+- [`staging/pilot-ui.js`](../staging/pilot-ui.js) apresenta formulário de solicitação em cada portal, status/justificativa e botões de formalização/recusa só para PM. [`staging/pilot-gateway.js`](../staging/pilot-gateway.js) nunca envia `requester_id`, pagamento ou papel do usuário na chamada.
+
+**Evidência final:** [GitHub Actions #40590059539](https://github.com/libanius/BrightScale-Tracker/actions/runs/40590059539) **3/3 jobs PASS — Node 11/11, Chrome 13/13, PostgreSQL 17 + RLS em 21 tabelas e PostgREST com JWT assinado sintético PASS**. Testou solicitação por cliente/sub, falsificação de autoria proibida, privacidade entre solicitantes, formalização PM, recusa auditada, preços internos ocultos, decisão cliente e ativação PM, ledger do adicional isolado e o original preservado.
+
+**Limites:** identidade e sessão reais não testadas no Supabase Auth; falta integração ao Tracker existente, assinatura formal, emails de comunicação, anexos, revisão operacional por versão e workflow completo de Change Orders contratuais. Nenhum dado real, conta, schema de produção, cobrança ou deploy foi alterado.
+
 ## Incremento 3 — Change Orders independentes (PR #5, branch sem deploy)
 
-Foi implementado, em 2026-10-27, o fluxo inicial de adicional à baseline original, usando [`staging/sql/003_change_orders.sql`](../staging/sql/003_change_orders.sql) **somente para ambiente descartável/staging futuro**. Aplicar **depois de 001 + 002**. Adiciona **9 tabelas `pilot_co_*`/`pilot_change_orders` com RLS**, sem alterar projeto real ou `tracker.*` existente.
+Foi implementado, em 2026-10-27, o fluxo inicial de adicional à baseline original, usando [`staging/sql/003_change_orders.sql`](../staging/sql/003_change_orders.sql) **somente para ambiente descartável/staging futuro**. Aplicar **depois de 001 + 002**. Adiciona **9 tabelas `pilot_co_*`/`pilot_change_orders` com RLS (e mais 2 tabelas de solicitações na migração 004)**, sem alterar projeto real ou `tracker.*` existente.
 
 **Lifecycle controlado pelo banco:**
 
@@ -19,7 +33,7 @@ Foi implementado, em 2026-10-27, o fluxo inicial de adicional à baseline origin
 
 **Interface:** [`staging/pilot-ui.js`](../staging/pilot-ui.js) apresenta PM create/draft/submit/activate, cliente aprovar/recusar e sub reportar CO ativo, com porcentagem e crédito validados separadamente. [`staging/pilot-gateway.js`](../staging/pilot-gateway.js) não envia papel/autoridade escolhidos pelo cliente, apenas chamadas PostgREST/RPC autorizadas por JWT + RLS. Todas as ações usam **dados sintéticos** até validação real.
 
-**Testes:** [`tests/pilot-postgrest.test.cjs`](../tests/pilot-postgrest.test.cjs) cobre JWT HTTP assinado, fluxo completo de aprovação, preços separados, bloqueios por papel, recusa, vedação de alterações retroativas, progresso/crédito independente, ledger original intocado e revogação. [`tests/staging-gateway.test.cjs`](../tests/staging-gateway.test.cjs) confere chamadas e projeções. [`tests/browser/test_staging_portal.py`](../tests/browser/test_staging_portal.py) com Chrome confirma visualizações PM/sub/cliente e que o cliente não consulta informações internas. O workflow garante **19 tabelas com RLS** (10 originais + 9 do CO).
+**Testes:** [`tests/pilot-postgrest.test.cjs`](../tests/pilot-postgrest.test.cjs) cobre JWT HTTP assinado, fluxo completo de aprovação, preços separados, bloqueios por papel, recusa, vedação de alterações retroativas, progresso/crédito independente, ledger original intocado e revogação. [`tests/staging-gateway.test.cjs`](../tests/staging-gateway.test.cjs) confere chamadas e projeções. [`tests/browser/test_staging_portal.py`](../tests/browser/test_staging_portal.py) com Chrome confirma visualizações PM/sub/cliente e que o cliente não consulta informações internas. O workflow garante **21 tabelas com RLS** (10 originais + 9 do CO + 2 de solicitações).
 
 **Limites que continuam pendentes:** assinatura digital formal/assinatura de cliente com prova jurídica; notificações e cópias por email; precificação/validação de impacto de prazo contratual; consentimentos de subs afetados; versões de negociações; anexos fotográficos; suporte a pagamento real; infraestrutura Auth real; políticas de retenção/remoção (decisões 31–39). Nem a ativação nem o aceite no piloto representam pagamento. Substituição, penalidade e responsabilidade seguem fluxos auditados futuros, não ações automáticas.
 
@@ -59,7 +73,7 @@ O PR #5 agora contém uma **interface de staging real**, distinta do protótipo 
 ### Como rodar após aprovar/criar o projeto staging
 
 1. Criar projeto Supabase **novo, vazio e separado**. Configurar Auth Email (OTP) e URL(s) de redirecionamento para a origem de teste; **não usar nenhum projeto ativo**.
-2. Aplicar, nessa ordem, os arquivos `staging/sql/001_progress_rls.sql`, `staging/sql/002_baseline_freeze.sql` e `staging/sql/003_change_orders.sql` no novo projeto vazio, após revisão de RLS; **NUNCA** executar o arquivo `staging/tests/bootstrap_local_pg.sql` no Supabase real.
+2. Aplicar, nessa ordem, os arquivos `staging/sql/001_progress_rls.sql`, `staging/sql/002_baseline_freeze.sql`, `staging/sql/003_change_orders.sql` e `staging/sql/004_change_order_requests.sql` no novo projeto vazio, após revisão de RLS; **NUNCA** executar o arquivo `staging/tests/bootstrap_local_pg.sql` no Supabase real.
 3. Hospedar o branch em preview HTTPS isolado ou executar `python -m http.server 8765` **somente para desenvolvimento local** e abrir `http://localhost:8765/staging/pilot.html`.
 4. Na tela inicial, fornecer URL e **publishable/anon key** do projeto isolado. Não usar `service_role`, secret keys ou tokens de administrador. O formulário armazena somente URL e publishable key no navegador local; tokens de sessão são geridos pelo Supabase JS Auth.
 5. Entrar com conta fictícia PM e criar um projeto; cadastrar membership e escopos, **completar 100% dos pesos por escopo, congelar a baseline pelo PM**, e depois testar sub reporta / PM valida / cliente vê somente progresso aprovado. Utilizar três identidades fictícias e confirmar negativas com JWT reais.
@@ -123,7 +137,7 @@ O sistema **não tem workflow de pagamento**, alterações de baseline por Chang
 ## Etapas após liberar o staging
 
 1. Confirmar organização e elegibilidade; provisionar Supabase vazio e **verificar project ID**.
-2. Rever/aplicar **somente** `staging/sql/001_progress_rls.sql`, `staging/sql/002_baseline_freeze.sql` e `staging/sql/003_change_orders.sql` nessa ordem e nesse ID; validar catálogo, RLS e advisors.
+2. Rever/aplicar **somente** `staging/sql/001_progress_rls.sql`, `staging/sql/002_baseline_freeze.sql`, `staging/sql/003_change_orders.sql` e `staging/sql/004_change_order_requests.sql` nessa ordem e nesse ID; validar catálogo, RLS e advisors.
 3. Configurar Auth e criar contas fictícias com autorização do usuário. Nunca publicar senhas/tokens no GitHub.
 4. Executar testes reais Data API/RPC positivos/negativos com contas PM, sub, cliente, usuário externo.
 5. Conectar UI em preview/staging, não no Tracker de produção. Somente após resultados auditáveis propor integração.
@@ -135,6 +149,7 @@ psql -v ON_ERROR_STOP=1 -f staging/tests/bootstrap_local_pg.sql
 psql -v ON_ERROR_STOP=1 -f staging/sql/001_progress_rls.sql
 psql -v ON_ERROR_STOP=1 -f staging/sql/002_baseline_freeze.sql
 psql -v ON_ERROR_STOP=1 -f staging/sql/003_change_orders.sql
+psql -v ON_ERROR_STOP=1 -f staging/sql/004_change_order_requests.sql
 psql -v ON_ERROR_STOP=1 -f staging/tests/rls_smoke.sql
 ```
 
