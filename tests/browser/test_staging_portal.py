@@ -66,8 +66,10 @@ class StagingPortalSmoke(unittest.TestCase):
         self.browser.close()
         self.p.stop()
 
-    def enter(self, role, configured=True):
+    def enter(self, role, configured=True, draft=False):
         self.context.add_init_script("window.__pilotMockRole = " + repr(role) + ";")
+        if draft:
+            self.context.add_init_script("window.__pilotMockDraft = true;")
         if configured:
             self.context.add_init_script(
                 "localStorage.setItem('brightscale-pilot-config', JSON.stringify({"
@@ -108,6 +110,23 @@ class StagingPortalSmoke(unittest.TestCase):
         self.assertIn("Subcontrato fictício", body)
         self.assertNotIn("Pagar agora", body)
         self.assertIn("DEMO sub note", body)
+
+    def test_draft_blocks_sub_reporting_and_pm_can_complete_baseline(self):
+        self.enter("sub", draft=True)
+        self.page.get_by_role("heading", name="SYNTHETIC STAGING Flooring").wait_for()
+        body=self.page.locator("#app").inner_text()
+        self.assertIn("Baseline RASCUNHO", body)
+        self.assertIn("Aguardando aprovação da baseline original pelo PM", body)
+        self.assertNotIn("Enviar para validação", body)
+
+    def test_pm_draft_shows_weight_completion_warning_and_not_freeze_button(self):
+        self.enter("pm", draft=True)
+        self.page.get_by_role("heading", name="SYNTHETIC STAGING Flooring").wait_for()
+        body=self.page.locator("#app").inner_text()
+        self.assertIn("Baseline RASCUNHO", body)
+        self.assertIn("Complete valores e pesos de todos os escopos", body)
+        self.assertNotIn("Aprovar e congelar baseline", body)
+        self.assertIn("Adicionar tarefa à baseline de teste", body)
 
     def test_production_project_configuration_is_rejected_before_sdk_creation(self):
         self.enter("pm", configured=False)
