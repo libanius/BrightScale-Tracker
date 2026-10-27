@@ -1,0 +1,71 @@
+name: BrightScale browser testing agents
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    # After merge into main, run weekdays 09:00 UTC.
+    - cron: "0 9 * * 1-5"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: browser-agents-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  chromium-agents:
+    name: "${{ matrix.agent }} agent · synthetic Chromium"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        agent: [PM, Client, Security, Offline]
+    env:
+      BROWSER_AGENT: ${{ matrix.agent }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Use preinstalled Chrome with pinned Playwright
+        run: |
+          python -m pip install "playwright==1.56.0"
+          command -v google-chrome
+          google-chrome --version
+      - name: Run simulated actor against real HTML/JS/IndexedDB
+        run: |
+          python -m unittest discover -s tests/browser -p 'test_*.py' -k "${{ matrix.agent }}Agent" -v
+      - name: Upload synthetic-only failure screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots-${{ matrix.agent }}
+          path: test-results/${{ matrix.agent }}/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  read-only-public-health:
+    # Probe only public HTML, never authenticates or accesses private project data.
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Public HTML only (zero credentials)
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import urllib.request
+          url = "https://tracker.brightscalegroup.com/index.html"
+          req = urllib.request.Request(url, headers={"User-Agent": "BrightScale-Tracker-ReadOnly-Monitor/1.0"})
+          with urllib.request.urlopen(req, timeout=15) as r:
+              body = r.read(256000).decode("utf-8", errors="replace")
+              code = r.status
+          assert code == 200, f"Unexpected HTTP status {code}"
+          assert "BrightScale Tracker" in body and "tracker-cloud.js" in body, "Unexpected public page"
+          print("Public homepage response validated; no authentication or data modification attempted.")
+          PY
