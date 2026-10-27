@@ -264,7 +264,7 @@ begin
     values(v_project,new.task_id,new.id,new.author_id,'reported',new.reported_pct);
   return new;
 end;
-$;
+$$;
 revoke all on function pilot_priv.audit_sub_report() from public,anon,authenticated;
 create trigger pilot_report_audit after insert on public.pilot_reports
   for each row execute function pilot_priv.audit_sub_report();
