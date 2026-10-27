@@ -85,3 +85,31 @@ jobs:
           ")
           echo "Pilot tables with RLS enabled: $count"
           test "$count" = "10"
+      - name: Initialize fake local JWT API role (no Supabase secrets)
+        run: psql -v ON_ERROR_STOP=1 -f staging/tests/bootstrap_postgrest.sql
+      - name: Start disposable PostgREST with local synthetic JWT signer
+        shell: bash
+        run: |
+          docker run --rm --detach --name pilot-postgrest --network host \
+            -e PGRST_DB_URI="postgres://pilot_authenticator:SYNTHETIC_CI_ONLY_PASS_2026@127.0.0.1:5432/postgres" \
+            -e PGRST_DB_SCHEMAS=public \
+            -e PGRST_DB_ANON_ROLE=anon \
+            -e PGRST_JWT_SECRET="SYNTHETIC_CI_ONLY_POSTGREST_JWT_SIGNING_KEY_2026" \
+            -e PGRST_SERVER_PORT=3000 \
+            postgrest/postgrest:v14.17
+          for attempt in $(seq 1 40); do
+            if curl -s --max-time 2 http://127.0.0.1:3000/ >/dev/null; then
+              echo "Local-only PostgREST ready"
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs pilot-postgrest
+          exit 1
+      - name: Real bearer JWT to PostgREST RLS end-to-end (synthetic identities)
+        run: node tests/pilot-postgrest.test.cjs
+      - name: Stop disposable API container
+        if: always()
+        run: |
+          docker logs pilot-postgrest --tail 25 || true
+          docker rm -f pilot-postgrest || true
