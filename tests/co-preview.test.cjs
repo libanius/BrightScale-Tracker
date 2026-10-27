@@ -104,3 +104,19 @@ test('integration HTML does not import pilot database or call destructive operat
  assert.match(segment,/window\.open\(pilotUrl/);
 });
 
+
+test('standalone CO demo has no legacy app bootstrap, storage, auth or cloud scripts',()=>{
+ const html=fs.readFileSync(path.join(__dirname,'../co-demo.html'),'utf8');
+ assert.match(html,/Conheça o novo fluxo de COs/);
+ assert.match(html,/AMBIENTE 100% FICTÍCIO/);
+ const scriptImports=[...html.matchAll(/<script\s+src="([^"]+)"/g)].map(x=>x[1]);
+ assert.deepEqual(scriptImports,['./co-preview.js']);
+ assert.doesNotMatch(html,/src="(?:tracker-cloud|staging\/pilot-ui|sw|supabase)/i);
+ assert.doesNotMatch(html,/\b(?:indexedDB|localStorage|sessionStorage|caches)\s*\./i);
+ assert.doesNotMatch(html,/\b(?:fetch|XMLHttpRequest)\s*\(/);
+ assert.doesNotMatch(html,/navigator\.serviceWorker|window\.TrackerCloud/);
+ const blocks=[...html.matchAll(/<script(?: [^>]*)?>([\s\S]*?)<\/script>/g)]
+   .map(match=>match[1]).filter(x=>x.trim());
+ assert.equal(blocks.length,1);
+ assert.doesNotThrow(()=>new vm.Script(blocks[0]));
+});
