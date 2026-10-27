@@ -17,11 +17,11 @@ Arquivos de descoberta: [../AGENTS.md](../AGENTS.md), [../CLAUDE.md](../CLAUDE.m
 
 1. Ler o handoff canônico **inteiro**, este protocolo e as instruções locais relevantes; verificar `main`, commits recentes e código afetado.
 2. Reconciliar a seção **Checkpoint operacional** do handoff com o estado real do repositório, PRs, deploys e testes. Um texto de handoff não é evidência de código funcionando.
-3. Continuar da última próxima ação verificável, sem repetir perguntas respondidas nem abrir uma nova entrevista. A entrevista extensa foi interrompida após a **decisão 34**, mas o responsável confirmou expressamente as **decisões 35, 36, 37 e 38 em 2026-10-27**, incluindo transferência assistida de subs e avaliação de causas com contestação auditável. **Decisão 39 sobre correção de registros de auditoria está pendente**; uma pergunta pontual pode ser feita se essencial, sem retomar entrevista longa; não confundir perguntas propostas com decisões ratificadas.
+3. Continuar da última próxima ação verificável, sem repetir perguntas respondidas nem abrir uma nova entrevista. A entrevista extensa foi pausada após a decisão 34, reaberta pontualmente para as decisões 35–39 e **encerrada expressamente pelo responsável em 2026-10-27 após a decisão 39**. **Não apresentar pergunta 40 nem reabrir entrevista** sem pedido explícito; a prioridade é entregar MVP testável, respeitando os critérios de auditoria e privacidade definidos na decisão 39.
 4. Priorizar o MVP testável em campo e os fluxos existentes antes de padrões avançados ou novas abstrações.
 5. Se faltar uma autorização decisiva para ação de alto impacto, solicitar apenas o consentimento necessário. Caso contrário, avançar com uma mudança pequena, reversível e verificável.
 
-**Ordem de autoridade:** instrução explícita e recente do responsável > decisões confirmadas 1–38 > código e contrato reais > propostas no handoff. Se detectar contradição, **registrar e pedir decisão pontual**, nunca reinterpretar silenciosamente.
+**Ordem de autoridade:** instrução explícita e recente do responsável > decisões confirmadas 1–39 > código e contrato reais > propostas no handoff. Se detectar contradição, **registrar e pedir decisão pontual**, nunca reinterpretar silenciosamente.
 
 ## 2. O que deve ser documentado
 
@@ -37,13 +37,13 @@ Ao concluir uma sessão com mudanças no projeto, atualizar **o mesmo handoff ca
 - Estado de infraestrutura/segurança/deploy somente se **verificado**. Registrar `not checked` quando necessário.
 - Riscos, regressões, decisões em aberto, documentação e migrations afetadas.
 
-Registrar eventos no **Log de continuidade** em ordem cronológica reversa, com referência a commits/PRs quando existirem; evitar duplicar a lista vigente de decisões (1–38; consultar handoff para alterações posteriores). A seção **Checkpoint operacional** mostra a situação atual de maneira concisa; o log guarda mudanças anteriores.
+Registrar eventos no **Log de continuidade** em ordem cronológica reversa, com referência a commits/PRs quando existirem; evitar duplicar a lista vigente de decisões (1–39; consultar handoff para alterações posteriores). A seção **Checkpoint operacional** mostra a situação atual de maneira concisa; o log guarda mudanças anteriores.
 
 ## 3. Checklist obrigatório antes de declarar entrega
 
 - [ ] Conferiu que a mudança segue as decisões aprovadas e a separação PM/cliente/sub.
 - [ ] Conferiu escopo contratual e Change Orders sem substituir contrato por sugestão da IA.
-- [ ] Preservou baseline imutável, versões, assinaturas, progresso validado, créditos reconhecidos e histórico.
+- [ ] Preservou baseline imutável, versões, assinaturas, progresso validado, créditos reconhecidos e histórico. Para correções em logs, usou eventos vinculados em vez de sobrescrita silenciosa; restringiu dados sensíveis sem impedir exclusão/anonimização legalmente exigida (decisão 39).
 - [ ] Separou `reported progress` / `validated progress` / `recognized credit` / `approved payout` / `paid`.
 - [ ] Nenhum sub vê valores de cliente ou margens BrightScale; nenhum cliente vê custos, contratos e finanças internos de subs.
 - [ ] Respeitou RLS/roles; não misturou ambiente de Tracker com outros produtos Supabase.
