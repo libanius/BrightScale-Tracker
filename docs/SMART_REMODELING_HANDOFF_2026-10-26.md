@@ -1,12 +1,12 @@
 # BrightScale Tracker 2.0 — Handoff oficial para continuidade com outras IAs
 
-**Atualizado:** 2026-10-26  
-**Status:** Entrevista de produto ENCERRADA após 34 decisões confirmadas. Próxima fase: consolidar, priorizar, implementar MVP e testar em campo.  
+**Atualizado:** 2026-10-27  
+**Status:** 35 decisões de produto confirmadas. A entrevista longa havia sido encerrada após a decisão 34 para priorizar o MVP; o responsável reabriu **pontualmente** a entrevista e confirmou expressamente a decisão 35 em 2026-10-27. Trabalho técnico de staging e MVP permanece prioritário.  
 **Projeto:** Smart Remodeling / BrightScale Tracker 2.0  
 **Código:** `libanius/BrightScale-Tracker` (`main`)  
 **App:** https://tracker.brightscalegroup.com
 
-> **INSTRUÇÃO PARA A PRÓXIMA IA:** Não retome a entrevista nem invente novas decisões. O usuário considerou a sequência de perguntas excessiva para um produto ainda não testado em campo. Avance com auditoria do repositório, plano de MVP e implementação incremental, sujeito à autorização do usuário para alterações de produção. Leia este documento antes de planejar ou modificar código. As decisões 1–34 são visão de produto, **não uma obrigação de implementar tudo no MVP**.
+> **INSTRUÇÃO PARA A PRÓXIMA IA:** O usuário havia suspendido a entrevista para acelerar o MVP, mas em 2026-10-27 confirmou expressamente a **decisão 35** e solicitou entrevista direcionada sobre escalonamento, substituição de subs, responsabilidades e auditoria. Respeite os pedidos mais recentes e faça **somente perguntas pontuais**, sem interromper a auditoria/implementação do MVP. Leia este documento antes de planejar ou modificar código. As decisões 1–35 são visão de produto, **não obrigação de implementar tudo no MVP**.
 
 ## Protocolo permanente de continuidade entre IAs
 
@@ -20,7 +20,7 @@ Smart Remodeling deve oferecer: escopo contratado claro, plano de execução, ac
 
 Pilares humanos: motivar subcontratados dando visibilidade ao progresso/crédito **sem prometer pagamento**; oferecer clareza ao cliente sem revelar operações internas; manter autoridade de decisões e finanças exclusivamente com o Project Manager (PM).
 
-## Decisões ratificadas (1–34)
+## Decisões ratificadas (1–35)
 
 1. **Visão geral:** Smart Remodeling é o núcleo da evolução do BrightScale Tracker, com facelift visual e funcional. A formulação granular da decisão 1 não está integralmente preservada neste handoff; não atribuir detalhes adicionais a ela.
 2. **Portal do cliente:** painel executivo + timeline + fotos/progresso visual + central de ações; mobile-first, simples.
@@ -55,9 +55,10 @@ Pilares humanos: motivar subcontratados dando visibilidade ao progresso/crédito
 31. **Versionamento:** ajustes pequenos auditados automaticamente; alterações operacionais relevantes formalizadas/confirmadas pelo PM, com revisão identificável; mudanças contratuais por CO. Nunca sobrescrever baseline, assinaturas ou créditos validados.
 32. **Comunicação:** revisões operacionais relevantes comunicadas aos subs envolvidos com **confirmação obrigatória de ciência**; confirmação de ciência não é aceite de preço/contrato/disponibilidade.
 33. **Viabilidade/bloqueio:** para CADA revisão, PM determina se exige confirmação de viabilidade/disponibilidade e se bloqueia a atividade até resposta; ciência continua obrigatória para toda revisão relevante.
-34. **Lembretes:** PM estabelece MANUALMENTE prazo de resposta; sistema envia lembretes conforme esse prazo. Não adotar como decisão 34 alerta de risco autônomo nem alteração automática de prazo.
+34. **Lembretes:** PM estabelece MANUALMENTE prazo de resposta; sistema envia lembtes conforme esse prazo. Não adotar como decisão 34 alerta de risco autônomo nem alteração automática de prazo.
+35. **Conflito de programação e negociação:** quando o sub relata indisponibilidade, a IA **sugere alternativas**; o PM pode **negociar datas com o sub no portal**, mantendo histórico das propostas, respostas, horários e participantes. **Somente o PM aprova e publica** a revisão operacional final. Nenhuma sugestão/proposta/alinhamento informal altera automaticamente a baseline, prazo contratual, Change Order, crédito reconhecido, valores ou pagamentos. Ciência obrigatória (32) e escolha de confirmação de viabilidade/bloqueio por revisão (33) continuam independentes; prazos de resposta permanecem definidos manualmente pelo PM (34). **DECIDED em 2026-10-27 por instrução explícita do usuário. Não implementado.**
 
-**Pergunta 35 NÃO decidida:** política diante de indisponibilidade do sub e possíveis sugestões de alternativas/negociação. NÃO presumir seleção de qualquer alternativa. Desenvolver comportamento conservador de registro + alerta PM apenas se necessário ao MVP, sem reivindicar que tenha sido aprovado.
+**Próximas decisões:** escalonamento após ausência de resposta, possível substituição de subcontratados, atribuição de responsabilidades e trilha de auditoria, sempre com autoridade PM e sem culpa automática. A pergunta 36 foi proposta, mas ainda não decidida.
 
 ## Invariantes de contrato, escopo e financeiro
 
@@ -84,7 +85,7 @@ Pilares humanos: motivar subcontratados dando visibilidade ao progresso/crédito
 
 ## Diretriz do usuário: sair da entrevista e testar
 
-O usuário explicitamente considerou a entrevista longa demais para algo não testado. Não continuar questionário 35+, salvo bloqueio real de implementação. O objetivo imediato é trabalhar com o Tracker atual e testar fluxo real de ponta a ponta.
+O usuário inicialmente encerrou a entrevista por considerá-la longa demais para um produto não testado. Em 2026-10-27, reabriu pontualmente a entrevista, confirmou a decisão 35 e pediu perguntas dirigidas a escalonamento, substituição, responsabilidades e auditoria. **Não interpretar isso como autorização para nova entrevista indefinida**, nem atrasar testes e construção do MVP. Continuar com uma pergunta curta por vez quando solicitado; implementar prioritariamente fluxos testáveis em campo.
 
 ### MVP recomendado — escopo proposto, ainda requer priorização técnica
 
@@ -132,7 +133,7 @@ Nota: Essa divisão é uma **proposta de implementação**, não uma revogação
 ## Checkpoint operacional (fonte atual para próxima IA)
 
 - **Atualizado em:** 2026-10-27 (horário da Flórida).
-- **Entrevista:** 34 decisões DECIDED; encerrada. Decisão 35 não confirmada. Não retomar questionário.
+- **Decisões:** 1–35 DECIDED. O usuário confirmou expressamente decisão 35 em 2026-10-27 e pediu continuidade pontual sobre escalonamento, substituição, responsabilidades e auditoria; **36 pendente**. Priorizar MVP e staging; a decisão 35 é DESIGN CONFIRMED, não código entregue.
 - **Produção:** `main` do Tracker apresenta `v2.0 · MVP` (PR #3), com os dados legados ainda no Supabase existente. Nenhum código/serviço de produção foi modificado nesta fase de staging.
 - **PR #2 — Guardrails:** draft, não incorporado. Duas correções de integridade e agentes Chromium de PM/cliente/segurança/offline testados com mock; testar preview e revisar antes de merge.
 - **PR #4 — Incremento 1:** [draft](https://github.com/libanius/BrightScale-Tracker/pull/4), protótipo local isolado de sub reporta → PM valida → crédito com ledger aditivo, **10/10 Node + 5/5 Chrome PASS**. Não contém login real, backend ou dados persistidos no Supabase.
@@ -143,6 +144,14 @@ Nota: Essa divisão é uma **proposta de implementação**, não uma revogação
 - **Próximo passo único:** confirmar a organização Supabase para provisionamento; verificar disponibilidade/limite. Em seguida criar staging separado (se plataforma permitir sem custo adicional) e executar testes de autenticação REAL por usuários fictícios antes de conectar qualquer UI do Tracker. Não chamar simulações de login de produção.
 
 ## Log de continuidade
+
+### 2026-10-27 — Decisão 35 ratificada: IA sugere, PM negocia e publica (DOCS-ONLY)
+- **Estado:** `DECIDED`; **não `IMPLEMENTED` ou `TESTED`**. Pedido explícito do responsável para retomar pontualmente entrevista de produto apesar da suspensão anterior.
+- **Decisão:** IA sugere alternativas de datas; PM negocia com sub no portal, preserva versões de propostas e respostas, e **somente PM** publica a revisão final.
+- **Compatibilidade:** ciência obrigatória da decisão 32, viabilidade/bloqueio definidos por revisão (33), prazo manual e lembretes (34), baseline imutável, Smart Delay Control, Change Orders, privacidade financeira e separação de créditos/pagamentos permanecem inalterados.
+- **Código/infra:** nenhum código de aplicação, schema Supabase ou deploy alterado por esta decisão. PR #2, #4 e #5 permanecem independentes.
+- **Próxima ação:** pergunta 36 pontual sobre vencimento do prazo sem resposta do sub; continuar piloto de staging em paralelo.
+
 
 ### 2026-10-27 — Fase 4: regras de banco e RLS comprovadas em PostgreSQL descartável
 - **Estado:** `IMPLEMENTED (PR #5 / staging-only SQL)` e `TESTED (local PostgreSQL 17 SQL + RLS)`. **NOT STAGING-DEPLOYED, NOT AUTH-TESTED, NOT FIELD-TESTED**.
