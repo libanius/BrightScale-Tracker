@@ -106,7 +106,22 @@
       },'Conectar ao ambiente de testes')
     ));
   }
+  // Fail closed on every non-preview host. A production deployment must
+  // never serve a functional pilot login, even if this file is copied there.
+  function approvedPreviewHost(){
+    var host=String(location.hostname||'').toLowerCase();
+    return host==='localhost'||host==='127.0.0.1'||
+      (host.endsWith('.pages.dev')&&host.length>'.pages.dev'.length)||
+      (host.endsWith('.workers.dev')&&host.length>'.workers.dev'.length);
+  }
   async function connect(){
+    if(!approvedPreviewHost()){
+      s.client=null;s.api=null;s.user=null;
+      main.replaceChildren(card(title('Portal de staging bloqueado nesta origem'),
+        small('O piloto só funciona em localhost ou preview isolado do Cloudflare. Não conectamos Supabase, mesmo com dados de configuração armazenados.')));
+      notify('STAGING BLOQUEADO — esta origem não é um ambiente de teste autorizado.',true);
+      return;
+    }
     var cfg=getConfig();
     if(!cfg){renderSetup();return;}
     try{
