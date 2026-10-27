@@ -36,7 +36,7 @@ class ProgressDemoBrowserTests(unittest.TestCase):
 
     def setUp(self):
         self.p = sync_playwright().start()
-        self.browser = self.p.chromium.launch(headless=True)
+        self.browser = self.p.chromium.launch(headless=True, channel="chrome")
         self.context = self.browser.new_context(
             viewport={"width": 390, "height": 844}, service_workers="block"
         )
