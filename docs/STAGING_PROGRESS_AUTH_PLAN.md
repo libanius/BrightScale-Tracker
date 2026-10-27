@@ -1,6 +1,20 @@
 # Fase 4 — Supabase staging isolado e teste de autorização por papéis
 
-**Estado (27/10/2026):** infraestrutura, portal e testes de segurança em [PR #5](https://github.com/libanius/BrightScale-Tracker/pull/5). [CI #40560963693](https://github.com/libanius/BrightScale-Tracker/actions/runs/40560963693) **PASS: PostgreSQL 17 + RLS, 7/7 Node, 4/4 Chrome, requisições HTTP com JWT assinado/PostgREST**. Este é um servidor de teste descartável, **NÃO é Supabase Auth real**. **Sem projeto remoto de staging, sem deploy e sem alteração de bancos de produção**.
+**Estado (27/10/2026):** infraestrutura, portal e testes de segurança em [PR #5](https://github.com/libanius/BrightScale-Tracker/pull/5). [CI #40581197075](https://github.com/libanius/BrightScale-Tracker/actions/runs/40581197075) **PASS: PostgreSQL 17 + RLS + baseline congelada, 8/8 Node, 6/6 Chrome, requisições HTTP com JWT assinado/PostgREST**. Este é um servidor de teste descartável, **NÃO é Supabase Auth real**. **Sem projeto remoto de staging, sem deploy e sem alteração de bancos de produção**.
+
+## Incremento 2 — baseline original congelada e report só após PM (implementado em branch)
+
+A partir de **2026-10-27**, o código de staging do PR #5 ganhou:
+
+- [`staging/sql/002_baseline_freeze.sql`](../staging/sql/002_baseline_freeze.sql): colunas de auditoria da baseline, função `pilot_freeze_baseline` permitida **exclusivamente ao PM proprietário**, e gatilhos que bloqueiam inserção de novos escopos, tarefas e termos no contrato original após a aprovação. Uma função usa lock de projeto para evitar inserção concorrente durante o congelamento.
+- A baseline só pode ser aprovada com **pelo menos um escopo**, termos de subcontrato e **soma de tarefas = 100% por escopo**. Um plano incompleto não pode ser congelado.
+- A política de reporte de progresso da equipe exige baseline congelada. `baseline_frozen_at` e `baseline_frozen_by` são definidos pelo servidor, não por um formulário. O evento `baseline_frozen` é anexado à auditoria e não há cobrança/pagamento implícito.
+- [`staging/pilot-gateway.js`](../staging/pilot-gateway.js) expõe apenas `freezeBaseline(projectId)` via RPC. [`staging/pilot-ui.js`](../staging/pilot-ui.js) mostra ao PM se a baseline está rascunho ou congelada; o botão de aprovação exige catálogo completo e confirmação explícita. Após o congelamento, remove ações de inserção da baseline original; sub vê bloqueio de reporte enquanto rascunho.
+- Testes adicionados ao [`staging/tests/rls_smoke.sql`](../staging/tests/rls_smoke.sql), [`tests/pilot-postgrest.test.cjs`](../tests/pilot-postgrest.test.cjs), [`tests/staging-gateway.test.cjs`](../tests/staging-gateway.test.cjs) e [`tests/browser/test_staging_portal.py`](../tests/browser/test_staging_portal.py).
+
+**Evidência:** [GitHub Actions 40581197075](https://github.com/libanius/BrightScale-Tracker/actions/runs/40581197075) **PASS**: PostgreSQL/RLS com chamadas HTTP assinadas, 8/8 Node e 6/6 Chrome. São identidades/valores fictícios em ambiente descartável. Nenhum Supabase de produção foi acessado; nenhuma senha real foi usada.
+
+**Limites:** isso congela a **baseline original do piloto**, mas **não entrega ainda** congelamento contratual completo, COs independentes, assinatura cliente, gates de licença/inspeção, remoção legal de dados ou controle de versões de revisões operacionais. Atribuição de equipe continua operacional e exigirá fluxo auditado de substituição (decisões 37–39). Não enviar contratos reais para este piloto.
 
 ## Por que ainda não foi criado um projeto Supabase?
 
@@ -24,12 +38,12 @@ O PR #5 agora contém uma **interface de staging real**, distinta do protótipo 
 ### Como rodar após aprovar/criar o projeto staging
 
 1. Criar projeto Supabase **novo, vazio e separado**. Configurar Auth Email (OTP) e URL(s) de redirecionamento para a origem de teste; **não usar nenhum projeto ativo**.
-2. Aplicar somente o arquivo `staging/sql/001_progress_rls.sql` no novo projeto, após revisão de RLS; **NUNCA** executar o arquivo `staging/tests/bootstrap_local_pg.sql` no Supabase real.
+2. Aplicar, nessa ordem, os arquivos `staging/sql/001_progress_rls.sql` e `staging/sql/002_baseline_freeze.sql` no novo projeto vazio, após revisão de RLS; **NUNCA** executar o arquivo `staging/tests/bootstrap_local_pg.sql` no Supabase real.
 3. Hospedar o branch em preview HTTPS isolado ou executar `python -m http.server 8765` **somente para desenvolvimento local** e abrir `http://localhost:8765/staging/pilot.html`.
 4. Na tela inicial, fornecer URL e **publishable/anon key** do projeto isolado. Não usar `service_role`, secret keys ou tokens de administrador. O formulário armazena somente URL e publishable key no navegador local; tokens de sessão são geridos pelo Supabase JS Auth.
-5. Entrar com conta fictícia PM e criar um projeto; entrar com contas fictícias Sub e Cliente em perfis separados para obter seus UUIDs; voltar ao PM para cadastrar membership, atribuição e tarefas; verificar os fluxos de reporte/aprovação e negativas com JWT reais.
+5. Entrar com conta fictícia PM e criar um projeto; cadastrar membership e escopos, **completar 100% dos pesos por escopo, congelar a baseline pelo PM**, e depois testar sub reporta / PM valida / cliente vê somente progresso aprovado. Utilizar três identidades fictícias e confirmar negativas com JWT reais.
 
-**Pendências antes do uso real:** testar Auth/JWT e RLS no Supabase verdadeiro; ajustar onboarding e auditabilidade de reassignment; escopo/termos de sub são criados em duas chamadas (falha pode deixar escopo incompleto); proibir múltiplas contas PM fora de tenant corporativo, implementar prova de congelamento da baseline e auditoria de revisões/substituições (decisões 29, 31, 37–39). **É uma tela de teste controlado, não um release.**
+**Pendências antes do uso real:** testar Auth/JWT e RLS no Supabase verdadeiro; ajustar onboarding e auditabilidade de reassignment; escopo/termos de sub são criados em duas chamadas (falha pode deixar escopo incompleto); proibir múltiplas contas PM fora de tenant corporativo, auditar o freeze da baseline com Supabase Auth real e implementar auditoria de revisões/substituições (decisões 29, 31, 37–39). **É uma tela de teste controlado, não um release.**
 
 ## Código do estágio
 
@@ -83,12 +97,12 @@ Evidência: [execução CI aprovada](https://github.com/libanius/BrightScale-Tra
 
 A função de aprovação `SECURITY DEFINER` existe especificamente para transação atômica, com `auth.uid()` obrigatório, checagem de propriedade do projeto e `search_path` explícito. Deve passar por revisão independente de segurança antes de uso fora do staging.
 
-O sistema **não tem workflow de pagamento**, alterações de baseline por Change Order, assinaturas ou reconciliação offline para essa fase. Não inserir dados reais. A baseline do modelo é apenas registro inicial sem interface para aprovar congelamento contratual completo; não declarar que a governança da baseline foi totalmente entregue.
+O sistema **não tem workflow de pagamento**, alterações de baseline por Change Order, assinaturas ou reconciliação offline para essa fase. Não inserir dados reais. O congelamento da baseline **original do piloto** já existe em código e CI; não declarar que o congelamento contratual definitivo, o Change Order ou a validação jurídica do contrato foram entregues.
 
 ## Etapas após liberar o staging
 
 1. Confirmar organização e elegibilidade; provisionar Supabase vazio e **verificar project ID**.
-2. Rever/aplicar **somente** `staging/sql/001_progress_rls.sql` nesse ID; validar catálogo, RLS e advisors.
+2. Rever/aplicar **somente** `staging/sql/001_progress_rls.sql` e `staging/sql/002_baseline_freeze.sql` nessa ordem e nesse ID; validar catálogo, RLS e advisors.
 3. Configurar Auth e criar contas fictícias com autorização do usuário. Nunca publicar senhas/tokens no GitHub.
 4. Executar testes reais Data API/RPC positivos/negativos com contas PM, sub, cliente, usuário externo.
 5. Conectar UI em preview/staging, não no Tracker de produção. Somente após resultados auditáveis propor integração.
@@ -98,6 +112,7 @@ O sistema **não tem workflow de pagamento**, alterações de baseline por Chang
 ```bash
 psql -v ON_ERROR_STOP=1 -f staging/tests/bootstrap_local_pg.sql
 psql -v ON_ERROR_STOP=1 -f staging/sql/001_progress_rls.sql
+psql -v ON_ERROR_STOP=1 -f staging/sql/002_baseline_freeze.sql
 psql -v ON_ERROR_STOP=1 -f staging/tests/rls_smoke.sql
 ```
 
