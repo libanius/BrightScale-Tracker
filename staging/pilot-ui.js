@@ -84,7 +84,7 @@
     if(parsed.protocol!=='https:'||!/^[a-z0-9-]+\.supabase\.co$/i.test(parsed.hostname)||parsed.pathname!=='/'||parsed.search||parsed.hash)
       throw Error('Informe a URL exata de um projeto Supabase STAGING https://...supabase.co');
     var ref=parsed.hostname.split('.')[0].toLowerCase();
-    if(productionRefs.includes(ref))throw Error('Bloqueado: este é o Supabase de produção do BrightScale Tracker.');
+    if(productionRefs.includes(ref))throw Error('Bloqueado: este é um projeto Supabase ativo de produção.');
     if(!key||key.length<30)throw Error('Informe a publishable/anon key do projeto STAGING; nunca service_role.');
     if(key.includes('service_role'))throw Error('Não use service_role ou secret keys no navegador.');
     return parsed.origin;
