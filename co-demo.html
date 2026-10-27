@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0f">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta http-equiv="Cache-Control" content="no-store">
+<title>BrightScale 2.0 | Change Orders — Demonstração</title>
+<style>
+:root { color-scheme:dark; --bg:#0a0a0f;--surface:#161821;--elev:#1d202a;--line:#30333f;--text:#f5f7fa;--muted:#aab2bf;--green:#00e5a0;--purple:#7c6bff;--amber:#ffbd75;--red:#ff777b; }
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{margin:0; background:var(--bg);color:var(--text);font:15px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased;}
+button{font:inherit;cursor:pointer;}
+button:focus-visible{outline:2px solid var(--green);outline-offset:3px;}
+a{color:var(--green);}
+.shell{max-width:810px;min-height:100dvh;margin:0 auto;padding:env(safe-area-inset-top) 18px calc(92px + env(safe-area-inset-bottom));}
+.appbar{display:flex;align-items:center;justify-content:space-between;padding:23px 0 19px;border-bottom:1px solid var(--line);}
+.brand{display:flex;align-items:center;gap:12px;font-weight:850;letter-spacing:-.35px;font-size:16px;}
+.brand-icon{height:38px;width:38px;border-radius:13px;background:linear-gradient(140deg,#00e5a0,#298a74);display:grid;place-items:center;color:#061d17;font-weight:900;font-size:21px;}
+.version{font:600 10px/1.3 ui-monospace,monospace;color:var(--green);letter-spacing:.55px;border:1px solid #286b57;border-radius:8px;padding:7px 8px;}
+.kicker{font-size:11px;letter-spacing:1.35px;font-weight:800;color:var(--green);margin:23px 0 9px;}
+h1{font-size:clamp(25px,6vw,36px);margin:0 0 6px;letter-spacing:-1.2px;line-height:1.15;}
+h2{font-size:18px;margin:0 0 13px;letter-spacing:-.35px;}
+h3{font-size:15px;margin:0 0 6px;}
+p{margin:0 0 11px;}
+.muted{color:var(--muted);font-size:13px;}
+.demo-notice{padding:13px 15px;background:#302715;border:1px solid #6f5532;border-radius:12px;color:#ffe3b4;margin:18px 0;font-size:12px;line-height:1.55;}
+.demo-notice strong{display:block;font-size:12px;letter-spacing:.25px;margin-bottom:3px;}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:17px;padding:17px;margin:14px 0;}
+.topline{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.eyebrow{font-size:11px;color:var(--muted);font-weight:750;letter-spacing:.45px;}
+.chip{font-size:11px;border-radius:50px;padding:5px 9px;color:var(--green);border:1px solid #2c7760;background:#102b25;font-weight:750;}
+.chip.pending{color:var(--amber);background:#362818;border-color:#745238;}
+.chip.closed{color:var(--red);background:#381e25;border-color:#694049;}
+.project-title{font-size:21px;font-weight:800;letter-spacing:-.5px;margin:9px 0 2px;}
+.role-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:12px;}
+.role-tabs button{border:1px solid var(--line);background:#22252f;color:var(--muted);border-radius:11px;padding:11px 5px;font-size:13px;font-weight:740;min-height:45px;}
+.role-tabs button[aria-pressed="true"]{border-color:var(--green);background:#12362c;color:#c0ffe8;}
+.figures{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:15px 0;}
+.figure{background:#10131b;border:1px solid #282e37;border-radius:13px;padding:12px;min-width:0;}
+.figure .label{font-size:11px;color:var(--muted);margin-bottom:6px;line-height:1.3;}
+.figure .value{font-size:20px;font-weight:850;letter-spacing:-.5px;word-wrap:break-word;}
+.figure .value.green{color:var(--green);}
+.progress-track{height:9px;border-radius:15px;overflow:hidden;background:#313540;margin:13px 0 8px;}
+.progress-fill{height:100%;background:linear-gradient(90deg,#0ca978,var(--green));width:0%;transition:width .24s;}
+.meta-row{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted);}
+.workflow{display:grid;gap:8px;}
+.stage{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #292d38;}
+.stage:last-child{border-bottom:0;}
+.bullet{height:25px;width:25px;flex:0 0 25px;display:grid;place-items:center;border-radius:50%;border:1px solid #515666;font-size:11px;font-weight:800;color:var(--muted);}
+.stage.complete .bullet{background:#103d30;color:var(--green);border-color:#347960;}
+.stage.current .bullet{background:#302b50;color:#c5b9ff;border-color:#7c6bff;}
+.stage-content{min-width:0;}
+.stage-title{font-size:13px;font-weight:750;}
+.stage-sub{color:var(--muted);font-size:11px;margin-top:2px;}
+.btn{width:100%;padding:13px 15px;border-radius:12px;border:1px solid var(--line);background:#292e3b;color:var(--text);font-weight:750;margin:7px 0 0;min-height:48px;}
+.btn.primary{background:var(--green);border-color:var(--green);color:#082116;}
+.btn.danger{border-color:#784348;color:#ffb8bd;}
+.btn.reset{background:transparent;}
+.hint{font-size:12px;color:var(--muted);padding:7px 0;}
+.history{display:flex;flex-direction:column;gap:8px;max-height:200px;overflow:auto;}
+.history-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #262b36;font-size:12px;color:var(--muted);}
+.history-item:last-child{border-bottom:none;}
+.small-print{font-size:11px;color:var(--muted);margin-top:12px;}
+.footer-nav{position:fixed;z-index:10;bottom:0;left:0;right:0;background:#111219;border-top:1px solid #282b37;padding:11px 16px calc(11px + env(safe-area-inset-bottom));}
+.footer-inner{display:flex;justify-content:space-around;gap:10px;max-width:810px;margin:auto;}
+.navitem{display:flex;flex:1;align-items:center;justify-content:center;gap:7px;min-height:41px;border-radius:10px;background:transparent;color:var(--muted);font-size:12px;border:none;font-weight:680;}
+.navitem.selected{background:#1d3230;color:var(--green);}
+.sep{border:0;border-top:1px solid var(--line);margin:12px 0;}
+[hidden]{display:none!important;}
+@media(max-width:360px){.shell{padding-inline:13px;}.card{padding:14px;}.figure .value{font-size:18px;}}
+</style>
+</head>
+<body>
+<div class="shell">
+ <header class="appbar">
+  <div class="brand"><span class="brand-icon" aria-hidden="true">B</span><span>BrightScale <span style="color:var(--muted);font-weight:600">Tracker</span></span></div>
+  <span class="version">2.0 · DEMO</span>
+ </header>
+ <main id="demo-main">
+  <p class="kicker">SMART REMODELING / CHANGE ORDERS</p>
+  <h1>Conheça o novo fluxo de COs</h1>
+  <p class="muted">Prévia interativa para iPhone: do pedido de adicional ao crédito validado, sem tocar nos projetos existentes.</p>
+  <aside class="demo-notice" id="demo-notice">
+   <strong>AMBIENTE 100% FICTÍCIO · SEM LOGIN</strong>
+   Esta página não usa banco local, IndexedDB, Supabase ou sincronização. Você pode tocar em tudo: nada será salvo ou cobrado.
+  </aside>
+  <section class="card" aria-labelledby="project-heading">
+   <div class="topline"><span class="eyebrow">EXEMPLO DE ADICIONAL · CO-001</span><span class="chip pending" id="status-chip">Rascunho</span></div>
+   <div class="project-title" id="project-heading">Bathroom Upgrade</div>
+   <p class="muted">Shower tile · Instalação · Escopo separado do contrato original</p>
+   <hr class="sep">
+   <h3>Visualizar como</h3>
+   <p class="muted">Seleção para demonstração visual, não é autenticação.</p>
+   <div class="role-tabs" role="group" aria-label="Escolha o papel demonstrado">
+    <button type="button" data-role="pm" aria-pressed="true">PM</button>
+    <button type="button" data-role="client" aria-pressed="false">Cliente</button>
+    <button type="button" data-role="sub" aria-pressed="false">Sub</button>
+   </div>
+   <div id="role-summary" class="small-print" role="status">PM: aprova etapas, publica CO e valida progresso.</div>
+  </section>
+  <section class="card" aria-labelledby="metrics-heading">
+   <div class="topline"><h2 id="metrics-heading">Resumo do adicional</h2><span class="chip">Isolado</span></div>
+   <div class="figures" id="figures">
+    <div class="figure"><div class="label">Preço para cliente</div><div class="value">$3,500.00</div></div>
+    <div class="figure"><div class="label">Preço do sub</div><div class="value">$800.00</div></div>
+   </div>
+   <div class="meta-row"><span>Progresso validado pelo PM</span><strong id="validated-label">0%</strong></div>
+   <div class="progress-track" aria-label="Percentual validado"><div class="progress-fill" id="progress-fill"></div></div>
+   <p class="small-print">Crédito reconhecido não autoriza pagamento nem altera o contrato original.</p>
+  </section>
+  <section class="card" aria-labelledby="steps-heading">
+    <h2 id="steps-heading">Fluxo de aprovação</h2>
+    <div class="workflow" id="workflow">
+      <div class="stage current"><span class="bullet">1</span><div><div class="stage-title">PM prepara e envia proposta</div><div class="stage-sub">Definição do adicional</div></div></div>
+      <div class="stage"><span class="bullet">2</span><div><div class="stage-title">Cliente decide</div><div class="stage-sub">Aprovar ou recusar</div></div></div>
+      <div class="stage"><span class="bullet">3</span><div><div class="stage-title">PM ativa o CO</div><div class="stage-sub">Após aprovação</div></div></div>
+      <div class="stage"><span class="bullet">4</span><div><div class="stage-title">Sub informa progresso</div><div class="stage-sub">Não gera crédito automaticamente</div></div></div>
+      <div class="stage"><span class="bullet">5</span><div><div class="stage-title">PM valida o crédito</div><div class="stage-sub">Registro separado do original</div></div></div>
+    </div>
+  </section>
+  <section class="card" id="actions-card" aria-labelledby="action-heading">
+    <h2 id="action-heading">Próxima ação</h2>
+    <p class="muted" id="action-hint">Você está visualizando o PM.</p>
+    <div id="action-buttons"><button class="btn primary" type="button" disabled>Carregando demonstração...</button></div>
+    <button class="btn reset" id="reset" type="button">Reiniciar demonstração</button>
+  </section>
+  <section class="card" aria-labelledby="audit-heading">
+    <h2 id="audit-heading">Histórico da simulação</h2>
+    <div class="history" id="history"><div class="history-item"><span>PM · Rascunho criado</span><span>1</span></div></div>
+    <p class="small-print">Histórico apenas nesta sessão. Recarregar a página reinicia tudo.</p>
+  </section>
+  <p class="small-print">Prévia PR #6 · Não é assinatura eletrônica, aprovação contratual real ou sistema de pagamento.</p>
+ </main>
+</div>
+<nav class="footer-nav" aria-label="Atalhos da demonstração">
+ <div class="footer-inner">
+  <button type="button" class="navitem selected" data-jump="project-heading">Visão geral</button>
+  <button type="button" class="navitem" data-jump="steps-heading">Etapas</button>
+  <button type="button" class="navitem" data-jump="audit-heading">Auditoria</button>
+ </div>
+</nav>
+<script src="./co-preview.js"></script>
+<script>
+(function(){
+  'use strict';
+  var model=window.BrightScaleCODemo;
+  var role='pm',state=model?model.initial():null;
+  var labels={
+    draft:'Rascunho',submitted:'Aguardando cliente',
+    client_approved:'Cliente aprovou',declined:'Recusado',active:'CO ativado'
+  };
+  var actions={
+    submit:'Enviar proposta para cliente',approve:'Aprovar adicional (simulação)',
+    decline:'Recusar adicional (simulação)',activate:'Ativar CO como PM',
+    report:'Informar 50% de execução',validate:'Validar 50% e reconhecer crédito'
+  };
+  var eventTitles={
+    created_draft:'Rascunho criado',submit:'Proposta enviada',approve:'Adicional aprovado',
+    decline:'Proposta recusada',activate:'CO ativado',report:'Progresso informado',
+    validate:'Progresso validado'
+  };
+  var roles={pm:'PM',client:'Cliente',sub:'Sub'};
+  var roleDetails={
+    pm:'PM: controla a proposta, ativa o adicional e valida os créditos.',
+    client:'Cliente: vê seu preço e aprova ou recusa a proposta.',
+    sub:'Subcontratado: vê somente seu preço e o crédito validado.'
+  };
+  function e(tag,text,cls){
+    var el=document.createElement(tag); if(text!==undefined)el.textContent=String(text);
+    if(cls)el.className=cls;return el;
+  }
+  function usd(cents){return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(cents/100);}
+  function figure(label,value,positive){
+    var wrap=e('div',undefined,'figure');
+    wrap.appendChild(e('div',label,'label'));
+    wrap.appendChild(e('div',value,'value'+(positive?' green':'')));
+    return wrap;
+  }
+  function draw(){
+    if(!model)return;
+    var view=model.view(state,role);
+    var chip=document.getElementById('status-chip');
+    chip.textContent=labels[view.status]||view.status;
+    chip.className='chip'+(view.status==='declined'?' closed':view.status==='draft'||view.status==='submitted'?' pending':'');
+    document.getElementById('validated-label').textContent=view.validatedPercent+'%';
+    document.getElementById('progress-fill').style.width=view.validatedPercent+'%';
+    document.getElementById('role-summary').textContent=roleDetails[role];
+    document.querySelectorAll('[data-role]').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.role===role));});
+    var f=document.getElementById('figures');f.replaceChildren();
+    if(Object.prototype.hasOwnProperty.call(view,'clientAmountCents'))f.appendChild(figure('Preço para cliente · FICTÍCIO',usd(view.clientAmountCents)));
+    if(Object.prototype.hasOwnProperty.call(view,'subcontractCents'))f.appendChild(figure('Preço do sub · FICTÍCIO',usd(view.subcontractCents)));
+    if(Object.prototype.hasOwnProperty.call(view,'creditCents'))f.appendChild(figure('Crédito reconhecido · FICTÍCIO',usd(view.creditCents),view.creditCents>0));
+    if(Object.prototype.hasOwnProperty.call(view,'reportedPercent')&&view.reportedPercent!==null)
+      f.appendChild(figure('Informado pelo sub',view.reportedPercent+'%'));
+    f.appendChild(figure('Pagamento autorizado','NÃO'));
+    var done=state.history.map(function(x){return x.action;});
+    var steps=['submit','approve','activate','report','validate'];
+    var activeStep=steps.findIndex(function(x){return !done.includes(x);});
+    if(state.status==='declined')activeStep=-1;
+    document.querySelectorAll('#workflow .stage').forEach(function(item,i){
+      item.className='stage'+(done.includes(steps[i])?' complete':i===activeStep?' current':'');
+      item.querySelector('.bullet').textContent=done.includes(steps[i])?'✓':String(i+1);
+    });
+    var hints={
+      pm:'Você está visualizando as decisões do Project Manager.',
+      client:'Você está visualizando a proposta do cliente.',
+      sub:'Você está visualizando o relatório do subcontratado.'
+    };
+    document.getElementById('action-hint').textContent=hints[role];
+    var box=document.getElementById('action-buttons');box.replaceChildren();
+    if(!view.actions.length)box.appendChild(e('p',state.status==='declined'?'Adicional recusado. Reinicie para tentar novamente.':'Nenhuma ação para este papel nesta etapa. Mude o papel acima para prosseguir.','hint'));
+    view.actions.forEach(function(action){
+      var b=e('button',actions[action],'btn'+(action==='decline'?' danger':' primary'));
+      b.type='button';b.dataset.action=action;
+      b.addEventListener('click',function(){state=model.apply(state,role,action);draw();});
+      box.appendChild(b);
+    });
+    var hist=document.getElementById('history');hist.replaceChildren();
+    view.history.forEach(function(item,i){
+      var div=e('div',undefined,'history-item');
+      div.appendChild(e('span',roles[item.actor]+' · '+(eventTitles[item.action]||item.action)));
+      div.appendChild(e('span',String(i+1)));
+      hist.appendChild(div);
+    });
+  }
+  if(!model){
+    document.getElementById('action-buttons').replaceChildren(e('p','Não foi possível abrir a demonstração. Atualize a página.','hint'));
+    return;
+  }
+  document.querySelectorAll('[data-role]').forEach(function(b){b.addEventListener('click',function(){role=b.dataset.role;draw();});});
+  document.getElementById('reset').addEventListener('click',function(){state=model.initial();role='pm';draw();window.scrollTo({top:0,behavior:'smooth'});});
+  document.querySelectorAll('[data-jump]').forEach(function(b){
+    b.addEventListener('click',function(){
+      document.getElementById(b.dataset.jump).scrollIntoView({behavior:'smooth',block:'start'});
+      document.querySelectorAll('[data-jump]').forEach(function(n){n.classList.toggle('selected',n===b);});
+    });
+  });
+  draw();
+})();
+</script>
+</body>
+</html>
