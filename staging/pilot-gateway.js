@@ -70,7 +70,14 @@
       var coTaskIds=coTasks.map(function(x){return x.id;});
       var coValidations=await list('pilot_co_validations',
         'task_id,validated_pct,updated_at','task_id',coTaskIds);
-      var co={orders:orders,scopes:coScopes,tasks:coTasks,validations:coValidations};
+      var requests=await list('pilot_co_requests',
+        'id,project_id,requester_id,title,description,status,linked_co_id,response_reason,reviewed_at,created_at',
+        'project_id',project.id);
+      var requestIds=requests.map(function(x){return x.id;});
+      var requestEvents=await list('pilot_co_request_events',
+        'id,request_id,actor_id,action,detail,created_at','request_id',requestIds);
+      var co={orders:orders,scopes:coScopes,tasks:coTasks,validations:coValidations,
+        requests:requests,requestEvents:requestEvents};
       // Client terms are THEIR contract amount, not subcontractor prices.
       // A sub must never request a client price. RLS remains authoritative.
       if(role!=='sub')co.clientTerms=await list('pilot_co_client_terms',
@@ -101,6 +108,27 @@
       freezeBaseline:async function(projectId){
         if(!projectId)throw Error('project_id_required');
         return check(await supabase.rpc('pilot_freeze_baseline',{p_project_id:projectId}));
+      },
+      requestChangeOrder:function(projectId,title,description){
+        title=String(title||'').trim();
+        description=String(description||'').trim();
+        if(!projectId||title.length<1||title.length>120||description.length>500)
+          throw Error('invalid_change_order_request');
+        return insert('pilot_co_requests',{project_id:projectId,title:title,description:description});
+      },
+      formalizeChangeOrderRequest:async function(requestId,clientCents){
+        if(!requestId||!Number.isSafeInteger(clientCents)||clientCents<0)
+          throw Error('invalid_request_price');
+        return check(await supabase.rpc('pilot_co_formalize_request',{
+          p_request_id:requestId,p_client_cents:clientCents
+        }));
+      },
+      declineChangeOrderRequest:async function(requestId,reason){
+        reason=String(reason||'').trim();
+        if(!requestId||!reason||reason.length>300)throw Error('invalid_decline_reason');
+        return check(await supabase.rpc('pilot_co_decline_request',{
+          p_request_id:requestId,p_reason:reason
+        }));
       },
       createChangeOrder:async function(projectId,title,description,clientCents){
         title=String(title||'').trim();
