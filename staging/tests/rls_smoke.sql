@@ -263,4 +263,54 @@ begin
 end $$;
 rollback;
 
+-- Rounding regression: a one-cent subcontract and two evenly weighted tasks
+-- may round each task to one cent. The second approval MUST be denied.
+begin;
+set local role authenticated;
+select set_config('request.jwt.claim.sub','11111111-1111-4111-8111-111111111111',true);
+insert into public.pilot_projects(id,name) values
+ ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaab','SYNTHETIC Cent Rounding Pilot');
+insert into public.pilot_memberships(project_id,user_id,role) values
+ ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaab','22222222-2222-4222-8222-222222222222','sub');
+insert into public.pilot_scopes(id,project_id,name) values
+ ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbd','aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaab','SYNTHETIC One Cent Scope');
+insert into public.pilot_assignments(scope_id,user_id) values
+ ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbd','22222222-2222-4222-8222-222222222222');
+insert into public.pilot_scope_terms(scope_id,subcontract_cents) values
+ ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbd',1);
+insert into public.pilot_tasks(id,scope_id,title,weight_pct) values
+ ('cccccccc-cccc-4ccc-8ccc-ccccccccccce','bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbd','Half of one cent A',50),
+ ('cccccccc-cccc-4ccc-8ccc-cccccccccccf','bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbd','Half of one cent B',50);
+commit;
+
+begin;
+set local role authenticated;
+select set_config('request.jwt.claim.sub','22222222-2222-4222-8222-222222222222',true);
+insert into public.pilot_reports(id,task_id,reported_pct,note) values
+ ('dddddddd-dddd-4ddd-8ddd-ddddddddddda','cccccccc-cccc-4ccc-8ccc-ccccccccccce',100,'Half A complete'),
+ ('dddddddd-dddd-4ddd-8ddd-ddddddddddd9','cccccccc-cccc-4ccc-8ccc-cccccccccccf',100,'Half B complete');
+commit;
+
+begin;
+set local role authenticated;
+select set_config('request.jwt.claim.sub','11111111-1111-4111-8111-111111111111',true);
+select public.pilot_review_report('dddddddd-dddd-4ddd-8ddd-ddddddddddda','approve',100,'');
+do $
+begin
+ begin
+   perform public.pilot_review_report('dddddddd-dddd-4ddd-8ddd-ddddddddddd9','approve',100,'');
+   raise exception 'security_fail_rounded_scope_over_credit';
+ exception when raise_exception then
+   if sqlerrm <> 'scope_credit_exceeds_subcontract' then raise; end if;
+ end;
+ if (select coalesce(sum(e.delta_cents),0) from public.pilot_credit_events e
+     join public.pilot_tasks t on t.id=e.task_id where t.scope_id='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbd')<>1
+   then raise exception 'rounded_credits_exceeded_subcontract'; end if;
+ if (select status from public.pilot_reports where id='dddddddd-dddd-4ddd-8ddd-ddddddddddd9')<>'pending'
+   then raise exception 'over_credit_changed_report_status'; end if;
+ if (select count(*) from public.pilot_validations where task_id='cccccccc-cccc-4ccc-8ccc-cccccccccccf')<>0
+   then raise exception 'over_credit_modified_approved_percent'; end if;
+end $;
+commit;
+
 -- No writes to production. This is a throwaway local CI database.
