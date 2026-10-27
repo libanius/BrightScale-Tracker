@@ -1,0 +1,57 @@
+name: Isolated staging RLS security tests
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: staging-rls-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sql-security:
+    name: Postgres 17 · PM/sub/client RLS authorization
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify local Postgres and load test-only auth shim
+        run: |
+          psql --version
+          psql -v ON_ERROR_STOP=1 -f staging/tests/bootstrap_local_pg.sql
+      - name: Apply isolated staging schema to disposable database
+        run: psql -v ON_ERROR_STOP=1 -f staging/sql/001_progress_rls.sql
+      - name: Run authenticated user negative and positive RLS tests
+        run: psql -v ON_ERROR_STOP=1 -f staging/tests/rls_smoke.sql
+      - name: Assert policy coverage and credit table immutability
+        run: |
+          psql -v ON_ERROR_STOP=1 -Atc "
+            select case when count(*) = 10 then 'PASS: 10 tables RLS-enabled'
+              else cast(1/0 as text) end
+            from pg_class c join pg_namespace n on n.oid=c.relnamespace
+            where n.nspname='public' and c.relname like 'pilot_%'
+              and c.relkind='r' and c.relrowsecurity;
+          "
