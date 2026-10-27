@@ -131,19 +131,26 @@ Nota: Essa divisão é uma **proposta de implementação**, não uma revogação
 
 ## Checkpoint operacional (fonte atual para próxima IA)
 
-- **Atualizado em:** 2026-10-26.
-- **Branch:** `main`; **auditoria detalhada:** [MVP_TECHNICAL_AUDIT_2026-10-26.md](MVP_TECHNICAL_AUDIT_2026-10-26.md).
-- **Decisões confirmadas:** 1–34 (`DECIDED`), entrevista encerrada; decisão 35 não tomada.
-- **Último resultado comprovado:** revisão estática do código GitHub e leitura de metadados Supabase live (`tracker`/`tracker_private`) sem escrita de dados. Auditoria de capacidades P0 publicada.
-- **MVP:** importação + IA + estrutura projeto + portal cliente somente leitura **PARTIAL/EXISTS**; sub reporta/PM valida **MISSING**; crédito reconhecido e fluxo de CO **PARTIAL/MISSING**; relatório diário estratégico **PARTIAL**; níveis de roles para subs **NOT IMPLEMENTED / RISK**. Ver matriz detalhada da auditoria.
-- **Supabase:** `tracker` com 15 tabelas e RLS ligado em todas; funções `tracker-share`, `tracker-estimate-intake`, `tracker-ops` aparecem `ACTIVE`. Há 1 intake `project_created`, 2 milestones `pending`, 1 backup `ok`. Isso não comprova teste ponta a ponta.
-- **Produção:** `https://tracker.brightscalegroup.com` conhecida, porém navegador público nesta sessão não conseguiu verificar UI. **NOT VERIFIED**; não alegar outage.
-- **Testes:** inspeção estática e queries SELECT em catálogo/contadores; **nenhum teste automatizado executado**, fluxo no navegador ou teste de campo.
-- **Riscos P0 identificados:** edição da tarefa pode apagar `acceptance_criteria`; importação de estimate em projeto existente soma ao contrato sem CO; progresso direto já alimenta crédito financeiro sem validação PM; RLS member amplo é inadequado para login de sub/cliente.
-- **Próximo passo único:** implementar **Incremento 0 — guardrails** em branch/PR: preservar `acceptanceCriteria` ao salvar tarefa, proteger importação em projeto existente e adicionar testes com dados fictícios. Só depois iniciar sub report/PM validation com autorização por papel.
-- **Segurança:** não alterar `public`/`private` schemas do Supabase compartilhado; nenhum código de aplicação, deploy ou dados reais foram alterados nesta auditoria.
+- **Atualizado em:** 2026-10-26 (horário da Flórida; commits no GitHub em 2026-10-27 UTC).
+- **Branch principal:** `main`; **correções Incremento 0 na branch** `fix/mvp-guardrails-2026-10-26`, PR rascunho **[#2](https://github.com/libanius/BrightScale-Tracker/pull/2)**. O PR NÃO está incorporado à `main`.
+- **Decisões confirmadas:** 1–34 (`DECIDED`); entrevista encerrada; decisão 35 não tomada. **Protocolo:** [CONTINUITY_PROTOCOL.md](CONTINUITY_PROTOCOL.md).
+- **Último resultado comprovado:** duas proteções implementadas na branch: 1) edições de tarefa preservam `acceptanceCriteria` e metadados; 2) importação de estimate para projeto existente é bloqueada, antes de gravar algo, até o fluxo de CO formal. O fluxo de **novo projeto** continua permitido.
+- **Evidências de código:** `index.html` (branch do PR), `tests/guardrails.test.cjs`, `.github/workflows/mvp-guardrails.yml`. Commits de implementação: `734f1ee36bde19cc206fd2d9d693cfb0ca2340af`, testes `82c04f436025e8c4238ea4f21e9a7bf7e7360882`, CI `1f275246f76c9ed804b4286de7a51fc5f89deda6`.
+- **Testes:** [GitHub Actions run 40443714407](https://github.com/libanius/BrightScale-Tracker/actions/runs/40443714407), Node 22, **7/7 PASS, 0 FAIL**: parse JS, preservação de metadados, ambos formulários de edição, bloqueio sem gravações, criação de novo projeto e seleção de destino desabilitada. **Não testado** no navegador, staging com autenticação, offline, ambiente de produção nem em campo.
+- **MVP além do Inc. 0:** ainda **PARTIAL/MISSING** conforme [auditoria técnica](MVP_TECHNICAL_AUDIT_2026-10-26.md): falta fluxo `sub report → PM validation → credit recognized`, autorização granular por papel, baseline e CO formal; portal cliente só leitura.
+- **Produção:** nenhuma aplicação/Edge Function/BD alterado. Ainda **não foi autorizado merge/deploy** do PR; documentação principal foi atualizada para continuidade. Status funcional do site não revalidado.
+- **Riscos:** importação de estimate para projeto existente fica temporariamente indisponível no PR (intencional); sem CO formal não há maneira de acrescentar ao contrato original por este fluxo. Editores de tarefas ainda podem alterar progresso diretamente (sem PM validation), problema reservado para Incremento 1. Repositório público precisa revisão de histórico/privacidade.
+- **Próxima ação única:** revisar **PR #2** e executar smoke test no preview/staging autenticado com **dados fictícios**; após evidência e autorização do responsável, incorporar o PR sem mexer nos schemas compartilhados. Depois executar Incremento 1: sub informa → PM valida → crédito oficial, com RLS por papel.
 
 ## Log de continuidade
+
+### 2026-10-26 — Incremento 0 implementado e testado em CI (PR #2 não incorporado)
+- **Estado:** `IMPLEMENTED` na branch `fix/mvp-guardrails-2026-10-26`; `TESTED` em CI Node com **7/7 PASS**; `NOT MERGED / NOT FIELD-TESTED`.
+- **Mudança:** `index.html` preserva metadados em ambos os saves de tarefas e rejeita importação de estimates em projetos existentes antes de gravações. Adicionou `tests/guardrails.test.cjs` e workflow `.github/workflows/mvp-guardrails.yml`.
+- **Evidência:** [PR #2](https://github.com/libanius/BrightScale-Tracker/pull/2), [CI verde](https://github.com/libanius/BrightScale-Tracker/actions/runs/40443714407) e commits `734f1ee`, `82c04f4`, `1f27524`.
+- **Teste:** Node 22 / GitHub Actions; 7 testes passaram, 0 falharam; não houve teste de interface real, staging com sessão, offline ou campo.
+- **Segurança/contratos:** nenhum schema, registro real, segredo ou Edge Function tocado; baseline original protegida do fluxo de importação. Projeto existente exige futura formalização de CO.
+- **Próximo passo:** teste de fumaça em preview e revisão do PR antes do merge. Em seguida fluxo de progresso informado pelo sub com validação do PM.
 
 ### 2026-10-26 — Fase 2: auditoria técnica inicial do MVP
 - **Estado:** `AUDITED / DOCS-ONLY`. Não marcar como `TESTED` ou `IMPLEMENTED`.
