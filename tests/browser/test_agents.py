@@ -43,7 +43,7 @@ class BrowserHarness(unittest.TestCase):
 
     def setUp(self):
         self.playwright = sync_playwright().start()
-        self.browser = self.playwright.chromium.launch(headless=True)
+        self.browser = self.playwright.chromium.launch(headless=True, channel="chrome")
         self.context = self.browser.new_context(
             viewport={"width": 390, "height": 844}, service_workers="block"
         )
