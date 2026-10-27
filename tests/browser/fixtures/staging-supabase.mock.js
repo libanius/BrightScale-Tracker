@@ -10,6 +10,7 @@
   var role=window.__pilotMockRole||'client';
   var id={pm:PM,sub:SUB,client:CLIENT}[role];
   window.__pilotQueried=[];
+  window.__pilotWrites=[];
   var data={
     pilot_projects:[project],
     pilot_memberships:[
@@ -80,7 +81,7 @@
           select:function(){return b;},
           eq:function(field,val){filters.push({field:field,values:[val]});return b;},
           in:function(field,values){filters.push({field:field,values:values});return b;},
-          insert:function(val){state.insert=val;return b;},
+          insert:function(val){state.insert=val;window.__pilotWrites.push({table:table,data:val});return b;},
           single:function(){
             if(state.insert){
               data[table].push(state.insert);
