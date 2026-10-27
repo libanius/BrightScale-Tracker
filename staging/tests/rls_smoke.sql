@@ -21,7 +21,7 @@ insert into public.pilot_tasks(id,scope_id,title,weight_pct) values
   ('cccccccc-cccc-4ccc-8ccc-cccccccccccc','bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb','SYNTHETIC Install LVP',60),
   ('cccccccc-cccc-4ccc-8ccc-cccccccccccd','bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbc','SYNTHETIC Paint Walls',100);
 -- Regression: PM cannot add a task whose weight would over-allocate a scope.
-do $
+do $$
 begin
   begin
     insert into public.pilot_tasks(id,scope_id,title,weight_pct) values
@@ -35,8 +35,8 @@ begin
   if (select coalesce(sum(weight_pct),0)
       from public.pilot_tasks where scope_id='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb')<>60
     then raise exception 'scope_weight_mutated_after_rejection'; end if;
-end $;
-do $
+end $$;
+do $$
 begin
  if (select count(*) from public.pilot_projects) <> 1 then raise exception 'pm_project_setup_failed'; end if;
  if (select count(*) from public.pilot_scope_terms) <> 2 then raise exception 'pm_cannot_read_terms'; end if;
