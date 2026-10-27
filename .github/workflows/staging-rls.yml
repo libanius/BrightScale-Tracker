@@ -46,12 +46,14 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f staging/sql/001_progress_rls.sql
       - name: Run authenticated user negative and positive RLS tests
         run: psql -v ON_ERROR_STOP=1 -f staging/tests/rls_smoke.sql
-      - name: Assert policy coverage and credit table immutability
+      - name: Assert all ten tables have RLS enabled
+        shell: bash
         run: |
-          psql -v ON_ERROR_STOP=1 -Atc "
-            select case when count(*) = 10 then 'PASS: 10 tables RLS-enabled'
-              else cast(1/0 as text) end
-            from pg_class c join pg_namespace n on n.oid=c.relnamespace
-            where n.nspname='public' and c.relname like 'pilot_%'
-              and c.relkind='r' and c.relrowsecurity;
-          "
+          count=$(psql -v ON_ERROR_STOP=1 -Atc "
+            select count(*)
+              from pg_class c join pg_namespace n on n.oid=c.relnamespace
+             where n.nspname='public' and c.relname like 'pilot_%'
+               and c.relkind='r' and c.relrowsecurity;
+          ")
+          echo "Pilot tables with RLS enabled: $count"
+          test "$count" = "10"
