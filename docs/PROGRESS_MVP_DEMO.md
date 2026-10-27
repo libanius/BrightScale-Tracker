@@ -1,6 +1,6 @@
 # Incremento 1 — demonstração de progresso, validação PM e crédito
 
-**Status:** implementado como **protótipo isolado**, sem banco de dados/contas reais; aguarda testes CI e revisão PR.  
+**Status:** implementado como **protótipo isolado**, sem banco de dados/contas reais; testado em CI Node e navegador Chrome; aguarda revisão do PR.  
 **Data:** 2026-10-27.  
 **Decisões:** 5, 6, 7, 8, 9, 10, 18, 23, 29, 31 e continuidade conforme [handoff canônico](SMART_REMODELING_HANDOFF_2026-10-26.md).
 
@@ -51,7 +51,7 @@ python -m playwright install chromium
 python -m unittest discover -s tests/browser -p 'test_progress_demo.py' -v
 ```
 
-GitHub Actions executa os dois testes com Ubuntu 24.04/Node22/Chromium. Esse workflow não chama API do Supabase ou Cloudflare para gravar dados.
+GitHub Actions [40503796357](https://github.com/libanius/BrightScale-Tracker/actions/runs/40503796357) executou os dois grupos: **10/10 testes Node PASS** e **5/5 testes Chrome PASS** usando Ubuntu 24.04/Node22/Google Chrome pré-instalado. O browser usa Playwright em Chrome real contra localhost e não chama Supabase, Cloudflare ou API financeira para gravar dados.
 
 ## Critérios para declarar Incremento 1 entregue em produção
 
