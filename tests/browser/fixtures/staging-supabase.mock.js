@@ -6,7 +6,7 @@
   var PM='11111111-1111-4111-8111-111111111111';
   var SUB='22222222-2222-4222-8222-222222222222';
   var CLIENT='33333333-3333-4333-8333-333333333333';
-  var project={id:'demo-project',owner_id:PM,name:'SYNTHETIC STAGING Flooring',baseline_version:1};
+  var project={id:'demo-project',owner_id:PM,name:'SYNTHETIC STAGING Flooring',baseline_version:1,baseline_frozen_at:window.__pilotMockDraft?null:'2026-10-27T15:00:00Z'};
   var role=window.__pilotMockRole||'client';
   var id={pm:PM,sub:SUB,client:CLIENT}[role];
   window.__pilotQueried=[];
