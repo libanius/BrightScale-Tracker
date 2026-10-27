@@ -131,18 +131,28 @@ Nota: Essa divisão é uma **proposta de implementação**, não uma revogação
 
 ## Checkpoint operacional (fonte atual para próxima IA)
 
-- **Atualizado em:** 2026-10-26 (horário da Flórida; commits no GitHub em 2026-10-27 UTC).
-- **Branch principal:** `main`; **correções Incremento 0 na branch** `fix/mvp-guardrails-2026-10-26`, PR rascunho **[#2](https://github.com/libanius/BrightScale-Tracker/pull/2)**. O PR NÃO está incorporado à `main`.
-- **Decisões confirmadas:** 1–34 (`DECIDED`); entrevista encerrada; decisão 35 não tomada. **Protocolo:** [CONTINUITY_PROTOCOL.md](CONTINUITY_PROTOCOL.md).
-- **Último resultado comprovado:** duas proteções implementadas na branch: 1) edições de tarefa preservam `acceptanceCriteria` e metadados; 2) importação de estimate para projeto existente é bloqueada, antes de gravar algo, até o fluxo de CO formal. O fluxo de **novo projeto** continua permitido.
-- **Evidências de código:** `index.html` (branch do PR), `tests/guardrails.test.cjs`, `.github/workflows/mvp-guardrails.yml`. Commits de implementação: `734f1ee36bde19cc206fd2d9d693cfb0ca2340af`, testes `82c04f436025e8c4238ea4f21e9a7bf7e7360882`, CI `1f275246f76c9ed804b4286de7a51fc5f89deda6`.
-- **Testes:** [GitHub Actions run 40443714407](https://github.com/libanius/BrightScale-Tracker/actions/runs/40443714407), Node 22, **7/7 PASS, 0 FAIL**: parse JS, preservação de metadados, ambos formulários de edição, bloqueio sem gravações, criação de novo projeto e seleção de destino desabilitada. **Não testado** no navegador, staging com autenticação, offline, ambiente de produção nem em campo.
-- **MVP além do Inc. 0:** ainda **PARTIAL/MISSING** conforme [auditoria técnica](MVP_TECHNICAL_AUDIT_2026-10-26.md): falta fluxo `sub report → PM validation → credit recognized`, autorização granular por papel, baseline e CO formal; portal cliente só leitura.
-- **Produção:** nenhuma aplicação/Edge Function/BD alterado. Ainda **não foi autorizado merge/deploy** do PR; documentação principal foi atualizada para continuidade. Status funcional do site não revalidado.
-- **Riscos:** importação de estimate para projeto existente fica temporariamente indisponível no PR (intencional); sem CO formal não há maneira de acrescentar ao contrato original por este fluxo. Editores de tarefas ainda podem alterar progresso diretamente (sem PM validation), problema reservado para Incremento 1. Repositório público precisa revisão de histórico/privacidade.
-- **Próxima ação única:** revisar **PR #2** e executar smoke test no preview/staging autenticado com **dados fictícios**; após evidência e autorização do responsável, incorporar o PR sem mexer nos schemas compartilhados. Depois executar Incremento 1: sub informa → PM valida → crédito oficial, com RLS por papel.
+- **Atualizado em:** 2026-10-26 horário da Flórida (CI/commits 2026-10-27 UTC).
+- **Branch:** `main` (handoff canônico) e **PR #2 draft** na branch `fix/mvp-guardrails-2026-10-26`. Link: [PR #2](https://github.com/libanius/BrightScale-Tracker/pull/2). **NÃO ESTÁ INCORPORADO EM MAIN/PRODUÇÃO**.
+- **Decisões confirmadas:** 1–34 (`DECIDED`); entrevista encerrada e decisão 35 não tomada.
+- **Último resultado comprovado:** Incremento 0 (preservação de critérios de aceite + bloqueio de novo estimate em contrato existente) implementado no PR; além disso foram **criados e executados quatro agentes automáticos Chromium** para PM, Cliente, Segurança e Offline com dados fictícios e cloud mock.
+- **Evidência dos agentes:** [GitHub Actions run #40444617361](https://github.com/libanius/BrightScale-Tracker/actions/runs/40444617361) **11/11 PASS**: PM 4, Cliente 3, Segurança 3, Offline 1. Os testes Node guardrails previamente passaram 7/7. Código e instruções dos agentes na branch PR: [docs/BROWSER_TEST_AGENTS.md](https://github.com/libanius/BrightScale-Tracker/blob/fix/mvp-guardrails-2026-10-26/docs/BROWSER_TEST_AGENTS.md), `tests/browser/test_agents.py`, `tests/browser/fixtures/tracker-cloud.mock.js` e `.github/workflows/browser-agents.yml`.
+- **O que foi testado:** Chromium de fato abriu `index.html` e `dashboard.html` locais e interagiu com DOM + IndexedDB, realizou saves/importação de projeto fictício e exibiu links fictícios. As chamadas externas são bloqueadas; não foram usados clientes/contratos reais.
+- **O que NÃO foi testado:** login REAL no Supabase, permissões RLS ao vivo de PM/sub/cliente, upload via IA REAL, sincronização remota/reconexão, teste de campo ou produção. O monitor público read-only está configurado para agenda/manual **quando o workflow estiver em main** e **não foi executado na rodada do PR**. Logo não alegar que bots entraram autenticados no site em produção.
+- **CI:** Chromium pinado em `ubuntu-24.04` porque Playwright 1.56.0 não suportou Ubuntu 26.04 do primeiro runner. A execução após correção passou 4/4 jobs. Testes do PR + guardrails estão separados de deploy.
+- **MVP restante:** ver [auditoria técnica](MVP_TECHNICAL_AUDIT_2026-10-26.md); falta `sub reported → PM validated → recognized credit`, controle de permissões por papel, baseline protegida e CO aprovado; não confundir fixture com backend pronto.
+- **Segurança:** produção, Supabase schemas `public`/`private`, pagamentos, dados de clientes e deploy intactos. Branch do PR contém somente correções e agentes; `main` recebe apenas documentação do estado.
+- **Próxima ação única:** revisar PR #2 e executar smoke/staging isolado antes de merge; se aprovado, habilitar workflows agendados em main. Depois configurar ambiente de teste Supabase SEPARADO com usuários fictícios por papel para testes realmente autenticados, antes de pôr um sub em campo.
 
 ## Log de continuidade
+
+### 2026-10-26 — Agentes PM/Cliente/Segurança/Offline criados e executados no navegador (PR #2)
+- **Estado:** `IMPLEMENTED (branch)` e `TESTED (isolated Chromium browser mock)`, **NÃO** `FIELD TESTED` ou login REAL. Workflow agendado aguarda integração a `main`.
+- **Mudança:** adicionou 4 suites independentes Python Playwright e fixture 100% fictícia, rodando `index.html`, `dashboard.html`, IndexedDB e telas reais em Chromium; criou workflow com triggers PR/push/main/manual e dias úteis após merge. Acrescentou cheque HTTP público somente-leitura para schedule/manual (ainda não executado).
+- **Evidências:** [PR #2](https://github.com/libanius/BrightScale-Tracker/pull/2), [GitHub Actions #40444617361](https://github.com/libanius/BrightScale-Tracker/actions/runs/40444617361) **11 PASS / 0 FAIL** (PM4, Cliente3, Segurança3, Offline1); [instruções dos agentes](https://github.com/libanius/BrightScale-Tracker/blob/fix/mvp-guardrails-2026-10-26/docs/BROWSER_TEST_AGENTS.md).
+- **Testes:** real Chromium + HTTP localhost + JS app e IndexedDB; test cloud/auth mockado e acesso externo bloqueado. Primeiro run falhou por incompatibilidade Playwright/Ubuntu 26.04; correção para 24.04 resolveu; não houve teste real Supabase RLS/login, produção ou field test.
+- **Segurança/contratos:** nenhum schema/cliente/contrato/pagamento alterado. PR continua draft.
+- **Próximo passo:** revisar PR, ensaiar smoke em staging isolado; confirmar merge/deploy depois. Planejar credenciais fictícias em staging para testes reais de autenticação/RLS.
+
 
 ### 2026-10-26 — Incremento 0 implementado e testado em CI (PR #2 não incorporado)
 - **Estado:** `IMPLEMENTED` na branch `fix/mvp-guardrails-2026-10-26`; `TESTED` em CI Node com **7/7 PASS**; `NOT MERGED / NOT FIELD-TESTED`.
