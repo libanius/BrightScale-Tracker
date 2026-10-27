@@ -48,7 +48,7 @@
   }
   function field(f){
     var lab=dom('label',{text:f.label});
-    var inp=f.options?dom('select'):dom(f.multiline?'textarea':'input',{type:f.type||'text'});
+    var inp=f.options?dom('select'):(f.multiline?dom('textarea'):dom('input',{type:f.type||'text'}));
     inp.name=f.key; inp.required=f.required!==false;
     if(f.placeholder)inp.placeholder=f.placeholder;
     if(f.min!==undefined)inp.min=f.min;
