@@ -255,7 +255,7 @@ create policy pilot_audit_read on public.pilot_audit_events for select to authen
 -- Server-side audit trail for reports; no client-provided timestamp or actor.
 create function pilot_priv.audit_sub_report()
 returns trigger language plpgsql security definer set search_path = ''
-as $
+as $$
 declare v_project uuid;
 begin
   select s.project_id into v_project from public.pilot_tasks t
