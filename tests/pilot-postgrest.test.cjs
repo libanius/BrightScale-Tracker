@@ -123,6 +123,54 @@ function one({data}) {
   await req('POST','rpc/pilot_review_report',IDs.pm,
     {p_report_id:report.id,p_action:'approve',p_approved_pct:80,p_reason:''},[400,409]);
 
+  // Client and sub may REQUEST a CO, but cannot price, submit or publish it.
+  const clientRequest=one(await req('POST','pilot_co_requests',IDs.client,{
+    project_id:pid,title:'SYNTHETIC Client Requested Sink',description:'New sink fixture'
+  },[201]));
+  const subRequest=one(await req('POST','pilot_co_requests',IDs.sub,{
+    project_id:pid,title:'SYNTHETIC Sub Requested Reroute',description:'Possible rework'
+  },[201]));
+  assert.equal(clientRequest.requester_id,IDs.client);
+  assert.equal(subRequest.requester_id,IDs.sub);
+  await req('POST','pilot_co_requests',IDs.client,{
+    project_id:pid,requester_id:IDs.pm,title:'SPOOF',description:'forgery'
+  },[401,403]);
+  const clientOwnRequests=await req('GET','pilot_co_requests?project_id=eq.'+pid,IDs.client);
+  assert.equal(clientOwnRequests.data.length,1);
+  assert.equal(clientOwnRequests.data[0].id,clientRequest.id);
+  const subOwnRequests=await req('GET','pilot_co_requests?project_id=eq.'+pid,IDs.sub);
+  assert.equal(subOwnRequests.data.length,1);
+  assert.equal(subOwnRequests.data[0].id,subRequest.id);
+  const externalRequests=await req('GET','pilot_co_requests?project_id=eq.'+pid,IDs.outsider);
+  assert.deepEqual(externalRequests.data,[]);
+  await req('POST','rpc/pilot_co_formalize_request',IDs.client,{
+    p_request_id:clientRequest.id,p_client_cents:90000
+  },[401,403]);
+  const formalized=await req('POST','rpc/pilot_co_formalize_request',IDs.pm,{
+    p_request_id:clientRequest.id,p_client_cents:90000
+  });
+  assert.equal(formalized.data.status,'formalized');
+  assert.equal(formalized.data.client_approved,false);
+  assert.equal(formalized.data.payment_authorized,false);
+  const privateFormalizedCO=await req('GET','pilot_change_orders?id=eq.'+
+    formalized.data.co_id,IDs.client);
+  assert.deepEqual(privateFormalizedCO.data,[]);
+  await req('POST','rpc/pilot_co_formalize_request',IDs.pm,{
+    p_request_id:clientRequest.id,p_client_cents:90000
+  },[400,409]);
+  const declinedRequest=await req('POST','rpc/pilot_co_decline_request',IDs.pm,{
+    p_request_id:subRequest.id,p_reason:'Outside contracted scope; clarify later'
+  });
+  assert.equal(declinedRequest.data.status,'declined');
+  await req('POST','rpc/pilot_co_formalize_request',IDs.pm,{
+    p_request_id:subRequest.id,p_client_cents:20000
+  },[400,409]);
+  const clientEvent=await req('GET','pilot_co_request_events?request_id=eq.'+
+    clientRequest.id,IDs.client);
+  assert.equal(clientEvent.data.length,2);
+  const pmRequests=await req('GET','pilot_co_requests?project_id=eq.'+pid,IDs.pm);
+  assert.equal(pmRequests.data.length,2);
+
   // An approved CO is NEVER merged with the original contract's baseline,
   // reports, recognized credit ledger or subcontractor/client prices.
   await req('POST','rpc/pilot_co_create_draft',IDs.sub,
