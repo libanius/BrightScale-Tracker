@@ -1,18 +1,18 @@
 # Fase 4 — Supabase staging isolado e teste de autorização por papéis
 
-**Estado (27/10/2026):** infraestrutura SQL e testes de autorização concluídos em [PR #5](https://github.com/libanius/BrightScale-Tracker/pull/5); [CI PostgreSQL 17 #40506790356](https://github.com/libanius/BrightScale-Tracker/actions/runs/40506790356) **PASS**. **Sem projeto Supabase novo, sem login real e sem implantação no Supabase**.
+**Estado (27/10/2026):** infraestrutura, portal e testes de segurança em [PR #5](https://github.com/libanius/BrightScale-Tracker/pull/5). [CI #40560963693](https://github.com/libanius/BrightScale-Tracker/actions/runs/40560963693) **PASS: PostgreSQL 17 + RLS, 7/7 Node, 4/4 Chrome, requisições HTTP com JWT assinado/PostgREST**. Este é um servidor de teste descartável, **NÃO é Supabase Auth real**. **Sem projeto remoto de staging, sem deploy e sem alteração de bancos de produção**.
 
 ## Por que ainda não foi criado um projeto Supabase?
 
-O conector mostrou **uma organização**, associada à conta Supabase conectada, no plano Free, com **dois projetos já ativos** (Abre-USA e brightscale-scanner). O serviço cotou **US$ 0/mês** para novo projeto nessa organização, mas ainda é necessário o usuário indicar formalmente a organização de destino; podem existir limites de projetos ativos no plano. **Nunca reutilizar brightscale-scanner ou Abre-USA como staging para contornar limite** e nunca pausar projeto vivo sem autorização explícita.
+A conta Supabase conectada possui **uma organização no plano Free** com **dois projetos ACTIVE_HEALTHY**: Abre-USA e brightscale-scanner (consulta realizada em 2026-10-27). A cotação genérica do conector retorna **US$ 0/mês**, mas a [documentação oficial de cobrança do Supabase](https://supabase.com/docs/guides/platform/billing-on-supabase) confirma que o Free permite **somente dois projetos ativos no total**, inclusive entre organizações da mesma conta com papel Owner/Admin. **A cota está ocupada**, portanto não criar um terceiro na organização, nem tentar driblar a limitação transferindo projetos entre organizações.
 
-Quando a organização e o limite forem confirmados, criar projeto `BrightScale Tracker STAGING` em `us-east-1` (não pagar automaticamente se a cotação mudar).
+**Decisão operacional:** manter ambos projetos ativos e isolados. Não pausar/excluir/migrar nenhum, não atualizar o plano ou incorrer em custos sem autorização explícita. O próximo projeto remoto separado pode ser criado apenas quando houver uma vaga legítima ou plano pago aprovado com cotação atual e escolha expressa da organização; se possível, usar `us-east-1`. Até lá, a alternativa segura é o teste com banco + API descartáveis no GitHub Actions.
 
 ## UI autenticada preparada em branch (não publicada)
 
 O PR #5 agora contém uma **interface de staging real**, distinta do protótipo de papéis fictícios do PR #4:
 
-- [`staging/pilot.html`](../staging/pilot.html): portal mobile-first, identificação de STAGING, bloqueio do projeto de produção conhecido e instruções para contas fictícias.
+- [`staging/pilot.html`](../staging/pilot.html): portal mobile-first, identificação de STAGING, bloqueio dos dois projetos ativos conhecidos e instruções para contas fictícias.
 - [`staging/pilot-ui.js`](../staging/pilot-ui.js): e-mail OTP do Supabase Auth, PM cria projetos/membros/escopos/tarefas e valida/rejeita, sub reporta suas tarefas e vê créditos separados; cliente vê apenas avanço validado.
 - [`staging/pilot-gateway.js`](../staging/pilot-gateway.js): cliente da API PostgREST/RPC do staging; papel calculado por `auth.getUser` + propriedade/membership. A autoridade é SEMPRE o RLS do banco, nunca um botão que simula papel.
 - [`tests/staging-gateway.test.cjs`](../tests/staging-gateway.test.cjs): verifica que visão cliente **nem consulta** tabelas financeiras/relatórios e que aprovações vão somente ao RPC do servidor, sem parâmetros forjáveis de `role` ou pagamento.
@@ -50,6 +50,18 @@ O PR #5 agora contém uma **interface de staging real**, distinta do protótipo 
 - **Revogação:** remove visibilidade de relatórios/créditos e tarefas ao retirar membership do sub, sem apagar eventos históricos.
 
 Há políticas RLS reais com `auth.uid()`, permissões de INSERT coluna a coluna para evitar falsificação de autor e timestamps, e RPC transacional `pilot_review_report` que verifica no **servidor** se o usuário é PM. Não há escrita direta no ledger nem atualização do progresso validado por outro papel.
+
+## Testes HTTP autenticados por JWT no ambiente descartável
+
+A partir de 2026-10-27, além da simulação SQL por `SET ROLE`, o workflow inicia uma **API PostgREST 14.17** em container temporário, com PostgreSQL 17. O endpoint recebe JWTs HS256 **assinados somente com segredo fictício do runner**, usa `role=authenticated` e `sub` fictícios, e executa as mesmas funções/RLS que o portal irá usar.
+
+- [`staging/tests/bootstrap_postgrest.sql`](../staging/tests/bootstrap_postgrest.sql): cria credencial de **teste exclusivamente descartável**; NUNCA aplicar no Supabase.
+- [`tests/pilot-postgrest.test.cjs`](../tests/pilot-postgrest.test.cjs): usa `fetch()` real, assinaturas JWT Node `crypto` e a API, cobrindo assinatura alterada rejeitada, criação de projeto/escope pelo PM, report do sub, tentativa de validação sub/cliente negada, privacidade do cliente, aprovação PM e crédito 57.600 centavos fictícios, duplicidade recusada, e revogação.
+- **Regressões encontradas por integração HTTP:** a política original `pilot_scopes_read` fazia self-lookup de um escopo ainda não visível em `INSERT ... RETURNING` e retornava 403 mesmo ao PM autorizado. Corrigido o predicado para usar `is_pm(project_id)` diretamente para o proprietário, mantendo as restrições RLS para os demais. Também houve ajustes em `auth.uid()` mock para compreender o JSON JWT do PostgREST.
+- **Regra financeira adicionada:** revisões do PM são serializadas por scope com `pg_advisory_xact_lock` antes da soma dos créditos; um caso de arredondamento (1 cent, duas tarefas 50/50) deve recusar a segunda aprovação em vez de reconhecer 2 centavos de crédito.
+- Evidência verificada: [CI #40560963693](https://github.com/libanius/BrightScale-Tracker/actions/runs/40560963693) **PASS** nos três jobs, inclusive HTTP com JWT assinado.
+
+**Limite:** JWT de teste assinado por uma chave sintética **NÃO é login Supabase Auth real**. A API PostgREST temporária não possui GoTrue, e-mail OTP, refresh tokens de usuários ou sessão real. Nenhum segredo verdadeiro ou dado de obra circulou nesses testes.
 
 ## Resultados comprovados no PostgreSQL descartável
 
