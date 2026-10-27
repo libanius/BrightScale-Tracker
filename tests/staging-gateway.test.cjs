@@ -27,7 +27,7 @@ function mockSupabase(rows={}) {
       };
       return builder;
     },
-    rpc(name,payload){calls.push({type:'rpc',name,payload});return Promise.resolve({data:{status:'validated',new_credit_cents:57600,payment_authorized:false},error:null});}
+    rpc(name,payload){calls.push({type:'rpc',name,payload});return Promise.resolve({data:name==='pilot_freeze_baseline'?{status:'frozen',scope_count:1,payment_authorized:false}:{status:'validated',new_credit_cents:57600,payment_authorized:false},error:null});}
   };
 }
 
@@ -107,6 +107,16 @@ test('reject invalid role, malformed uuid, percent, zero weight and negative mon
  assert.throws(()=>api.createTask('scope-1','Bad task',0),/weight_must_be_positive/);
  assert.throws(()=>api.createScope('project-1','Bad price',-1),/invalid_scope_cents/);
  await assert.rejects(api.review('report-1','pay',40,''),/invalid_review_action/);
+});
+
+test('baseline freeze calls server RPC without passing a client-selected role',async()=>{
+ const sb=mockSupabase(mockData),api=Gateway.create(sb);
+ const result=await api.freezeBaseline(project.id);
+ assert.equal(result.status,'frozen');
+ assert.equal(result.payment_authorized,false);
+ const call=sb.calls.find(x=>x.type==='rpc');
+ assert.equal(call.name,'pilot_freeze_baseline');
+ assert.deepEqual(call.payload,{p_project_id:project.id});
 });
 
 test('staging browser files parse and have no embedded role-secret credentials',()=>{
