@@ -53,9 +53,9 @@ test('client portal does not even REQUEST financial, report or team assignments'
  const sb=mockSupabase(mockData), api=Gateway.create(sb);
  const snapshot=await api.snapshot(project,{id:client});
  assert.equal(snapshot.role,'client');
- assert.deepEqual(Object.keys(snapshot).sort(),['project','role','scopes','tasks','validations']);
+ assert.deepEqual(Object.keys(snapshot).sort(),['changeOrders','project','role','scopes','tasks','validations']);
  const names=sb.calls.filter(x=>x.table).map(x=>x.table);
- for(const forbidden of ['pilot_reports','pilot_credit_events','pilot_scope_terms','pilot_assignments','pilot_audit_events'])
+ for(const forbidden of ['pilot_reports','pilot_credit_events','pilot_scope_terms','pilot_assignments','pilot_audit_events','pilot_co_sub_terms','pilot_co_reports','pilot_co_credit_events','pilot_co_audit_events'])
    assert.equal(names.includes(forbidden),false,'Client queried '+forbidden);
  assert.equal(snapshot.validations[0].validated_pct,40);
 });
@@ -65,7 +65,8 @@ test('sub projection never loads PM-only membership list or private audit',async
  const snapshot=await api.snapshot(project,{id:sub});
  assert.equal(snapshot.role,'sub');
  assert.ok(!('members' in snapshot));
- assert.ok(!sb.calls.some(x=>x.table==='pilot_audit_events'));
+ assert.ok(!sb.calls.some(x=>x.table==='pilot_audit_events'||x.table==='pilot_co_audit_events'));
+ assert.ok(!sb.calls.some(x=>x.table==='pilot_co_client_terms'));
  assert.equal(snapshot.credits[0].delta_cents,57600);
 });
 
@@ -119,6 +120,37 @@ test('baseline freeze calls server RPC without passing a client-selected role',a
  assert.deepEqual(call.payload,{p_project_id:project.id});
 });
 
+test('Change Order RPC calls are explicit and cannot include client-selected caller roles',async()=>{
+ const sb=mockSupabase(mockData), api=Gateway.create(sb);
+ const created=await api.createChangeOrder(project.id,'SYNTHETIC CO bathroom','Tile add-on',350000);
+ assert.equal(created.payment_authorized,false);
+ await api.addChangeOrderScope('co-1','SYNTHETIC shower',sub,80000);
+ await api.addChangeOrderTask('scope-co-1','SYNTHETIC tile',60);
+ await api.submitChangeOrder('co-1');
+ await api.decideChangeOrder('co-1',true,'');
+ await api.activateChangeOrder('co-1');
+ await api.reviewChangeOrderReport('report-co-1','approve',50,'OK');
+ const calls=sb.calls.filter(x=>x.type==='rpc');
+ assert.deepEqual(calls.map(x=>x.name),[
+  'pilot_co_create_draft','pilot_co_add_scope','pilot_co_add_task',
+  'pilot_co_submit','pilot_co_client_decide','pilot_co_activate','pilot_co_review_report'
+ ]);
+ for(const c of calls) {
+  assert.equal('role' in c.payload,false);
+  assert.equal('subcontract_paid' in c.payload,false);
+  assert.equal('payment_authorized' in c.payload,false);
+ }
+ assert.deepEqual(calls[4].payload,{p_co_id:'co-1',p_approve:true,p_reason:''});
+ assert.deepEqual(calls[5].payload,{p_co_id:'co-1'});
+});
+test('Change Order rejects invalid prices, untrusted assignment and invalid action',async()=>{
+ const api=Gateway.create(mockSupabase(mockData));
+ await assert.rejects(api.createChangeOrder(project.id,'A','',-10),/invalid_change_order_terms/);
+ await assert.rejects(api.addChangeOrderScope('co-1','Tile','NOT-UUID',30000),/invalid_user_uuid/);
+ await assert.rejects(api.addChangeOrderTask('scope-1','Tile',100.1),/percent/);
+ await assert.rejects(api.decideChangeOrder('co-1','yes',''),/invalid_client_decision/);
+ await assert.rejects(api.reviewChangeOrderReport('report-co-1','pay',50,''),/invalid_review_action/);
+});
 test('staging browser files parse and have no embedded role-secret credentials',()=>{
  for(const file of ['pilot-ui.js','pilot-gateway.js']){
   const source=fs.readFileSync(path.join(__dirname,'../staging',file),'utf8');
