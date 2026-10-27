@@ -107,7 +107,9 @@ class StagingPortalSmoke(unittest.TestCase):
         body = self.page.locator("#app").inner_text()
         self.assertIn("Administração PM", body)
         self.assertIn("Validar e reconhecer crédito", body)
-        self.assertIn("Subcontrato fictício", body)
+        self.assertIn("Baseline original congelada", body)
+        self.assertNotIn("Criar escopo de teste", body)
+        self.assertNotIn("Adicionar tarefa à baseline de teste", body)
         self.assertNotIn("Pagar agora", body)
         self.assertIn("DEMO sub note", body)
 
