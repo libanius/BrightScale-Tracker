@@ -77,7 +77,7 @@ class StagingPortalSmoke(unittest.TestCase):
 
     def test_client_cannot_see_money_pm_form_or_private_report(self):
         self.enter("client")
-        self.page.get_by_text("SYNTHETIC STAGING Flooring").first.wait_for()
+        self.page.get_by_role("heading", name="SYNTHETIC STAGING Flooring").wait_for()
         body = self.page.locator("#app").inner_text()
         self.assertIn("40%", body)
         self.assertIn("Apenas progresso VALIDADO", body)
@@ -92,7 +92,7 @@ class StagingPortalSmoke(unittest.TestCase):
 
     def test_sub_sees_own_progress_reporting_but_cannot_review(self):
         self.enter("sub")
-        self.page.get_by_text("SYNTHETIC STAGING Flooring").first.wait_for()
+        self.page.get_by_role("heading", name="SYNTHETIC STAGING Flooring").wait_for()
         body = self.page.locator("#app").inner_text()
         self.assertIn("Crédito reconhecido: $576.00", body)
         self.assertIn("Relatório pendente de validação do PM", body)
@@ -101,7 +101,7 @@ class StagingPortalSmoke(unittest.TestCase):
 
     def test_pm_sees_review_workflow_and_no_payment_action(self):
         self.enter("pm")
-        self.page.get_by_text("SYNTHETIC STAGING Flooring").first.wait_for()
+        self.page.get_by_role("heading", name="SYNTHETIC STAGING Flooring").wait_for()
         body = self.page.locator("#app").inner_text()
         self.assertIn("Administração PM", body)
         self.assertIn("Validar e reconhecer crédito", body)
