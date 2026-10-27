@@ -1,12 +1,12 @@
 # BrightScale Tracker 2.0 — Handoff oficial para continuidade com outras IAs
 
 **Atualizado:** 2026-10-27  
-**Status:** 38 decisões de produto confirmadas. O responsável confirmou expressamente as decisões 35–38 em 2026-10-27, incluindo a análise de evidências pela IA, validação do PM, direito de manifestação/contestação do sub e preservação integral da trilha de auditoria. A próxima pergunta (39) é pontual, sobre como corrigir registros de auditoria sem apagar evidências; MVP e staging permanecem prioritários.  
+**Status:** **39 decisões de produto confirmadas. Rodada de entrevista ENCERRADA por solicitação expressa do responsável em 2026-10-27.** Próxima prioridade: revisar os PRs de integridade e testar o MVP de ponta a ponta em ambiente isolado antes de uso em obra real. Decisões 35–39 são visão de produto, não funcionalidades entregues.  
 **Projeto:** Smart Remodeling / BrightScale Tracker 2.0  
 **Código:** `libanius/BrightScale-Tracker` (`main`)  
 **App:** https://tracker.brightscalegroup.com
 
-> **INSTRUÇÃO PARA A PRÓXIMA IA:** O usuário havia suspendido a entrevista extensa para acelerar o MVP, mas em 2026-10-27 confirmou expressamente as **decisões 35, 36, 37 e 38** e pediu perguntas objetivas somente se essenciais para auditoria. **Decisão 39 ainda não tomada.** Faça no máximo uma pergunta pontual por vez, sem atrasar o MVP nem inventar escolhas. Decisões 1–38 são visão do produto, **não funcionalidades implementadas**.
+> **INSTRUÇÃO PARA A PRÓXIMA IA:** o responsável confirmou **39 decisões** (1–39), ratificou em 2026-10-27 o histórico de auditoria com correções vinculadas e controle de privacidade (**decisão 39**) e **encerrou expressamente a entrevista**. **Não fazer pergunta 40 nem retomar descoberta teórica** sem novo pedido explícito; executar o menor MVP end-to-end com testes e evidência. Conservar histórico, baseline, Change Orders, créditos reconhecidos, pagamentos separados e papel decisório do PM. Este handoff contém escolhas aprovadas, **não prova que tenham sido implementadas**.
 
 ## Protocolo permanente de continuidade entre IAs
 
@@ -20,7 +20,7 @@ Smart Remodeling deve oferecer: escopo contratado claro, plano de execução, ac
 
 Pilares humanos: motivar subcontratados dando visibilidade ao progresso/crédito **sem prometer pagamento**; oferecer clareza ao cliente sem revelar operações internas; manter autoridade de decisões e finanças exclusivamente com o Project Manager (PM).
 
-## Decisões ratificadas (1–38)
+## Decisões ratificadas (1–39)
 
 1. **Visão geral:** Smart Remodeling é o núcleo da evolução do BrightScale Tracker, com facelift visual e funcional. A formulação granular da decisão 1 não está integralmente preservada neste handoff; não atribuir detalhes adicionais a ela.
 2. **Portal do cliente:** painel executivo + timeline + fotos/progresso visual + central de ações; mobile-first, simples.
@@ -60,8 +60,9 @@ Pilares humanos: motivar subcontratados dando visibilidade ao progresso/crédito
 36. **Escalonamento assistido pela IA:** ao vencer o prazo de resposta definido pelo PM, o Tracker **alerta o PM**, identifica **riscos e dependências possivelmente afetadas** e a IA **sugere alternativas**, inclusive consultar outro subcontratado. **Somente o PM decide** se mantém o bloqueio conforme a revisão, insiste, negocia, consulta outra equipe ou inicia procedimento de substituição. Rastrear aviso, tentativas de contato, propostas e decisões, com autoria e data/hora. Silêncio **não significa aceite, indisponibilidade comprovada, culpa ou autorização de substituição**. Espera por resposta não vira atraso real automaticamente (Smart Delay Control, 15). IA não altera baseline, prazo contratual, Change Order, custos, créditos, pagamentos ou atribuição, e não publica decisão. Mantêm-se as decisões 31–35 sobre versionamento, ciência, viabilidade e prazo manual. **DECIDED em 2026-10-27 por instrução explícita do usuário; ainda não implementado.**
 37. **Substituição assistida e auditada de subcontratados:** diante da necessidade de trocar a equipe, a **IA prepara um checklist** do trabalho concluído, créditos já reconhecidos, pendências e riscos. O **PM verifica o novo sub**, documenta responsabilidades relevantes, aprova e publica uma **revisão operacional** de transferência. Preservar histórico de tarefas, progresso validado, créditos anteriores, propostas, comunicações, decisão, atores, evidências, datas e versões; manter uma trilha de auditoria integral. **Nenhuma culpa, penalidade, pagamento, substituição ou modificação de contrato decorre automaticamente da recomendação da IA.** O procedimento contratual aplicável, eventual Change Order e consentimentos exigidos seguem fluxos separados; ciência da revisão (32) não equivale a aceitação de novas obrigações. O PM mantém a autoridade de publicação e as regras de safety, permitting e baseline continuam inalteradas. **DECIDED em 2026-10-27 por instrução explícita do usuário; ainda não implementado.**
 38. **Causas, responsabilidades operacionais e contestação auditável:** a IA **analisa as evidências disponíveis e sugere possíveis causas**, identificando incertezas, sem estabelecer culpa. O **PM revisa e valida sua própria avaliação operacional**, com justificativa e evidências vinculadas. O **sub pode apresentar sua versão dos fatos ou contestar** a avaliação no portal. O Tracker **preserva lado a lado** a sugestão da IA, as evidências de origem, a avaliação/decisão do PM e a versão/contestação do sub, incluindo autores, datas/horários, revisões, mudanças de status e histórico de comunicação. Divergência registrada não implica culpa definitiva nem necessariamente modifica a avaliação PM; a contestação não será apagada por decisão posterior. **Nenhuma responsabilidade jurídica definitiva, penalidade, dedução de crédito, pagamento ou mudança contratual é automática**; eventual ajuste contratual segue os procedimentos formais e aprovações pertinentes, preservando baseline, COs e créditos reconhecidos (decisões 10–18, 31–37). **DECIDED em 2026-10-27 por instrução explícita do usuário; ainda não implementado.**
+39. **Histórico imutável com correções auditadas e proteção de privacidade:** o sistema deve **preservar a trilha de auditoria original**, registrar correções como **novos eventos vinculados** ao registro/evidência corrigido, com autor, motivo, data/hora, versão e referência ao conteúdo afetado. O **PM pode restringir imediatamente a visualização** de dados incorretos ou sensíveis, respeitando permissões e mantendo histórico em área protegida acessível apenas a papéis autorizados. A preservação deve **respeitar obrigações legais aplicáveis de retenção, privacidade e exclusão**: imutabilidade operacional não significa conservar indefinidamente informação pessoal quando uma obrigação legal exigir sua eliminação ou anonimização. Registrar também os eventos de restrição, correção e cumprimento de exclusão/retificação segundo o regime aplicável, sem expor o conteúdo protegido em logs públicos. Correções **não alteram automaticamente** baseline, Change Orders, assinaturas, créditos reconhecidos, pagamentos, avaliações de responsabilidade ou decisões anteriores. Qualquer efeito contratual/financeiro segue seus próprios fluxos formais e aprovação humana. **DECIDED em 2026-10-27 por instrução explícita do usuário; ainda não implementado.**
 
-**Próxima decisão proposta (39), ainda PENDENTE:** forma de corrigir erro factual, documento anexado incorretamente ou informação pessoal indevida em registro de auditoria sem apagar provas nem expor dados indevidos; distinguir correções auditadas de alterações retroativas de evidências, crédito ou contrato.
+**ENTREVISTA ENCERRADA (2026-10-27):** decisões 1–39 ratificadas. Não propor decisão 40 nem continuar questionário sem novo pedido expresso. A prioridade é o MVP testável em ambiente isolado e, depois, uma obra piloto, com as proteções contratuais e financeiras já definidas.
 
 ## Invariantes de contrato, escopo e financeiro
 
@@ -72,7 +73,7 @@ Pilares humanos: motivar subcontratados dando visibilidade ao progresso/crédito
 - O PM tem última palavra operacional. IA é assistente consultiva, jamais publicadora/autorizadora autônoma.
 - Data projetada != data contratual; mudanças contratuais exigem aprovação/assinatura pertinente.
 - Não presumir aceite por silêncio, atribuir culpa automática, aplicar multas, transferir custos ou liberar serviço incompatível com exigências legais/de segurança.
-- Histórico precisa de proveniência, relógios corretos, atores, versões, motivos, visibilidade por função e audit trail.
+- Histórico precisa de proveniência, relógios corretos, atores, versões, motivos, visibilidade por função e audit trail. **Correções geram eventos vinculados, não sobrescrita silenciosa**; o PM pode restringir visibilidade de dados errados/sensíveis imediatamente, preservando material em área protegida na extensão permitida pela lei e executando exclusão/anonimização legalmente exigida quando aplicável (decisão 39).
 - Respeitar permissões separadas para PM / subcontractor / customer e links seguros, expiráveis/revogáveis.
 
 ## Contexto técnico conhecido (revalidar no código antes de implementar)
@@ -88,7 +89,7 @@ Pilares humanos: motivar subcontratados dando visibilidade ao progresso/crédito
 
 ## Diretriz do usuário: sair da entrevista e testar
 
-O usuário inicialmente encerrou a entrevista por considerá-la longa demais para um produto não testado. Em 2026-10-27, confirmou as decisões 35–38 e pediu mais uma pergunta pontual apenas se necessária para fechar a governança de auditoria. **Não interpretar isso como autorização para entrevista indefinida**, nem atrasar testes e construção do MVP. Fazer uma pergunta curta por vez, quando solicitado; implementar prioritariamente fluxos testáveis em campo.
+O usuário havia interrompido a entrevista longa para avançar no MVP; em 2026-10-27 confirmou pontualmente as decisões 35–39 e **solicitou encerrar esta rodada de entrevista**. Não fazer perguntas 40+ nem explorar novas variantes de produto sem solicitação explícita. Priorizar implementação e testes controlados do MVP, sem aguardar entrevistas adicionais. Pedir autorização apenas se for essencial para ações externas irreversíveis, cobrança ou mudanças em produção.
 
 ### MVP recomendado — escopo proposto, ainda requer priorização técnica
 
@@ -129,14 +130,14 @@ Nota: Essa divisão é uma **proposta de implementação**, não uma revogação
 - **TESTED**: funcionalidade validada (contexto e resultado descritos).
 - **BLOCKED**: impedimento confirmado e passo para removê-lo.
 
-**Estado histórico em 2026-10-26:** na primeira consolidação havia 34 decisões confirmadas e a entrevista longa estava pausada. **Estado atual:** decisões 1–38 confirmadas em 2026-10-27, conforme lista e checkpoint acima. As decisões 35–38 continuam não implementadas.
+**Estado histórico em 2026-10-26:** na primeira consolidação havia 34 decisões confirmadas e a entrevista longa estava pausada. **Estado atual:** decisões 1–39 confirmadas em 2026-10-27 e entrevista encerrada, conforme lista e checkpoint acima. As decisões 35–39 continuam não implementadas.
 
 ---
 
 ## Checkpoint operacional (fonte atual para próxima IA)
 
 - **Atualizado em:** 2026-10-27 (horário da Flórida).
-- **Decisões:** **1–38 DECIDED**. Decisão 38 aprovada: IA analisa evidências e sugere causas, PM valida avaliação operacional, sub pode apresentar versão/contestação, Tracker preserva ambas e todo histórico auditável, sem culpa jurídica, penalidade, pagamento ou contrato automático. **Decisão 39 sobre correção auditável de erros/registro sensível ainda pendente.** Priorizar MVP e staging; decisões 35–38 são DESIGN CONFIRMED, não código entregue.
+- **Decisões:** **1–39 DECIDED, ENTREVISTA ENCERRADA** em 2026-10-27. Decisão 39: correções de auditoria são eventos vinculados e preservados; PM restringe visualização de registros incorretos/sensíveis, com histórico protegido e respeito a retenção/exclusão legal; nenhum crédito, contrato, pagamento ou responsabilidade muda automaticamente. **Não há decisão 40 pendente.** Priorizar MVP testável; decisões 35–39 são DESIGN CONFIRMED, não código entregue.
 - **Produção:** `main` do Tracker apresenta `v2.0 · MVP` (PR #3), com os dados legados ainda no Supabase existente. Nenhum código/serviço de produção foi modificado nesta fase de staging.
 - **PR #2 — Guardrails:** draft, não incorporado. Duas correções de integridade e agentes Chromium de PM/cliente/segurança/offline testados com mock; testar preview e revisar antes de merge.
 - **PR #4 — Incremento 1:** [draft](https://github.com/libanius/BrightScale-Tracker/pull/4), protótipo local isolado de sub reporta → PM valida → crédito com ledger aditivo, **10/10 Node + 5/5 Chrome PASS**. Não contém login real, backend ou dados persistidos no Supabase.
@@ -144,9 +145,17 @@ Nota: Essa divisão é uma **proposta de implementação**, não uma revogação
 - **Testes comprovados Fase 4:** [GitHub Actions #40506790356](https://github.com/libanius/BrightScale-Tracker/actions/runs/40506790356) **PASS** em PostgreSQL 17 descartável: DDL, 10 tabelas RLS ativas, JWT test identities simuladas (PM, sub, cliente, outsider, anon), autorização negativa, termos/crédito privados, relatório pendente/validação por PM, 57.600 centavos fictícios de crédito, autor/timestamp anti-spoofing, revogação de acesso. **NÃO equivale a Supabase Auth real**.
 - **Projeto Supabase staging real:** **NÃO CRIADO**. Conector mostrou somente uma organização no plano Free com dois projetos já ativos (Abre-USA e brightscale-scanner), e o custo consultado para novo projeto foi **US$ 0/mês**. É necessário o responsável confirmar organização de destino; verificar limite da plataforma antes de criar. **Não pausar/migrar** projetos existentes para contornar plano.
 - **Segurança:** nenhum projeto real alterado, nenhum deploy, nenhuma conta/credencial de cliente usada. Nunca executar `staging/tests/bootstrap_local_pg.sql` em Supabase. Toda documentação do PR #5 contém apenas nomes de identidades fictícias.
-- **Próximo passo único:** confirmar a organização Supabase para provisionamento; verificar disponibilidade/limite. Em seguida criar staging separado (se plataforma permitir sem custo adicional) e executar testes de autenticação REAL por usuários fictícios antes de conectar qualquer UI do Tracker. Não chamar simulações de login de produção.
+- **Próximos passos técnicos (sem entrevista):** (1) revisar [PR #2](https://github.com/libanius/BrightScale-Tracker/pull/2) e validar correções no browser/preview isolado antes de qualquer merge ou deploy; (2) usar os [PRs #4](https://github.com/libanius/BrightScale-Tracker/pull/4) e [#5](https://github.com/libanius/BrightScale-Tracker/pull/5) como protótipo e base de testes para sub reporta → PM valida → crédito, mantendo responsabilidades no backend; (3) para Auth/RLS reais, verificar limites do plano e solicitar **somente autorização necessária** para criar um projeto Supabase staging separado, sem tocar nos projetos já ativos. Não confundir testes PostgreSQL com login real no Supabase nem testes com uso em campo.
 
 ## Log de continuidade
+
+### 2026-10-27 — Decisão 39 ratificada e entrevista ENCERRADA; retomada do MVP (DOCS-ONLY)
+- **Estado:** `DECIDED (1–39)`; **entrevista encerrada por instrução do responsável**. Decisão 39 não está `IMPLEMENTED` nem `TESTED`. PRs #2, #4 e #5 continuam rascunhos abertos, conforme consulta GitHub nesta sessão; nenhum novo deploy do app.
+- **Regra aprovada:** histórico operacional não é sobrescrito; correções criam eventos vinculados com autor, data/hora e motivo. PM pode restringir prontamente acesso a registros incorretos/sensíveis; preservar evidência sob acesso protegido apenas conforme retenção, exclusão ou anonimização legalmente aplicáveis. Logs e projeções públicas nunca devem vazar material ocultado.
+- **Compatibilidade:** nenhuma modificação implícita de baseline, CO, assinatura, crédito reconhecido, pagamento, avaliação operacional/responsabilidade ou prova de aceite. IA não determina culpa ou penalidade.
+- **Ação tomada:** atualização do handoff canônico, protocolo e instruções de agentes, sem alteração de app, Supabase, dados, credenciais ou deployment; nenhum teste de aplicação executado nesta sessão.
+- **Próximo passo verificável:** revisar PR #2 e validar guardrails em preview/sandbox, depois evoluir fluxo sub → PM → crédito a partir dos PRs #4/#5 em staging separado com autorização e testes reais de login/RLS.
+
 
 ### 2026-10-27 — Decisão 38 ratificada: evidências, avaliação PM, manifestação do sub (DOCS-ONLY)
 - **Estado:** `DECIDED`; **não `IMPLEMENTED` nem `TESTED`**. Pedido explícito do responsável, sem revogação das decisões 1–37.
