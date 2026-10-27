@@ -58,6 +58,27 @@ function one({data}) {
   one(await req('POST','pilot_assignments',IDs.pm,{scope_id:scope.id,user_id:IDs.sub},[201]));
   const task=one(await req('POST','pilot_tasks',IDs.pm,{scope_id:scope.id,title:'Synthetic JWT Install LVP',weight_pct:60},[201]));
 
+  // Reports cannot be submitted until PM explicitly freezes the baseline.
+  await req('POST','pilot_reports',IDs.sub,
+    {task_id:task.id,reported_pct:30,note:'before PM freeze'},[401,403]);
+  await req('POST','rpc/pilot_freeze_baseline',IDs.sub,
+    {p_project_id:pid},[401,403]);
+  await req('POST','rpc/pilot_freeze_baseline',IDs.pm,
+    {p_project_id:pid},[400,409]); // weights total 60%, baseline incomplete
+  const baseboard=one(await req('POST','pilot_tasks',IDs.pm,
+    {scope_id:scope.id,title:'SYNTHETIC Baseboard',weight_pct:40},[201]));
+  assert.equal(baseboard.weight_pct,40);
+  const freeze=await req('POST','rpc/pilot_freeze_baseline',IDs.pm,
+    {p_project_id:pid});
+  assert.equal(freeze.data.status,'frozen');
+  assert.equal(freeze.data.payment_authorized,false);
+  const meta=await req('GET','pilot_projects?id=eq.'+pid+'&select=baseline_frozen_at',IDs.pm);
+  assert.ok(meta.data[0].baseline_frozen_at);
+  await req('POST','pilot_tasks',IDs.pm,
+    {scope_id:scope.id,title:'SYNTHETIC late scope mutation',weight_pct:1},[400,403,409]);
+  await req('POST','rpc/pilot_freeze_baseline',IDs.pm,
+    {p_project_id:pid},[400,409]);
+
   // A foreign caller cannot list private projects or write reports.
   const outsider=await req('GET','pilot_projects?select=id&name=eq.SYNTHETIC%20JWT%20API%20Flooring',IDs.outsider);
   assert.deepEqual(outsider.data,[]);
