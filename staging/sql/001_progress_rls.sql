@@ -90,6 +90,26 @@ create table public.pilot_audit_events (
   created_at timestamptz not null default now()
 );
 
+-- Prevent an accidentally inflated scope: all tasks together may weigh at most 100%.
+-- The advisory lock serializes concurrent task inserts for the same scope.
+create function pilot_priv.enforce_scope_weight_limit()
+returns trigger language plpgsql security definer set search_path = ''
+as $
+declare v_existing numeric;
+begin
+  perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(new.scope_id::text, 1));
+  select coalesce(sum(t.weight_pct), 0) into v_existing
+    from public.pilot_tasks t where t.scope_id=new.scope_id;
+  if v_existing + new.weight_pct > 100 then
+    raise exception 'scope_weight_exceeds_100';
+  end if;
+  return new;
+end;
+$;
+revoke all on function pilot_priv.enforce_scope_weight_limit() from public, anon, authenticated;
+create trigger pilot_tasks_limit before insert on public.pilot_tasks
+  for each row execute function pilot_priv.enforce_scope_weight_limit();
+
 -- All permission helpers execute with an explicit, restricted search_path.
 -- Helpers query protected tables with their function owner's privileges to avoid
 -- recursive RLS policy lookups; authorization ALWAYS resolves auth.uid().
@@ -287,6 +307,7 @@ declare
   v_previous numeric := 0;
   v_approved numeric;
   v_current bigint := 0;
+  v_scope_current bigint := 0;
   v_target bigint := 0;
   v_delta bigint := 0;
   v_reason text := pg_catalog.btrim(coalesce(p_reason,''));
@@ -331,6 +352,15 @@ begin
   v_target := round(v_contract * v_task_weight / 100 * v_approved / 100)::bigint;
   v_delta := v_target-v_current;
   if v_delta < 0 then raise exception 'immutable_credit_conflict'; end if;
+  -- No sum of per-task rounding may exceed the original scope subcontract.
+  -- This is a defensive money cap, NOT a payment authorization.
+  select coalesce(sum(e.delta_cents), 0)::bigint into v_scope_current
+    from public.pilot_credit_events e
+    join public.pilot_tasks t on t.id=e.task_id
+    where t.scope_id=v_scope;
+  if v_scope_current + v_delta > v_contract then
+    raise exception 'scope_credit_exceeds_subcontract';
+  end if;
 
   insert into public.pilot_validations(task_id,validated_pct,reviewed_by)
     values(v_report.task_id,v_approved,v_actor)
