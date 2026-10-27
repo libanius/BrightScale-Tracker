@@ -1,0 +1,37 @@
+name: Smart Remodeling progress MVP demo
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  progress-domain:
+    name: PM validation + credit invariants (Node)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify simulated progress and PM validation
+        run: node --test tests/progress-review.test.cjs
+
+  progress-browser:
+    name: Sub + PM + client journeys (Chromium)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Chromium + Playwright
+        run: |
+          python -m pip install "playwright==1.56.0"
+          python -m playwright install --with-deps chromium
+      - name: Test the real prototype HTML in a sandbox
+        run: python -m unittest discover -s tests/browser -p 'test_progress_demo.py' -v
