@@ -24,16 +24,37 @@
     pilot_scope_terms:[{scope_id:'demo-scope',subcontract_cents:240000}],
     pilot_assignments:[{scope_id:'demo-scope',user_id:SUB}],
   };
+  var mockCOStatus=window.__pilotMockCOStatus||'submitted';
+  if(window.__pilotMockCO)Object.assign(data,{
+    pilot_change_orders:[{id:'co-demo',project_id:'demo-project',title:'SYNTHETIC Bathroom Add-on',description:'Demo shower upgrade',
+      status:mockCOStatus,submitted_at:'2026-10-27T10:00:00Z'}],
+    pilot_co_client_terms:[{co_id:'co-demo',client_amount_cents:350000}],
+    pilot_co_scopes:[{id:'co-scope-demo',co_id:'co-demo',title:'SYNTHETIC Shower'}],
+    pilot_co_sub_terms:[{scope_id:'co-scope-demo',sub_id:SUB,subcontract_cents:80000}],
+    pilot_co_tasks:[
+      {id:'co-task-demo',scope_id:'co-scope-demo',title:'SYNTHETIC Install shower tile',weight_pct:60},
+      {id:'co-task-second',scope_id:'co-scope-demo',title:'SYNTHETIC Grout',weight_pct:40}],
+    pilot_co_validations:[{task_id:'co-task-demo',validated_pct:50}],
+    pilot_co_reports:[{id:'co-report-demo',task_id:'co-task-demo',author_id:SUB,status:'pending',reported_pct:60,note:'PRIVATE sub CO note',created_at:'2026-10-27'}],
+    pilot_co_credit_events:[{id:'co-credit-demo',co_id:'co-demo',scope_id:'co-scope-demo',task_id:'co-task-demo',
+      sub_id:SUB,delta_cents:24000,validated_pct:50}]
+  });
+  window.__pilotRpcCalls=[];
   function filtered(table,filters){
     var items=(data[table]||[]).filter(function(item){
       return filters.every(function(f){return f.values.includes(item[f.field]);});
     });
     if(table==='pilot_memberships'&&role!=='pm')items=items.filter(function(m){return m.user_id===id;});
     if(role==='client'){
-      if(['pilot_reports','pilot_credit_events','pilot_scope_terms','pilot_assignments'].includes(table)){
+      if(['pilot_reports','pilot_credit_events','pilot_scope_terms','pilot_assignments',
+        'pilot_co_sub_terms','pilot_co_reports','pilot_co_credit_events','pilot_co_audit_events'].includes(table)){
         window.__pilotLeaked=true;
         return [];
       }
+    }
+    if(role==='sub'&&table==='pilot_co_client_terms'){window.__pilotLeaked=true;return [];}
+    if((role==='sub'||role==='client')&&table==='pilot_change_orders'){
+      items=items.filter(function(c){return role==='client'?c.status!=='draft':c.status==='active';});
     }
     return items;
   }
@@ -67,7 +88,18 @@
         };
         return b;
       },
-      rpc:function(){return Promise.resolve({data:{status:'validated',new_credit_cents:0,payment_authorized:false},error:null});}
+      rpc:function(name,payload){
+        window.__pilotRpcCalls.push({name:name,payload:payload});
+        if(name==='pilot_co_client_decide' && data.pilot_change_orders) {
+          data.pilot_change_orders[0].status=payload.p_approve?'client_approved':'declined';
+          return Promise.resolve({data:{status:data.pilot_change_orders[0].status,signature_verified:false,payment_authorized:false},error:null});
+        }
+        if(name==='pilot_co_activate' && data.pilot_change_orders) {
+          data.pilot_change_orders[0].status='active';
+          return Promise.resolve({data:{status:'active',contract_original_unchanged:true,payment_authorized:false},error:null});
+        }
+        return Promise.resolve({data:{status:'validated',new_credit_cents:0,payment_authorized:false},error:null});
+      }
     };
   }
   window.supabase={createClient:client};
