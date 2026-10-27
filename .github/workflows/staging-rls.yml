@@ -74,9 +74,10 @@ jobs:
         run: |
           psql -v ON_ERROR_STOP=1 -f staging/sql/001_progress_rls.sql
           psql -v ON_ERROR_STOP=1 -f staging/sql/002_baseline_freeze.sql
+          psql -v ON_ERROR_STOP=1 -f staging/sql/003_change_orders.sql
       - name: Run authenticated user negative and positive RLS tests
         run: psql -v ON_ERROR_STOP=1 -f staging/tests/rls_smoke.sql
-      - name: Assert all ten tables have RLS enabled
+      - name: Assert all nineteen pilot tables have RLS enabled
         shell: bash
         run: |
           count=$(psql -v ON_ERROR_STOP=1 -Atc "
@@ -86,7 +87,7 @@ jobs:
                and c.relkind='r' and c.relrowsecurity;
           ")
           echo "Pilot tables with RLS enabled: $count"
-          test "$count" = "10"
+          test "$count" = "19"
       - name: Initialize fake local JWT API role (no Supabase secrets)
         run: psql -v ON_ERROR_STOP=1 -f staging/tests/bootstrap_postgrest.sql
       - name: Start disposable PostgREST with local synthetic JWT signer
