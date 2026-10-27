@@ -167,7 +167,7 @@
       if (!v.audit.length) html += '<p class="muted tiny">Nenhuma decisão registrada.</p>';
       v.audit.slice().reverse().forEach(function(a) {
         html += '<div class="audit"><strong>'+esc(a.type)+'</strong> · '+esc(taskTitle(a.taskId));
-        html += '<div class="tiny muted">'+esc(a.at)+' · '+esc(a.actor)+' · '+a.percent+'%</div>';
+        html += '<div class="tiny muted">'+esc(a.at)+' · '+esc(a.actor)+(a.percent !== undefined ? ' · '+a.percent+'%' : '')+'</div>';
         if (a.validatedPercent !== undefined) html += '<div class="tiny muted">Validado: '+a.validatedPercent+'% · Novo crédito: '+cash(a.deltaCents/100)+'</div>';
         if (a.reason) html += '<div class="tiny muted">Motivo: '+esc(a.reason)+'</div>';
         html += '</div>';
