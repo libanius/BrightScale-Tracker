@@ -94,7 +94,7 @@ create table public.pilot_audit_events (
 -- The advisory lock serializes concurrent task inserts for the same scope.
 create function pilot_priv.enforce_scope_weight_limit()
 returns trigger language plpgsql security definer set search_path = ''
-as $
+as $$
 declare v_existing numeric;
 begin
   perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(new.scope_id::text, 1));
@@ -105,7 +105,7 @@ begin
   end if;
   return new;
 end;
-$;
+$$;
 revoke all on function pilot_priv.enforce_scope_weight_limit() from public, anon, authenticated;
 create trigger pilot_tasks_limit before insert on public.pilot_tasks
   for each row execute function pilot_priv.enforce_scope_weight_limit();
