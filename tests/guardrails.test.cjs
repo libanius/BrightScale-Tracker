@@ -19,6 +19,11 @@ function fn(name, globals = {}) {
   return vm.runInNewContext('(' + match[0] + ')', globals, { filename: 'index.html' });
 }
 
+test('guardrails branch keeps v2.0 MVP footer when merging into main', () => {
+  assert.match(app, /nav\.appendChild\(div\('nav-ver', 'v2\.0 · MVP'\)\)/);
+  assert.doesNotMatch(app, /nav\.appendChild\(div\('nav-ver', 'v1\.0'\)\)/);
+});
+
 test('inline application JavaScript parses', () => {
   assert.doesNotThrow(() => new vm.Script(app, { filename: 'index.html' }));
 });
