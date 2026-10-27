@@ -173,6 +173,10 @@
       .reduce(function(sum,c){return sum+Number(c.delta_cents);},0);
     t.appendChild(small('Crédito reconhecido: '+window.PilotGateway.money(myCredits)+' (não é pagamento)'));
     if(v.role==='sub'){
+      if(!v.project.baseline_frozen_at){
+        t.appendChild(small('Aguardando aprovação da baseline original pelo PM. Ainda não é permitido informar progresso.'));
+        return t;
+      }
       var pending=v.reports.some(function(r){return r.task_id===task.id&&r.status==='pending';});
       if(pending)t.appendChild(dom('span',{text:'Relatório pendente de validação do PM',className:'pill wait'}));
       else t.appendChild(form('Informar progresso',[
@@ -184,11 +188,34 @@
   }
   function renderPM(v,projectArea){
     projectArea.appendChild(title('Administração PM · dados fictícios'));
+    if(!v.project.baseline_frozen_at){
+      var complete=v.scopes.length>0 && v.scopes.every(function(scope){
+        var w=v.tasks.filter(function(t){return t.scope_id===scope.id;})
+          .reduce(function(sum,t){return sum+Number(t.weight_pct);},0);
+        var term=v.terms.find(function(t){return t.scope_id===scope.id;});
+        return Boolean(term)&&Math.abs(w-100)<0.001;
+      });
+      projectArea.appendChild(card(
+        dom('h3',{text:'Aprovação da baseline original'}),
+        small('Revise escopos, valores do subcontrato e pesos (100% por escopo). Após aprovação, o servidor impedirá novos escopos, tarefas e termos originais. Change Orders serão tratados separadamente.'),
+        small(complete?'Todos os escopos têm termos e pesos de 100%.':'Complete valores e pesos de todos os escopos antes da aprovação.'),
+        ...(complete?[button('Aprovar e congelar baseline',async function(){
+          if(!window.confirm('Congelar baseline ORIGINAL? Escopos, pesos e termos não poderão ser modificados silenciosamente.'))return;
+          var result=await s.api.freezeBaseline(v.project.id);
+          if(result.status!=='frozen')throw Error('baseline_freeze_failed');
+          notify('Baseline original congelada e auditada pelo PM.',false);
+          await refresh();
+        },'primary')]:[])
+      ));
+    }else{
+      projectArea.appendChild(card(dom('h3',{text:'Baseline original congelada'}),
+        small('Aprovada em '+v.project.baseline_frozen_at+'. Novos escopos e adicionais exigem um Change Order separado.')));
+    }
     projectArea.appendChild(card(form('Adicionar membro de teste',[
       {key:'user',label:'UUID do usuário autenticado de teste',placeholder:'00000000-0000-4000-8000-000000000000'},
       {key:'role',label:'Permissão',options:[{value:'sub',label:'Subcontratado'},{value:'client',label:'Cliente'}]}
     ],function(x){return s.api.inviteTestMember(v.project.id,x.user,x.role);},'Adicionar membro')));
-    projectArea.appendChild(card(form('Criar escopo de teste',[
+    if(!v.project.baseline_frozen_at)projectArea.appendChild(card(form('Criar escopo de teste',[
       {key:'name',label:'Nome do escopo',placeholder:'Flooring'},
       {key:'amount',label:'Subcontrato fictício em USD',type:'number',min:0,step:'0.01',value:'1200'}
     ],async function(x){
@@ -208,7 +235,7 @@
         {key:'sub',label:'Sub contratado',options:subs.map(function(m){return {value:m.user_id,label:m.user_id};})}
       ],function(x){return s.api.assignSub(scope.id,x.sub);},'Atribuir sub (somente uma vez)'));
       else if(assigned)scopePanel.appendChild(small('Equipe atribuída (UUID): '+assigned.user_id));
-      if(weight<100)scopePanel.appendChild(form('Adicionar tarefa à baseline de teste',[
+      if(!v.project.baseline_frozen_at && weight<100)scopePanel.appendChild(form('Adicionar tarefa à baseline de teste',[
         {key:'title',label:'Tarefa',placeholder:'Install LVP'},
         {key:'weight',label:'Peso da tarefa (%)',type:'number',min:0.01,max:100-weight,step:'0.01',value:String(Math.min(100-weight,50))}
       ],function(x){return s.api.createTask(scope.id,x.title,x.weight);},'Adicionar tarefa'));
@@ -271,6 +298,7 @@
     if(s.snapshot){
       var v=s.snapshot;
       var panel=card(dom('div',{className:'eyebrow',text:v.role.toUpperCase()+' · BASELINE '+v.project.baseline_version}),title(v.project.name));
+      panel.appendChild(dom('span',{text:v.project.baseline_frozen_at?'Baseline CONGELADA':'Baseline RASCUNHO',className:'pill '+(v.project.baseline_frozen_at?'':'wait')}));
       if(v.role==='client')panel.appendChild(small('Apenas progresso VALIDADO. Sem custos de subs, créditos ou relatórios pendentes.'));
       else if(v.role==='sub')panel.appendChild(small('Relatórios enviados precisam ser validados pelo PM. Crédito não é pagamento.'));
       else panel.appendChild(small('Você valida ou rejeita relatórios. O portal não executa pagamentos.'));
