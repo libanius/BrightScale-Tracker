@@ -37,4 +37,6 @@ jobs:
           python -m pip install "playwright==1.56.0"
           command -v google-chrome
       - name: Browser user-journeys with network blocked
-        run: python -m unittest discover -s tests/browser -p "test_co_navigation.py" -v
+        run: |
+          python -m unittest discover -s tests/browser -p "test_co_navigation.py" -v
+          python -m unittest discover -s tests/browser -p "test_co_standalone.py" -v
