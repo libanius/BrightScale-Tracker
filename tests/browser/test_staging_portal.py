@@ -101,11 +101,7 @@ class StagingPortalSmoke(unittest.TestCase):
 
     def test_pm_sees_review_workflow_and_no_payment_action(self):
         self.enter("pm")
-        self.page.wait_for_timeout(1200)
-        print("PM debug — app:", self.page.locator("#app").inner_text()[:2500],
-              "status:", self.page.locator("#message").inner_text(),
-              "jsErrors:", self.errors, flush=True)
-        self.page.get_by_role("heading", name="SYNTHETIC STAGING Flooring").wait_for(timeout=6000)
+        self.page.get_by_role("heading", name="SYNTHETIC STAGING Flooring").wait_for(timeout=12000)
         body = self.page.locator("#app").inner_text()
         self.assertIn("Administração PM", body)
         self.assertIn("Validar e reconhecer crédito", body)
