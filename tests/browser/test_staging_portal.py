@@ -66,10 +66,13 @@ class StagingPortalSmoke(unittest.TestCase):
         self.browser.close()
         self.p.stop()
 
-    def enter(self, role, configured=True, draft=False):
+    def enter(self, role, configured=True, draft=False, co_status=None):
         self.context.add_init_script("window.__pilotMockRole = " + repr(role) + ";")
         if draft:
             self.context.add_init_script("window.__pilotMockDraft = true;")
+        if co_status is not None:
+            self.context.add_init_script("window.__pilotMockCO = true;")
+            self.context.add_init_script("window.__pilotMockCOStatus = " + repr(co_status) + ";")
         if configured:
             self.context.add_init_script(
                 "localStorage.setItem('brightscale-pilot-config', JSON.stringify({"
@@ -129,6 +132,60 @@ class StagingPortalSmoke(unittest.TestCase):
         self.assertIn("Complete valores e pesos de todos os escopos", body)
         self.assertNotIn("Aprovar e congelar baseline", body)
         self.assertIn("Adicionar tarefa à baseline de teste", body)
+
+    def test_client_sees_additional_client_price_but_never_sub_costs(self):
+        self.enter("client", co_status="submitted")
+        self.page.get_by_role("heading", name="SYNTHETIC Bathroom Add-on").wait_for()
+        body=self.page.locator("#app").inner_text()
+        self.assertIn("$3,500.00",body)
+        self.assertIn("Aprovar adicional",body)
+        self.assertIn("SYNTHETIC Install shower tile",body)
+        self.assertNotIn("$800.00",body)
+        self.assertNotIn("$240.00",body)
+        self.assertNotIn("PRIVATE sub CO note",body)
+        self.assertNotIn("Ativar CO aprovado",body)
+        calls=self.page.evaluate("window.__pilotQueried")
+        for table in ["pilot_co_sub_terms","pilot_co_reports","pilot_co_credit_events","pilot_co_audit_events"]:
+            self.assertNotIn(table,calls)
+        self.assertFalse(self.page.evaluate("window.__pilotLeaked || false"))
+
+    def test_sub_active_co_sees_own_price_and_credit_but_not_client_price(self):
+        self.enter("sub", co_status="active")
+        self.page.get_by_role("heading", name="SYNTHETIC Bathroom Add-on").wait_for()
+        body=self.page.locator("#app").inner_text()
+        self.assertIn("$800.00",body)
+        self.assertIn("$240.00",body)
+        self.assertNotIn("$3,500.00",body)
+        self.assertNotIn("Aprovar adicional",body)
+        self.assertNotIn("Ativar CO aprovado",body)
+        self.assertNotIn("Validar e reconhecer crédito deste CO",body)
+        self.assertFalse(self.page.evaluate("window.__pilotLeaked || false"))
+        self.assertNotIn("pilot_co_client_terms",self.page.evaluate("window.__pilotQueried"))
+
+    def test_pm_draft_can_complete_separate_co_and_submit(self):
+        self.enter("pm", co_status="draft")
+        self.page.get_by_role("heading", name="SYNTHETIC Bathroom Add-on").wait_for()
+        body=self.page.locator("#app").inner_text()
+        self.assertIn("Novo Change Order (rascunho PM)",body)
+        self.assertIn("Adicionar escopo ao CO",body)
+        self.assertNotIn("Ativar CO aprovado",body)
+        self.assertIn("Enviar CO para aprovação do cliente",body)
+        self.assertIn("$3,500.00",body)
+        self.assertIn("$800.00",body)
+        self.assertIn("Crédito de sub reconhecido NESTE CO",body)
+        self.assertNotIn("Ativar CO aprovado",body)
+
+    def test_client_approval_calls_explicit_server_rpc(self):
+        self.enter("client", co_status="submitted")
+        self.page.get_by_role("heading", name="SYNTHETIC Bathroom Add-on").wait_for()
+        self.page.on("dialog",lambda d:d.accept())
+        self.page.get_by_role("button", name="Aprovar adicional", exact=False).click()
+        self.page.get_by_text("client_approved", exact=False).first.wait_for()
+        calls=self.page.evaluate("window.__pilotRpcCalls")
+        decision=[c for c in calls if c["name"]=="pilot_co_client_decide"]
+        self.assertEqual(len(decision),1)
+        self.assertEqual(decision[0]["payload"],{"p_co_id":"co-demo","p_approve":True,"p_reason":""})
+        self.assertNotIn("role",decision[0]["payload"])
 
     def test_production_project_configuration_is_rejected_before_sdk_creation(self):
         self.enter("pm", configured=False)
