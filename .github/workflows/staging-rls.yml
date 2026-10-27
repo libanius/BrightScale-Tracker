@@ -1,0 +1,119 @@
+name: Isolated staging RLS security tests
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: staging-rls-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gateway-contract:
+    name: Staging client role projection and RPC (Node)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify client projection, sub/PM role paths and Javascript syntax
+        run: node --test tests/staging-gateway.test.cjs
+
+  staging-ui-browser:
+    name: Chrome staging UI · PM/sub/client synthetic login
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Use preinstalled Chrome with pinned Playwright
+        run: |
+          python -m pip install "playwright==1.56.0"
+          command -v google-chrome
+      - name: Verify frontend roles, privacy, and production URL guard
+        run: python -m unittest discover -s tests/browser -p "test_staging_portal.py" -v
+
+  sql-security:
+    name: Postgres 17 · PM/sub/client RLS authorization
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify local Postgres and load test-only auth shim
+        run: |
+          psql --version
+          psql -v ON_ERROR_STOP=1 -f staging/tests/bootstrap_local_pg.sql
+      - name: Apply isolated staging schema and baseline freeze in disposable PG
+        run: |
+          psql -v ON_ERROR_STOP=1 -f staging/sql/001_progress_rls.sql
+          psql -v ON_ERROR_STOP=1 -f staging/sql/002_baseline_freeze.sql
+          psql -v ON_ERROR_STOP=1 -f staging/sql/003_change_orders.sql
+          psql -v ON_ERROR_STOP=1 -f staging/sql/004_change_order_requests.sql
+      - name: Run authenticated user negative and positive RLS tests
+        run: psql -v ON_ERROR_STOP=1 -f staging/tests/rls_smoke.sql
+      - name: Assert all twenty-one pilot tables have RLS enabled
+        shell: bash
+        run: |
+          count=$(psql -v ON_ERROR_STOP=1 -Atc "
+            select count(*)
+              from pg_class c join pg_namespace n on n.oid=c.relnamespace
+             where n.nspname='public' and c.relname like 'pilot_%'
+               and c.relkind='r' and c.relrowsecurity;
+          ")
+          echo "Pilot tables with RLS enabled: $count"
+          test "$count" = "21"
+      - name: Initialize fake local JWT API role (no Supabase secrets)
+        run: psql -v ON_ERROR_STOP=1 -f staging/tests/bootstrap_postgrest.sql
+      - name: Start disposable PostgREST with local synthetic JWT signer
+        shell: bash
+        run: |
+          docker run --rm --detach --name pilot-postgrest --network host \
+            -e PGRST_DB_URI="postgres://pilot_authenticator:SYNTHETIC_CI_ONLY_PASS_2026@127.0.0.1:5432/postgres" \
+            -e PGRST_DB_SCHEMAS=public \
+            -e PGRST_DB_ANON_ROLE=anon \
+            -e PGRST_JWT_SECRET="SYNTHETIC_CI_ONLY_POSTGREST_JWT_SIGNING_KEY_2026" \
+            -e PGRST_SERVER_PORT=3000 \
+            postgrest/postgrest:v14.17
+          for attempt in $(seq 1 40); do
+            if curl -s --max-time 2 http://127.0.0.1:3000/ >/dev/null; then
+              echo "Local-only PostgREST ready"
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs pilot-postgrest
+          exit 1
+      - name: Real bearer JWT to PostgREST RLS end-to-end (synthetic identities)
+        run: node tests/pilot-postgrest.test.cjs
+      - name: Stop disposable API container
+        if: always()
+        run: |
+          docker logs pilot-postgrest --tail 25 || true
+          docker rm -f pilot-postgrest || true
