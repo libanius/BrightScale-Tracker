@@ -229,7 +229,7 @@ create policy pilot_memberships_revoke on public.pilot_memberships for delete to
   using (pilot_priv.is_pm(project_id));
 
 create policy pilot_scopes_read on public.pilot_scopes for select to authenticated
-  using (pilot_priv.can_read_scope(id));
+  using (pilot_priv.is_pm(project_id) or pilot_priv.can_read_scope(id));
 create policy pilot_scopes_create on public.pilot_scopes for insert to authenticated
   with check (pilot_priv.is_pm(project_id));
 create policy pilot_assignments_read on public.pilot_assignments for select to authenticated
