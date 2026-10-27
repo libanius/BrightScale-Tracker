@@ -53,6 +53,13 @@ class StagingPortalSmoke(unittest.TestCase):
                 route.fulfill(status=200, content_type="application/javascript", body=FAKE)
             elif url.startswith(self.origin) and urlsplit(url).path.startswith("/staging/"):
                 route.continue_()
+            elif (url.startswith("https://tracker.brightscalegroup.com/staging/")
+                  and urlsplit(url).path.startswith("/staging/")):
+                # Test the production-host fail-closed behavior without a real
+                # request to the actual Tracker production site.
+                filepath = ROOT / urlsplit(url).path.lstrip("/")
+                media = "text/html" if filepath.suffix == ".html" else "application/javascript"
+                route.fulfill(status=200, content_type=media, body=filepath.read_text(encoding="utf8"))
             else:
                 self.remote.append(url)
                 route.abort("blockedbyclient")
@@ -219,6 +226,15 @@ class StagingPortalSmoke(unittest.TestCase):
         self.assertIn("Solicitar um Change Order (cliente, sub ou PM)",body)
         self.assertNotIn("SYNTHETIC Requested faucet",body)
         self.assertNotIn("Transformar em CO rascunho",body)
+
+    def test_pilot_denies_login_on_production_host_without_real_network(self):
+        self.page.goto("https://tracker.brightscalegroup.com/staging/pilot.html", wait_until="load")
+        self.page.get_by_role("heading", name="Portal de staging bloqueado nesta origem").wait_for()
+        body=self.page.locator("#app").inner_text()
+        self.assertIn("só funciona em localhost ou preview isolado", body)
+        self.assertNotIn("Receber link de login", body)
+        self.assertNotIn("Conectar ao Supabase STAGING", body)
+        self.assertEqual(self.page.evaluate("window.__pilotQueried"), [])
 
     def test_production_project_configuration_is_rejected_before_sdk_creation(self):
         self.enter("pm", configured=False)

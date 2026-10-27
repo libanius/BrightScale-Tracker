@@ -178,6 +178,7 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;background:var(--ac);
 <div id="tc"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="tracker-cloud.js"></script>
+<script src="co-preview.js"></script>
 <script>
 'use strict';
 
@@ -929,6 +930,7 @@ function setScopeOpen(scopeId, isOpen) {
 ═══════════════════════════════════════════ */
 var TABS = [
   {id:'projects', l:'Projetos', d:'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6'},
+  {id:'changeOrders', l:'COs', d:'M9 12h6m-6 4h6M9 8h4M5 3h10l4 4v14H5V3zm10 0v4h4'},
   {id:'reports',  l:'Relatorios', d:'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z'},
   {id:'settings', l:'Ajustes',    d:'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z'},
 ];
@@ -972,8 +974,180 @@ function render() {
       renderProjects(main);
     }
   }
+  else if (S.tab === 'changeOrders') renderChangeOrders(main);
   else if (S.tab === 'reports') renderReports(main);
   else if (S.tab === 'settings') renderSettings(main);
+}
+
+/* ═══════════════════════════════════════════
+   CHANGE ORDERS — UI INTEGRATION PREVIEW, SYNTHETIC DATA ONLY
+   The official CO workflow remains entirely in the staging pilot.
+   Never read project names/ids or fetch/write cloud data from this tab.
+═══════════════════════════════════════════ */
+function renderChangeOrders(main) {
+  var demo = window.BrightScaleCODemo;
+  if (!demo) {
+    main.appendChild(div('card', 'Não foi possível carregar a demonstração de CO.'));
+    return;
+  }
+  if (!S.coDemoState) S.coDemoState = demo.initial();
+  if (!S.coDemoRole) S.coDemoRole = 'pm';
+  var view = demo.view(S.coDemoState, S.coDemoRole);
+  var headings = {
+    draft:'Rascunho do PM',
+    submitted:'Aguardando decisão do cliente',
+    client_approved:'Aprovado no portal de demonstração',
+    declined:'Recusado pelo cliente',
+    active:'Ativado pelo PM'
+  };
+  var actorNames={pm:'Project Manager',client:'Cliente',sub:'Subcontratado'};
+  var actionLabels={
+    submit:'PM envia proposta',
+    approve:'Cliente aprova (simulação)',
+    decline:'Cliente recusa (simulação)',
+    activate:'PM ativa CO',
+    report:'Sub informa 50%',
+    validate:'PM valida 50%'
+  };
+
+  var head = div('projects-heading');
+  var headText=div('');
+  headText.appendChild(el('h1', null, 'Change Orders'));
+  headText.appendChild(div('hsub', 'Smart Remodeling · integração visual'));
+  head.appendChild(headText);
+  main.appendChild(head);
+
+  var notice=div('card');
+  notice.id='co-preview-disclaimer';
+  notice.style.cssText='border-color:var(--ac2);background:rgba(124,107,255,.07);margin-top:14px;';
+  notice.appendChild(el('div','ct','SIMULAÇÃO LOCAL — NENHUM PROJETO REAL'));
+  var explanation=el('p','', '');
+  explanation.textContent='Esta tela demonstra o ciclo de um adicional usando apenas dados fictícios. '+
+    'Os papéis aqui são uma seleção visual, NÃO um login. Nenhuma ação consulta, salva ou modifica contratos, valores, '+
+    'progresso ou créditos no Supabase/IndexedDB do Tracker.';
+  explanation.style.cssText='font-size:13px;line-height:1.7;color:var(--tx);';
+  notice.appendChild(explanation);
+  main.appendChild(notice);
+
+  var roleCard=div('card');
+  roleCard.appendChild(div('ct','Visualizar como (somente demonstração)'));
+  var roleLabel=mkLbl('Papel demonstrado');
+  roleLabel.htmlFor='co-demo-role';
+  roleCard.appendChild(roleLabel);
+  var select=el('select');
+  select.id='co-demo-role';
+  ['pm','client','sub'].forEach(function(role) {
+    var o=el('option');
+    o.value=role;
+    o.textContent=actorNames[role];
+    select.appendChild(o);
+  });
+  select.value=S.coDemoRole;
+  select.onchange=function(){
+    S.coDemoRole=select.value;
+    render();
+  };
+  roleCard.appendChild(select);
+  main.appendChild(roleCard);
+
+  var detail=div('card');
+  detail.appendChild(div('ct','Adicional independente'));
+  var scopeTitle=el('h2');
+  scopeTitle.textContent=view.title;
+  scopeTitle.style.cssText='font-size:18px;margin-bottom:8px;';
+  detail.appendChild(scopeTitle);
+  var scope=el('p');
+  scope.textContent=view.scope+' · '+view.task+' (peso fictício de 60%)';
+  scope.style.cssText='font-size:12px;color:var(--mu);margin-bottom:8px;line-height:1.5;';
+  detail.appendChild(scope);
+  var status=div('co-demo-status');
+  status.id='co-demo-status';
+  status.textContent='Status: '+(headings[view.status]||view.status);
+  status.style.cssText='font-size:14px;font-weight:700;color:var(--ac);margin:8px 0;';
+  detail.appendChild(status);
+
+  function line(text){
+    var p=el('p');
+    p.textContent=text;
+    p.style.cssText='font-size:13px;padding:7px 0;border-bottom:1px solid var(--bd);';
+    detail.appendChild(p);
+  }
+  if (Object.prototype.hasOwnProperty.call(view,'clientAmountCents')) {
+    line('Valor ao cliente (FICTÍCIO): '+formatUsd(view.clientAmountCents/100));
+  }
+  if (Object.prototype.hasOwnProperty.call(view,'subcontractCents')) {
+    line('Valor interno do sub (FICTÍCIO): '+formatUsd(view.subcontractCents/100));
+    line('Crédito reconhecido apenas neste CO (FICTÍCIO): '+formatUsd(view.creditCents/100));
+  }
+  line('Progresso validado do CO: '+view.validatedPercent+'%');
+  if (Object.prototype.hasOwnProperty.call(view,'reportedPercent') && view.reportedPercent !== null) {
+    line('Progresso informado pelo sub: '+view.reportedPercent+'% (ainda exige validação do PM)');
+  }
+  line('Pagamento autorizado: NÃO');
+  main.appendChild(detail);
+
+  var operations=div('card');
+  operations.appendChild(div('ct','Próxima ação simulada'));
+  if (!view.actions.length) {
+    var help=el('p');
+    help.textContent=view.status==='declined'
+      ? 'Pedido recusado. Reinicie a simulação para testar outra proposta.'
+      : 'Nenhuma ação para este papel agora. Altere o papel acima para acompanhar o ciclo.';
+    help.style.cssText='font-size:13px;color:var(--mu);line-height:1.6;';
+    operations.appendChild(help);
+  }
+  view.actions.forEach(function(action){
+    var b=btn('btn bp bfull',actionLabels[action],function(){
+      S.coDemoState=demo.apply(S.coDemoState,S.coDemoRole,action);
+      render();
+    });
+    b.setAttribute('data-co-demo-action',action);
+    b.style.marginBottom='8px';
+    operations.appendChild(b);
+  });
+  operations.appendChild(btn('btn bs bfull','Reiniciar simulação',function(){
+    S.coDemoState=demo.initial();
+    S.coDemoRole='pm';
+    render();
+  }));
+  main.appendChild(operations);
+
+  var trail=div('card');
+  trail.appendChild(div('ct','Histórico apenas desta sessão simulada'));
+  view.history.forEach(function(event,index){
+    var p=el('p');
+    p.textContent=(index+1)+'. '+actorNames[event.actor]+' · '+event.action;
+    p.style.cssText='font-size:12px;color:var(--mu);padding:5px 0;';
+    trail.appendChild(p);
+  });
+  main.appendChild(trail);
+
+  var integration=div('card');
+  integration.appendChild(div('ct','Portal de testes — ambiente isolado'));
+  var caution=el('p');
+  caution.textContent='O portal real de staging possui fluxos PM/cliente/sub com autorização no banco, mas precisa de um '+
+    'Supabase STAGING novo e vazio e dos três perfis de teste. Não use o Supabase atual da BrightScale.';
+  caution.style.cssText='font-size:13px;line-height:1.7;color:var(--mu);margin-bottom:12px;';
+  integration.appendChild(caution);
+  var pilotUrl=demo.pilotLink(window.location);
+  if (pilotUrl) {
+    var openPilot=btn('btn bs bfull','Abrir portal isolado de staging',function(){
+      window.open(pilotUrl,'_blank','noopener,noreferrer');
+    });
+    openPilot.id='co-open-staging';
+    integration.appendChild(openPilot);
+  } else {
+    var disabled=btn('btn bs bfull','Portal de staging indisponível nesta origem');
+    disabled.id='co-open-staging';
+    disabled.disabled=true;
+    disabled.setAttribute('aria-disabled','true');
+    integration.appendChild(disabled);
+    var why=el('p');
+    why.textContent='Acesso habilitado somente em localhost ou preview isolado do Cloudflare; nunca no domínio principal.';
+    why.style.cssText='font-size:12px;color:var(--mu);margin-top:10px;';
+    integration.appendChild(why);
+  }
+  main.appendChild(integration);
 }
 
 /* ═══════════════════════════════════════════

@@ -1,0 +1,42 @@
+name: BrightScale CO navigation preview (isolated)
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: co-navigation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  co-demo-contract:
+    name: CO in-memory model and main UI contract (Node)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check synthetic lifecycle, financial projections and preview guard
+        run: node --test tests/co-preview.test.cjs
+  co-nav-browser:
+    name: Main Tracker CO tab (real Chrome, mock cloud)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Use pinned Playwright + preinstalled Chrome
+        run: |
+          python -m pip install "playwright==1.56.0"
+          command -v google-chrome
+      - name: Browser user-journeys with network blocked
+        run: |
+          python -m unittest discover -s tests/browser -p "test_co_navigation.py" -v
+          python -m unittest discover -s tests/browser -p "test_co_standalone.py" -v
