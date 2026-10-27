@@ -70,8 +70,10 @@ jobs:
         run: |
           psql --version
           psql -v ON_ERROR_STOP=1 -f staging/tests/bootstrap_local_pg.sql
-      - name: Apply isolated staging schema to disposable database
-        run: psql -v ON_ERROR_STOP=1 -f staging/sql/001_progress_rls.sql
+      - name: Apply isolated staging schema and baseline freeze in disposable PG
+        run: |
+          psql -v ON_ERROR_STOP=1 -f staging/sql/001_progress_rls.sql
+          psql -v ON_ERROR_STOP=1 -f staging/sql/002_baseline_freeze.sql
       - name: Run authenticated user negative and positive RLS tests
         run: psql -v ON_ERROR_STOP=1 -f staging/tests/rls_smoke.sql
       - name: Assert all ten tables have RLS enabled
