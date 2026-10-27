@@ -131,19 +131,29 @@ Nota: Essa divisão é uma **proposta de implementação**, não uma revogação
 
 ## Checkpoint operacional (fonte atual para próxima IA)
 
-- **Atualizado em:** 2026-10-26 horário da Flórida (CI/commits 2026-10-27 UTC).
-- **Branch:** `main` (handoff canônico) e **PR #2 draft** na branch `fix/mvp-guardrails-2026-10-26`. Link: [PR #2](https://github.com/libanius/BrightScale-Tracker/pull/2). **NÃO ESTÁ INCORPORADO EM MAIN/PRODUÇÃO**.
+- **Atualizado em:** 2026-10-27 (horário da Flórida).
+- **Branch:** `main` recebeu **apenas a mudança visual de versão** [PR #3](https://github.com/libanius/BrightScale-Tracker/pull/3), merge `dbd6eea449e81d6fe432fb96f57246e9a810e657`. O **PR #2 draft** de correções e agentes segue SEPARADO, **NÃO INCORPORADO em main/produção**: [PR #2](https://github.com/libanius/BrightScale-Tracker/pull/2).
 - **Decisões confirmadas:** 1–34 (`DECIDED`); entrevista encerrada e decisão 35 não tomada.
-- **Último resultado comprovado:** Incremento 0 (preservação de critérios de aceite + bloqueio de novo estimate em contrato existente) implementado no PR; além disso foram **criados e executados quatro agentes automáticos Chromium** para PM, Cliente, Segurança e Offline com dados fictícios e cloud mock.
+- **Último resultado comprovado:** marca visual do produto padronizada para **`v2.0 · MVP`** no rodapé de `index.html`, na seção Sobre e em `dashboard.html`. PR #3 mesclado em `main`; [GitHub Pages build/deployment 40500652655](https://github.com/libanius/BrightScale-Tracker/actions/runs/40500652655) `success`. **Não foi possível verificar visualmente o domínio Cloudflare** nesta sessão; a mudança não cria uma instância, schema ou banco novo. Inc. 0 (critérios de aceite e importação bloqueada) + 4 agentes Chromium continuam no PR #2 draft.
 - **Evidência dos agentes:** [GitHub Actions run #40444617361](https://github.com/libanius/BrightScale-Tracker/actions/runs/40444617361) **11/11 PASS**: PM 4, Cliente 3, Segurança 3, Offline 1. Os testes Node guardrails previamente passaram 7/7. Código e instruções dos agentes na branch PR: [docs/BROWSER_TEST_AGENTS.md](https://github.com/libanius/BrightScale-Tracker/blob/fix/mvp-guardrails-2026-10-26/docs/BROWSER_TEST_AGENTS.md), `tests/browser/test_agents.py`, `tests/browser/fixtures/tracker-cloud.mock.js` e `.github/workflows/browser-agents.yml`.
 - **O que foi testado:** Chromium de fato abriu `index.html` e `dashboard.html` locais e interagiu com DOM + IndexedDB, realizou saves/importação de projeto fictício e exibiu links fictícios. As chamadas externas são bloqueadas; não foram usados clientes/contratos reais.
 - **O que NÃO foi testado:** login REAL no Supabase, permissões RLS ao vivo de PM/sub/cliente, upload via IA REAL, sincronização remota/reconexão, teste de campo ou produção. O monitor público read-only está configurado para agenda/manual **quando o workflow estiver em main** e **não foi executado na rodada do PR**. Logo não alegar que bots entraram autenticados no site em produção.
 - **CI:** Chromium pinado em `ubuntu-24.04` porque Playwright 1.56.0 não suportou Ubuntu 26.04 do primeiro runner. A execução após correção passou 4/4 jobs. Testes do PR + guardrails estão separados de deploy.
 - **MVP restante:** ver [auditoria técnica](MVP_TECHNICAL_AUDIT_2026-10-26.md); falta `sub reported → PM validated → recognized credit`, controle de permissões por papel, baseline protegida e CO aprovado; não confundir fixture com backend pronto.
-- **Segurança:** produção, Supabase schemas `public`/`private`, pagamentos, dados de clientes e deploy intactos. Branch do PR contém somente correções e agentes; `main` recebe apenas documentação do estado.
+- **Segurança:** nenhum registro de projeto, contrato, pagamento ou schema Supabase foi alterado nesta sessão; `main` recebeu somente alteração textual visual. A branch PR #2 contém correções e agentes isolados, não publicada em `main`.
+- **Diagnóstico dos dados antigos:** leitura `SELECT count(*)` no schema `tracker`: **4 projects / 4 units / 16 scopes / 54 tasks / 5 notes** em 2026-10-27; há registros preexistentes no cloud. `index.html` login chama `pullFromCloud`, que reflete registros do servidor no IndexedDB. `tracker-cloud.js` também pode reenfileirar registros locais em **primeira** sincronização (`firstSync`), então investigar proveniência antes de arquivar/excluir. Agentes do PR #2 usam apenas mock local e não contaminaram este banco.
 - **Próxima ação única:** revisar PR #2 e executar smoke/staging isolado antes de merge; se aprovado, habilitar workflows agendados em main. Depois configurar ambiente de teste Supabase SEPARADO com usuários fictícios por papel para testes realmente autenticados, antes de pôr um sub em campo.
 
 ## Log de continuidade
+
+### 2026-10-27 — Identificação v2.0 · MVP + diagnóstico de retorno dos dados antigos
+- **Estado:** `IMPLEMENTED (main)` para rótulo de versão; `TESTED` compilação JS inline e conferência de texto nas três posições do código; workflow GitHub Pages `success`; **DOM no domínio Cloudflare ainda NOT VERIFIED**.
+- **Mudança:** [PR #3](https://github.com/libanius/BrightScale-Tracker/pull/3) foi mesclado em `main` (`dbd6eea`), atualizando a navegação/rodapé `v1.0` e os rótulos `v7.5` da área Sobre/dashboard para `v2.0 · MVP`. Fase de produto, não novo banco ou confirmação de funcionalidades.
+- **Investigação de dados:** os 4 projetos e 54 tarefas lidos em contagens agregadas de `tracker` explicam a presença de histórico após login. Código: `index.html` chama `pullFromCloud` no login; `tracker-cloud.js` usa Supabase, cache IndexedDB e `firstSync` para migrar registros locais que faltam no servidor. Causa exata de qualquer item específico NÃO VERIFICADA. Nada foi apagado.
+- **Testes/deploy:** compilação inline JS passou; conteúdo `main` confere as três etiquetas. [Actions 40500652655](https://github.com/libanius/BrightScale-Tracker/actions/runs/40500652655) concluída com sucesso; destino Cloudflare do usuário não aberto com navegador autenticado.
+- **Segurança:** zero alterações de dados, tabelas, RLS ou login; PR #2 draft/automação permanece isolado e não pode explicar retorno do histórico.
+- **Próximo passo:** usuário conferir etiqueta em tela e, se necessário, usar `Ajustes → Forçar atualizar app` (somente cache). Para separar legado de novo MVP, primeiro definir política segura de arquivamento/visibilidade, sem exclusão automática.
+
 
 ### 2026-10-26 — Agentes PM/Cliente/Segurança/Offline criados e executados no navegador (PR #2)
 - **Estado:** `IMPLEMENTED (branch)` e `TESTED (isolated Chromium browser mock)`, **NÃO** `FIELD TESTED` ou login REAL. Workflow agendado aguarda integração a `main`.
