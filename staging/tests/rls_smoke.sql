@@ -36,6 +36,19 @@ begin
       from public.pilot_tasks where scope_id='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb')<>60
     then raise exception 'scope_weight_mutated_after_rejection'; end if;
 end $$;
+-- Initial 60% floor scope is incomplete: PM cannot approve baseline.
+do $$
+begin
+ begin
+   perform public.pilot_freeze_baseline('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa');
+   raise exception 'baseline_freeze_accepted_incomplete_scope';
+ exception when raise_exception then
+   if sqlerrm <> 'baseline_incomplete_scope_weights_or_terms' then raise; end if;
+ end;
+end $$;
+insert into public.pilot_tasks(id,scope_id,title,weight_pct) values
+ ('cccccccc-cccc-4ccc-8ccc-ccccccccccca',
+  'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb','SYNTHETIC Install Baseboard',40);
 do $$
 begin
  if (select count(*) from public.pilot_projects) <> 1 then raise exception 'pm_project_setup_failed'; end if;
@@ -43,13 +56,69 @@ begin
 end $$;
 commit;
 
--- Sub can report ONLY his assigned scope. No recognized credit until review.
+-- Draft baselines prevent even assigned subs from reporting.
 begin;
 set local role authenticated;
 select set_config('request.jwt.claim.sub','22222222-2222-4222-8222-222222222222',true);
 do $$
 begin
- if (select count(*) from public.pilot_tasks) <> 1 then raise exception 'sub_can_see_foreign_task'; end if;
+ begin
+  insert into public.pilot_reports(id,task_id,reported_pct,note) values
+   ('dddddddd-dddd-4ddd-8ddd-ddddddddddd0','cccccccc-cccc-4ccc-8ccc-cccccccccccc',40,'Blocked until PM freezes');
+  raise exception 'sub_reported_before_freeze';
+ exception when insufficient_privilege then null;
+ end;
+end $$;
+commit;
+
+-- No non-PM can freeze a project even with a complete baseline.
+begin;
+set local role authenticated;
+select set_config('request.jwt.claim.sub','33333333-3333-4333-8333-333333333333',true);
+do $$
+begin
+ begin
+   perform public.pilot_freeze_baseline('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa');
+   raise exception 'client_froze_baseline';
+ exception when insufficient_privilege then null;
+ end;
+end $$;
+commit;
+
+begin;
+set local role authenticated;
+select set_config('request.jwt.claim.sub','11111111-1111-4111-8111-111111111111',true);
+select public.pilot_freeze_baseline('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa');
+do $$
+begin
+ if (select baseline_frozen_at from public.pilot_projects where id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa') is null
+  then raise exception 'pm_freeze_not_recorded'; end if;
+ if (select count(*) from public.pilot_audit_events where action='baseline_frozen')<>1
+  then raise exception 'pm_freeze_audit_missing'; end if;
+ begin
+  insert into public.pilot_tasks(id,scope_id,title,weight_pct) values
+   ('cccccccc-cccc-4ccc-8ccc-cccccccccccb',
+    'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb','Unapproved after freeze',1);
+  raise exception 'task_insert_after_freeze_accepted';
+ exception when raise_exception then
+  if sqlerrm <> 'baseline_already_frozen' then raise; end if;
+ end;
+ begin
+  perform public.pilot_freeze_baseline('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa');
+  raise exception 'repeat_freeze_accepted';
+ exception when raise_exception then
+  if sqlerrm <> 'baseline_already_frozen' then raise; end if;
+ end;
+end $$;
+commit;
+
+-- Sub can report ONLY his assigned scope after the PM freezes the baseline.
+begin;
+set local role authenticated;
+select set_config('request.jwt.claim.sub','22222222-2222-4222-8222-222222222222',true);
+do $$
+begin
+ if (select count(*) from public.pilot_tasks) <> 2 then raise exception 'sub_can_see_foreign_task'; end if;
  if (select count(*) from public.pilot_scope_terms) <> 1 then raise exception 'sub_terms_scope_invalid'; end if;
  if (select count(*) from public.pilot_memberships) <> 1 then raise exception 'sub_membership_visibility_invalid'; end if;
 end $$;
@@ -89,7 +158,7 @@ select set_config('request.jwt.claim.sub','33333333-3333-4333-8333-333333333333'
 do $$
 begin
  if (select count(*) from public.pilot_projects)<>1 then raise exception 'client_cannot_see_project'; end if;
- if (select count(*) from public.pilot_tasks)<>2 then raise exception 'client_tasks_visibility_failed'; end if;
+ if (select count(*) from public.pilot_tasks)<>3 then raise exception 'client_tasks_visibility_failed'; end if;
  if (select count(*) from public.pilot_reports)<>0 then raise exception 'client_can_see_reports'; end if;
  if (select count(*) from public.pilot_scope_terms)<>0 then raise exception 'client_can_see_sub_terms'; end if;
  if (select count(*) from public.pilot_credit_events)<>0 then raise exception 'client_can_see_credits'; end if;
@@ -137,8 +206,8 @@ begin
      then raise exception 'official_progress_not_40'; end if;
  if (select sum(delta_cents) from public.pilot_credit_events)<>57600
      then raise exception 'credit_not_57600_cents'; end if;
- if (select count(*) from public.pilot_audit_events)<>2
-     then raise exception 'audit_missing_report_or_review'; end if;
+ if (select count(*) from public.pilot_audit_events)<>3
+     then raise exception 'audit_missing_freeze_report_or_review'; end if;
  if (select author_id from public.pilot_reports
      where id='dddddddd-dddd-4ddd-8ddd-dddddddddddd')
      <> '22222222-2222-4222-8222-222222222222'::uuid
@@ -281,6 +350,7 @@ insert into public.pilot_scope_terms(scope_id,subcontract_cents) values
 insert into public.pilot_tasks(id,scope_id,title,weight_pct) values
  ('cccccccc-cccc-4ccc-8ccc-ccccccccccce','bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbd','Half of one cent A',50),
  ('cccccccc-cccc-4ccc-8ccc-cccccccccccf','bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbd','Half of one cent B',50);
+select public.pilot_freeze_baseline('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaab');
 commit;
 
 begin;
