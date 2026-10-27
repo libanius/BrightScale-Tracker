@@ -295,7 +295,7 @@ begin;
 set local role authenticated;
 select set_config('request.jwt.claim.sub','11111111-1111-4111-8111-111111111111',true);
 select public.pilot_review_report('dddddddd-dddd-4ddd-8ddd-ddddddddddda','approve',100,'');
-do $
+do $$
 begin
  begin
    perform public.pilot_review_report('dddddddd-dddd-4ddd-8ddd-ddddddddddd9','approve',100,'');
@@ -310,7 +310,7 @@ begin
    then raise exception 'over_credit_changed_report_status'; end if;
  if (select count(*) from public.pilot_validations where task_id='cccccccc-cccc-4ccc-8ccc-cccccccccccf')<>0
    then raise exception 'over_credit_modified_approved_percent'; end if;
-end $;
+end $$;
 commit;
 
 -- No writes to production. This is a throwaway local CI database.
