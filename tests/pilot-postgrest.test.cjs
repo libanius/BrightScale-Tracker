@@ -201,6 +201,32 @@ function one({data}) {
   const clientAudit=await req('GET','pilot_co_audit_events?co_id=eq.'+co,IDs.client);
   assert.deepEqual(clientAudit.data,[]);
 
+  // Client can refuse another proposed CO, with reason, but never rewrite
+  // submitted prices or cause an automatic activation/payment.
+  const declinedDraft=await req('POST','rpc/pilot_co_create_draft',IDs.pm,
+    {p_project_id:pid,p_title:'SYNTHETIC Declined Add-on',
+     p_description:'Counterproposal fixture',p_client_cents:120000});
+  const deniedCo=declinedDraft.data.co_id;
+  const deniedScope=await req('POST','rpc/pilot_co_add_scope',IDs.pm,
+    {p_co_id:deniedCo,p_title:'SYNTHETIC Declined Shower',
+      p_sub_id:IDs.sub,p_sub_cents:35000});
+  await req('POST','rpc/pilot_co_add_task',IDs.pm,
+    {p_scope_id:deniedScope.data.scope_id,p_title:'Tile repair',p_weight_pct:100});
+  await req('POST','rpc/pilot_co_submit',IDs.pm,{p_co_id:deniedCo});
+  await req('PATCH','pilot_co_client_terms?co_id=eq.'+deniedCo,IDs.client,
+    {client_amount_cents:1},[401,403,405]);
+  const declined=await req('POST','rpc/pilot_co_client_decide',IDs.client,
+    {p_co_id:deniedCo,p_approve:false,p_reason:'Need revised amount'});
+  assert.equal(declined.data.status,'declined');
+  await req('POST','rpc/pilot_co_activate',IDs.pm,{p_co_id:deniedCo},[400,409]);
+  await req('POST','rpc/pilot_co_client_decide',IDs.client,
+    {p_co_id:deniedCo,p_approve:true,p_reason:''},[400,409]);
+  const declinedSub=await req('GET','pilot_change_orders?id=eq.'+deniedCo,IDs.sub);
+  assert.deepEqual(declinedSub.data,[]);
+  // No CO decision may alter the original already recognized ledger.
+  const afterDeclineOriginal=await req('GET','pilot_credit_events?task_id=eq.'+task.id,IDs.pm);
+  assert.equal(afterDeclineOriginal.data[0].delta_cents,57600);
+
   // Revoking access invalidates RLS immediately without deleting audit rows.
   await req('DELETE','pilot_memberships?project_id=eq.'+pid+'&user_id=eq.'+IDs.sub,IDs.pm,undefined,[204,200]);
   const revoked=await req('GET','pilot_tasks?id=eq.'+task.id,IDs.sub);
