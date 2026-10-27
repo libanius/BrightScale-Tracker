@@ -170,15 +170,21 @@ revoke all on public.pilot_projects,public.pilot_memberships,public.pilot_scopes
   public.pilot_reports,public.pilot_validations,public.pilot_credit_events,
   public.pilot_audit_events from public,anon,authenticated;
 
-grant select, insert on public.pilot_projects to authenticated;
-grant select, insert, delete on public.pilot_memberships to authenticated;
-grant select, insert on public.pilot_scopes to authenticated;
-grant select, insert, delete on public.pilot_assignments to authenticated;
-grant select, insert on public.pilot_scope_terms to authenticated;
-grant select, insert on public.pilot_tasks to authenticated;
-grant select, insert on public.pilot_reports to authenticated;
-grant select on public.pilot_validations,public.pilot_credit_events,public.pilot_audit_events
-  to authenticated;
+-- Column-level INSERT grants prevent clients forging server timestamps, ownership,
+-- statuses, review actors or immutable baseline/credit metadata.
+grant select on public.pilot_projects,public.pilot_memberships,public.pilot_scopes,
+  public.pilot_assignments,public.pilot_scope_terms,public.pilot_tasks,
+  public.pilot_reports,public.pilot_validations,public.pilot_credit_events,
+  public.pilot_audit_events to authenticated;
+grant insert(id,name) on public.pilot_projects to authenticated;
+grant insert(project_id,user_id,role) on public.pilot_memberships to authenticated;
+grant delete on public.pilot_memberships to authenticated;
+grant insert(id,project_id,name) on public.pilot_scopes to authenticated;
+grant insert(scope_id,user_id) on public.pilot_assignments to authenticated;
+grant delete on public.pilot_assignments to authenticated;
+grant insert(scope_id,subcontract_cents) on public.pilot_scope_terms to authenticated;
+grant insert(id,scope_id,title,weight_pct) on public.pilot_tasks to authenticated;
+grant insert(id,task_id,reported_pct,note) on public.pilot_reports to authenticated;
 
 alter table public.pilot_projects enable row level security;
 alter table public.pilot_memberships enable row level security;
@@ -245,6 +251,23 @@ create policy pilot_credit_read on public.pilot_credit_events for select to auth
   using (sub_id=(select auth.uid()) or pilot_priv.is_pm_task(task_id));
 create policy pilot_audit_read on public.pilot_audit_events for select to authenticated
   using (pilot_priv.is_pm(project_id));
+
+-- Server-side audit trail for reports; no client-provided timestamp or actor.
+create function pilot_priv.audit_sub_report()
+returns trigger language plpgsql security definer set search_path = ''
+as $
+declare v_project uuid;
+begin
+  select s.project_id into v_project from public.pilot_tasks t
+    join public.pilot_scopes s on s.id=t.scope_id where t.id=new.task_id;
+  insert into public.pilot_audit_events(project_id,task_id,report_id,actor_id,action,reported_pct)
+    values(v_project,new.task_id,new.id,new.author_id,'reported',new.reported_pct);
+  return new;
+end;
+$;
+revoke all on function pilot_priv.audit_sub_report() from public,anon,authenticated;
+create trigger pilot_report_audit after insert on public.pilot_reports
+  for each row execute function pilot_priv.audit_sub_report();
 
 -- All approvals go through one atomic, audited database operation. The DB
 -- verifies the actual JWT subject, not role strings supplied by a browser.
