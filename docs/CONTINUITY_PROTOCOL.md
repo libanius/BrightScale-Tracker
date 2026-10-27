@@ -17,11 +17,11 @@ Arquivos de descoberta: [../AGENTS.md](../AGENTS.md), [../CLAUDE.md](../CLAUDE.m
 
 1. Ler o handoff canônico **inteiro**, este protocolo e as instruções locais relevantes; verificar `main`, commits recentes e código afetado.
 2. Reconciliar a seção **Checkpoint operacional** do handoff com o estado real do repositório, PRs, deploys e testes. Um texto de handoff não é evidência de código funcionando.
-3. Continuar da última próxima ação verificável, sem repetir perguntas respondidas nem abrir uma nova entrevista. A entrevista do Smart Remodeling terminou na **decisão 34**, em 2026-10-26; a **decisão 35 não foi tomada**.
+3. Continuar da última próxima ação verificável, sem repetir perguntas respondidas nem abrir uma nova entrevista. A entrevista extensa foi interrompida após a **decisão 34**, mas o responsável confirmou expressamente as **decisões 35 e 36 em 2026-10-27** e pediu apenas perguntas pontuais sobre substituição, responsabilidades e auditoria. **Decisão 37 pendente**; não confundir perguntas propostas com decisões ratificadas.
 4. Priorizar o MVP testável em campo e os fluxos existentes antes de padrões avançados ou novas abstrações.
 5. Se faltar uma autorização decisiva para ação de alto impacto, solicitar apenas o consentimento necessário. Caso contrário, avançar com uma mudança pequena, reversível e verificável.
 
-**Ordem de autoridade:** instrução explícita e recente do responsável > decisões confirmadas 1–34 > código e contrato reais > propostas no handoff. Se detectar contradição, **registrar e pedir decisão pontual**, nunca reinterpretar silenciosamente.
+**Ordem de autoridade:** instrução explícita e recente do responsável > decisões confirmadas 1–36 > código e contrato reais > propostas no handoff. Se detectar contradição, **registrar e pedir decisão pontual**, nunca reinterpretar silenciosamente.
 
 ## 2. O que deve ser documentado
 
@@ -37,7 +37,7 @@ Ao concluir uma sessão com mudanças no projeto, atualizar **o mesmo handoff ca
 - Estado de infraestrutura/segurança/deploy somente se **verificado**. Registrar `not checked` quando necessário.
 - Riscos, regressões, decisões em aberto, documentação e migrations afetadas.
 
-Registrar eventos no **Log de continuidade** em ordem cronológica reversa, com referência a commits/PRs quando existirem; evitar duplicar a lista de 34 decisões. A seção **Checkpoint operacional** mostra a situação atual de maneira concisa; o log guarda mudanças anteriores.
+Registrar eventos no **Log de continuidade** em ordem cronológica reversa, com referência a commits/PRs quando existirem; evitar duplicar a lista vigente de decisões (1–36; consultar handoff para alterações posteriores). A seção **Checkpoint operacional** mostra a situação atual de maneira concisa; o log guarda mudanças anteriores.
 
 ## 3. Checklist obrigatório antes de declarar entrega
 
