@@ -90,6 +90,7 @@ class BrowserHarness(unittest.TestCase):
         self.page.goto(self.base_url + "/index.html", wait_until="domcontentloaded")
         self.page.locator(".projects-heading h1").wait_for(timeout=25000)
         self.assertIn("Projetos", self.page.locator(".projects-heading h1").inner_text())
+        self.assertEqual(self.page.locator('.nav-ver').inner_text(), 'v2.0 · MVP')
 
     def seed_pm_task(self):
         self.page.evaluate("""async () => {
