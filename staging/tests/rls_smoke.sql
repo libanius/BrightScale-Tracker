@@ -100,7 +100,7 @@ begin
    ('cccccccc-cccc-4ccc-8ccc-cccccccccccb',
     'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb','Unapproved after freeze',1);
   raise exception 'task_insert_after_freeze_accepted';
- exception when raise_exception then
+ exception when check_violation then
   if sqlerrm <> 'baseline_already_frozen' then raise; end if;
  end;
  begin
