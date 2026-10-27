@@ -237,7 +237,7 @@ create policy pilot_tasks_create on public.pilot_tasks for insert to authenticat
   with check (exists(select 1 from public.pilot_scopes s where s.id=scope_id and pilot_priv.is_pm(s.project_id)));
 
 create policy pilot_reports_read on public.pilot_reports for select to authenticated
-  using (author_id=(select auth.uid()) or pilot_priv.is_pm_task(task_id));
+  using ((author_id=(select auth.uid()) and pilot_priv.is_sub_task(task_id)) or pilot_priv.is_pm_task(task_id));
 create policy pilot_reports_create on public.pilot_reports for insert to authenticated
   with check (
     author_id=(select auth.uid()) and status='pending'
@@ -248,7 +248,7 @@ create policy pilot_reports_create on public.pilot_reports for insert to authent
 create policy pilot_validations_read on public.pilot_validations for select to authenticated
   using (pilot_priv.can_read_task(task_id));
 create policy pilot_credit_read on public.pilot_credit_events for select to authenticated
-  using (sub_id=(select auth.uid()) or pilot_priv.is_pm_task(task_id));
+  using ((sub_id=(select auth.uid()) and pilot_priv.is_sub_task(task_id)) or pilot_priv.is_pm_task(task_id));
 create policy pilot_audit_read on public.pilot_audit_events for select to authenticated
   using (pilot_priv.is_pm(project_id));
 
