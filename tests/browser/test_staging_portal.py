@@ -112,14 +112,15 @@ class StagingPortalSmoke(unittest.TestCase):
     def test_production_project_configuration_is_rejected_before_sdk_creation(self):
         self.enter("pm", configured=False)
         self.page.get_by_text("Conectar ao Supabase STAGING").wait_for()
-        self.page.get_by_label("URL Supabase STAGING").fill(
-            "https://hyvoatfozlpsevsbkxxm.supabase.co"
-        )
         self.page.get_by_label("Publishable / anon key do staging").fill(TEST_KEY)
         self.page.get_by_label("Digite STAGING").fill("STAGING")
-        self.page.get_by_role("button", name="Conectar ao ambiente de testes").click()
-        self.page.get_by_text("Bloqueado: este é o Supabase de produção", exact=False).wait_for()
-        self.assertIsNone(self.page.evaluate("localStorage.getItem('brightscale-pilot-config')"))
+        for production_ref in ["hyvoatfozlpsevsbkxxm", "wihfneccjwmtxzvivfzf"]:
+            self.page.get_by_label("URL Supabase STAGING").fill(
+                "https://" + production_ref + ".supabase.co"
+            )
+            self.page.get_by_role("button", name="Conectar ao ambiente de testes").click()
+            self.page.get_by_text("Bloqueado: este é um projeto Supabase ativo de produção", exact=False).wait_for()
+            self.assertIsNone(self.page.evaluate("localStorage.getItem('brightscale-pilot-config')"))
 
 
 if __name__ == "__main__":
