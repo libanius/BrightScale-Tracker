@@ -8,7 +8,7 @@
   var message=document.getElementById('message');
   var STORAGE='brightscale-pilot-config';
   var s={client:null,api:null,user:null,projects:[],selectedId:null,snapshot:null,refreshId:0};
-  var productionRefs=['hyvoatfozlpsevsbkxxm']; // NEVER point this demo at active shared Tracker
+  var productionRefs=['hyvoatfozlpsevsbkxxm','wihfneccjwmtxzvivfzf']; // Both active projects are NOT staging
   function dom(tag,attrs){
     var n=document.createElement(tag);
     attrs=attrs||{};
