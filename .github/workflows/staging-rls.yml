@@ -12,6 +12,18 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  gateway-contract:
+    name: Staging client role projection and RPC (Node)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify client projection, sub/PM role paths and Javascript syntax
+        run: node --test tests/staging-gateway.test.cjs
+
   sql-security:
     name: Postgres 17 · PM/sub/client RLS authorization
     runs-on: ubuntu-24.04
