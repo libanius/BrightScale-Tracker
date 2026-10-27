@@ -1,6 +1,6 @@
 # Fase 4 — Supabase staging isolado e teste de autorização por papéis
 
-**Estado (27/10/2026):** infraestrutura SQL e testes em CI preparados na [PR #5](https://github.com/libanius/BrightScale-Tracker/pull/5), **sem implantação no Supabase**.
+**Estado (27/10/2026):** infraestrutura SQL e testes de autorização concluídos em [PR #5](https://github.com/libanius/BrightScale-Tracker/pull/5); [CI PostgreSQL 17 #40506790356](https://github.com/libanius/BrightScale-Tracker/actions/runs/40506790356) **PASS**. **Sem projeto Supabase novo, sem login real e sem implantação no Supabase**.
 
 ## Por que ainda não foi criado um projeto Supabase?
 
@@ -26,6 +26,20 @@ Quando a organização e o limite forem confirmados, criar projeto `BrightScale 
 - **Revogação:** remove visibilidade de relatórios/créditos e tarefas ao retirar membership do sub, sem apagar eventos históricos.
 
 Há políticas RLS reais com `auth.uid()`, permissões de INSERT coluna a coluna para evitar falsificação de autor e timestamps, e RPC transacional `pilot_review_report` que verifica no **servidor** se o usuário é PM. Não há escrita direta no ledger nem atualização do progresso validado por outro papel.
+
+## Resultados comprovados no PostgreSQL descartável
+
+O workflow compilou a migração, verificou as **10 tabelas com RLS habilitado** e concluiu sem erros a execução de `staging/tests/rls_smoke.sql`. Os cenários exercitaram:
+
+- PM cria projeto e escopo fictícios, cadastra membros e valida um relatório;
+- sub vê somente tarefas/valores do próprio escopo e só envia reporte pendente;
+- cliente vê tarefas e progresso **já validado**, sem crédito, notas do sub ou termos financeiros;
+- usuário externo e papel `anon` têm acesso negado;
+- relatório 40% aprovado gerou **57.600 centavos fictícios** no ledger e eventos de auditoria;
+- não foi permitida segunda aprovação, falsificação de autoria/horário, escrita direta no crédito ou mutação contratual;
+- revogar a associação do sub retirou visibilidade das tarefas, termos e créditos.
+
+Evidência: [execução CI aprovada](https://github.com/libanius/BrightScale-Tracker/actions/runs/40506790356). São testes reais de políticas PostgreSQL, porém a identidade foi **simulada** com JWT claim em ambiente descartável. **Não equivale** a testar Auth Supabase real.
 
 ## Limites claros desta fase
 
