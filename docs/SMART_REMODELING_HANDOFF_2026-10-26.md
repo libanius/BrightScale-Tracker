@@ -136,6 +136,14 @@ Nota: Essa divisão é uma **proposta de implementação**, não uma revogação
 
 ## Checkpoint operacional (fonte atual para próxima IA)
 
+### Auditoria de fechamento — 2026-10-28
+- **VERIFIED:** domínio principal `https://tracker.brightscalegroup.com/workspace/` abriu no navegador cloud com login e “Conectado ao Supabase”. O 403 do cliente HTTP de terminal não prova falha do site.
+- **FIXED / REMOTE:** recibos Edge v2 ACTIVE. Variável `URL` ocultava o construtor global e fazia CORS rejeitar todas as origens. Renomeada para `SUPABASE_URL`; mantida autenticação explícita e verificação PM/RLS antes de ler a fila.
+- **SECURED / REMOTE:** dez tabelas abandonadas `tracker.pilot_*` estavam com RLS desligado e SELECT para authenticated. Corrigida a alegação anterior de proteção: migration `tracker_secure_abandoned_pilot` agora habilita RLS e revoga grants PUBLIC/anon/authenticated, sem apagar dados. Confirmados 40/40 live RLS, 10/10 piloto RLS, zero grants expostos; advisor não acusa mais RLS desabilitado.
+- **TESTED:** 34 Node PASS; 37 checks SQL + suíte herdada PASS; namespace live PASS com preservação de dados/grants de outros serviços e restrição idempotente das 10 tabelas; build PASS. Endpoint remoto: preflight Tracker 204, POST sem autenticação 401, origem externa 403. Nenhum e-mail real enviado.
+- **PENDENTE:** chave de recibos não disponível (nenhum segredo Resend/SMTP no Vault; fila vazia), aceitação OTP/convites e teste de estimate/obra real pelo proprietário. Não marcar FIELD-VALIDATED. Stripe automático e recursos P1/P2 continuam posteriores.
+- **NEXT:** configurar `RESEND_API_KEY`/remetente verificado no servidor por canal seguro; aceitar login e executar estimate real com revisão PM. Sem nova entrevista, custos ou mudanças nos serviços alheios.
+
 ### Marcos de cobrança — correção publicada (PR #11)
 - Distribuição exata de centavos sem alterar contrato; revisão dos marcos acessível antes da validação final. Total e excesso visíveis; sobrecobrança real continua bloqueada. CI final quatro suítes SUCCESS (30 Node / 7 browser no workspace). Ver log da correção.
 
@@ -199,6 +207,14 @@ Nota: Essa divisão é uma **proposta de implementação**, não uma revogação
 - **Próxima etapa técnica (sem entrevista):** a integração **VISUAL** da aba COs está TESTED no PR #6, mas a ligação operacional ao Tracker continua **BLOCKED** sem novo backend, validação de permissões reais e migração/compatibilidade de project IDs. Próximo trabalho: desenhar/adotar um mapping explícito de `tracker.projects`/empresa para Change Orders, sem copiar dados reais ao banco público do piloto e sem escrever em produção; testar com projetos fictícios e fluxo PM/sub/cliente. Depois assinatura digital formal, emails, anexos, controles de fase/inspeção e QA offline. Nenhuma decisão 40.
 
 ## Log de continuidade
+
+### 2026-10-28 — Auditoria de fechamento: recibos, isolamento e domínio principal
+- **IMPLEMENTED / DEPLOYED:** correção do shadowing de `URL` no endpoint de recibos, publicado como v2. Novos testes executam o handler inteiro; validam CORS, falta de configuração, identidade inválida, PM não proprietário e envio sintético para destinatário resolvido no servidor.
+- **CORREÇÃO FACTUAL:** handoff/README diziam que o scaffold abandonado estava protegido; catálogo e advisor mostraram dez tabelas `tracker.pilot_*` com RLS desligado/grant authenticated. SQL versionado `live/sql/secure-abandoned-pilot.sql` aplicado como migration `tracker_secure_abandoned_pilot`; dados preservados, nenhuma tabela live/public/private modificada. Verificação remota 40/40 live RLS, 10/10 piloto RLS, zero grants expostos. Aviso RLS-disabled eliminado; avisos existentes de outros serviços não foram alterados.
+- **TESTED LOCAL:** `npm test` 34/34; `npm run test:sql` 37 verificações e herdadas PASS; `npm run test:live-schema` PASS, incluindo repetição da correção e preservação de linha sintética; `npm run build` PASS. Sem mudança de bundle.
+- **TESTED REMOTE:** recibos OPTIONS origem Tracker 204, POST sem autenticação 401 e origem externa 403. Tela principal de `/workspace/` aberta no navegador e conectada, sem efetuar login nem enviar convites. SMTP/Resend não encontrado no Vault e fila de recibos vazia; envio/entrega real continua BLOCKED.
+- **DOCS:** README do workspace reconciliado com autorização e ambiente live atuais; instruções antigas de staging identificadas como históricas.
+- **NEXT:** configurar chave e remetente de recibos por canal seguro; proprietário validar OTP e estimate real, sem afirmar conclusão de campo. Recursos avançados e Stripe automático mantidos posteriores.
 
 ### 2026-10-28 — Correção de campo: marcos e arredondamento
 - **IMPLEMENTED:** percentuais de marcos importados convertidos para centavos por alocação de maior resto com aritmética inteira; cronograma de 100% soma exatamente o contrato, cronograma parcial conserva seu percentual. Não normaliza percentuais acima de 100 nem altera preços contratuais.

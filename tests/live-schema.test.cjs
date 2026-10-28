@@ -11,9 +11,20 @@ const assert = require("node:assert/strict");
       `create schema tracker;create schema tracker_private;create table tracker.members(email text,role text);insert into tracker.members values('synthetic-pm@example.test','admin');insert into auth.users values('11111111-1111-4111-8111-111111111111','synthetic-pm@example.test',now());create table public.unrelated_service(id int);insert into public.unrelated_service values(7);create function tracker_private.existing_helper() returns int language sql as 'select 7';revoke all on function tracker_private.existing_helper() from public,authenticated;`,
     );
     await db.exec(fs.readFileSync("live/sql/workspace.sql", "utf8"));
+    // Reproduce the abandoned scaffold with broad authenticated grants.
+    const abandoned = ["projects", "scopes", "scope_terms", "tasks", "reports", "validations", "credit_events", "audit_events", "memberships", "assignments"];
+    for (const table of abandoned) {
+      await db.exec(`create table tracker.pilot_${table}(id int); grant all on tracker.pilot_${table} to authenticated;`);
+    }
+    await db.exec("insert into tracker.pilot_projects values (42)");
+    for (let i = 0; i < 2; i++) await db.exec(fs.readFileSync("live/sql/secure-abandoned-pilot.sql", "utf8"));
+    const protectedScaffold = (await db.query("select relrowsecurity, has_table_privilege('authenticated',oid,'select') as can_read, has_table_privilege('authenticated',oid,'insert') as can_write from pg_class where relnamespace='tracker'::regnamespace and relname like 'pilot_%'")).rows;
+    assert.equal(protectedScaffold.length, 10);
+    assert(protectedScaffold.every((r) => r.relrowsecurity && !r.can_read && !r.can_write));
+    assert.equal((await db.query("select id from tracker.pilot_projects")).rows[0].id, 42);
     const count = (
       await db.query(
-        "select count(*)::int n from pg_tables where schemaname='tracker' and tablename like 'live_%'",
+        "select count(*)::int n from pg_tables where schemaname='tracker' and tablename like 'live_%' and rowsecurity",
       )
     ).rows[0].n;
     assert.equal(count, 40);
@@ -32,6 +43,7 @@ const assert = require("node:assert/strict");
     await db.exec(
       "set role authenticated;select set_config('request.jwt.claim.sub','33333333-3333-4333-8333-333333333333',false)",
     );
+    await assert.rejects(() => db.query("select * from tracker.pilot_projects"), /permission denied/);
     await assert.rejects(
       () =>
         db.query(
@@ -54,7 +66,7 @@ const assert = require("node:assert/strict");
     );
     assert(r.rows[0].result.id);
     console.log(
-      "Live namespace PASS: 40 RLS tables; unrelated table and existing function grants preserved; PM-only setup enforced.",
+      "Live namespace PASS: 40 RLS tables; 10 abandoned tables restricted idempotently with data preserved; unrelated services/grants preserved; PM-only setup enforced.",
     );
   } finally {
     await db.close();
