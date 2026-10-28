@@ -55,3 +55,23 @@ class Workspace(unittest.TestCase):
   self.page.get_by_role('button',name='Subcontractors',exact=True).click();self.page.get_by_role('button',name='Novo projeto',exact=True).click()
   self.assertEqual(self.page.get_by_label('Nome do projeto',exact=True).input_value(),'SYNTHETIC draft')
   self.assertTrue(self.page.evaluate('document.documentElement.scrollWidth <= innerWidth'))
+
+ def test_document_autofills_without_requiring_smart_answers(self):
+  self.enter('pm');self.page.get_by_role('button',name='Novo projeto',exact=True).click()
+  self.page.locator('input[type=file]').set_input_files({'name':'synthetic.txt','mimeType':'text/plain','buffer':b'SYNTHETIC approved estimate with flooring and client information'})
+  self.page.get_by_text('Analisando documento e preenchendo',exact=False).wait_for()
+  self.page.get_by_text('Revise o contexto extraído',exact=True).wait_for()
+  self.assertEqual(self.page.get_by_label('Scope · limites e exclusões do serviço',exact=True).input_value(),'Instalar piso conforme documento')
+  self.assertEqual(self.page.get_by_label('Alignment · acesso, materiais, licenças e restrições críticas',exact=True).input_value(),'')
+  self.page.get_by_text('Confirmar acesso ao local',exact=True).wait_for()
+  self.assertEqual(self.page.evaluate('window.__analysisCalls[0].questions'),{})
+  self.page.get_by_role('button',name='Continuar com os dados preenchidos',exact=True).click()
+  self.assertEqual(self.page.get_by_label('Nome do projeto',exact=True).input_value(),'SYNTHETIC extracted project')
+  self.assertEqual(self.page.get_by_label('Cliente',exact=True).input_value(),'SYNTHETIC extracted client')
+  self.assertEqual(self.page.get_by_label('Valor do contrato (USD)',exact=True).input_value(),'1234.56')
+ def test_analysis_failure_keeps_text_for_retry(self):
+  self.enter('pm');self.page.get_by_role('button',name='Novo projeto',exact=True).click()
+  self.page.locator('input[type=file]').set_input_files({'name':'synthetic.txt','mimeType':'text/plain','buffer':b'FAIL_ANALYSIS synthetic estimate'})
+  self.page.get_by_text('SYNTHETIC analysis failed',exact=True).wait_for()
+  self.assertIn('FAIL_ANALYSIS',self.page.get_by_label('Texto extraído · confira antes de analisar',exact=True).input_value())
+  self.assertTrue(self.page.get_by_role('button',name='Analisar e preencher automaticamente',exact=True).is_enabled())

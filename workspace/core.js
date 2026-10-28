@@ -129,13 +129,24 @@ export function blankPlan() {
     milestones: [],
   };
 }
+export function smartContext(raw) {
+  return Object.fromEntries(
+    ["scope", "standard", "constraints", "rhythm", "time"].map((k) => [
+      k,
+      typeof raw.smart_context?.[k] === "string" ? raw.smart_context[k] : "",
+    ]),
+  );
+}
 export function fromAI(raw) {
   const p = blankPlan();
   p.open_questions = raw.open_questions || [];
   p.risks = raw.risks || [];
   p.materials = raw.materials || [];
+  p.start_date = raw.schedule?.start_date || "";
+  p.end_date = raw.schedule?.end_date || "";
   p.name = raw.project_title || "";
   p.client_name = raw.client?.name || "";
+  p.client_email = raw.client?.email || "";
   p.address = raw.site_address || "";
   p.estimate_number = raw.estimate?.number || "";
   if (raw.estimate?.total != null)

@@ -136,6 +136,9 @@ Nota: Essa divisão é uma **proposta de implementação**, não uma revogação
 
 ## Checkpoint operacional (fonte atual para próxima IA)
 
+### Documento → preenchimento automático — correção em andamento
+- Nova extração automática e contexto SMART em código; planner v2 remoto ativo. Publicação frontend/CI pendentes nesta entrada. Ver log da correção.
+
 ### LIVE — publicado em 2026-10-28
 - **ACESSO VERIFICADO:** https://feat-tracker-delivery-brightscale-tracker.brightscalegroup.workers.dev/workspace/ mostra login automático conectado ao Supabase real. Domínio principal não confirmado nesta sessão: HTTP GET retornou 403; causa não determinada. Não declarar indisponibilidade para o usuário nem contornar controles.
 - **RELEASE:** PR #9 merged; commit de conexão `255d7438ddf99deb0f1c7ec876d64d37efe25a53`, merge `b8f47103fa2cc98974fd595980c9bbd4bafc4539`. Workers Builds de produção SUCCESS confirmado pelo check GitHub.
@@ -190,6 +193,14 @@ Nota: Essa divisão é uma **proposta de implementação**, não uma revogação
 - **Próxima etapa técnica (sem entrevista):** a integração **VISUAL** da aba COs está TESTED no PR #6, mas a ligação operacional ao Tracker continua **BLOCKED** sem novo backend, validação de permissões reais e migração/compatibilidade de project IDs. Próximo trabalho: desenhar/adotar um mapping explícito de `tracker.projects`/empresa para Change Orders, sem copiar dados reais ao banco público do piloto e sem escrever em produção; testar com projetos fictícios e fluxo PM/sub/cliente. Depois assinatura digital formal, emails, anexos, controles de fase/inspeção e QA offline. Nenhuma decisão 40.
 
 ## Log de continuidade
+
+### 2026-10-28 — Correção de campo: documento antes das perguntas SMART
+- **IMPLEMENTED:** seleção PDF/TXT lê texto e chama a IA automaticamente, preenchendo projeto, cliente, endereço, valor, termos, datas explícitas e contexto SMART. Pendências aparecem para confirmação; retirado bloqueio que exigia digitar escopo/restrições antes da análise. JSON de plano é importado sem nova chamada.
+- **UX:** estado local de leitura/análise, formulário bloqueado durante processamento, texto preservado após falha e botão de repetição. Revisão PM continua obrigatória; nenhuma licença/ausência de restrições presumida. PDF somente imagem continua sem OCR nesta versão.
+- **REMOTE:** planner Edge v2 ACTIVE, schema smart_context nullable e schedule com datas de execução explícitas; autenticação PM existente preservada. Nenhuma alteração de banco.
+- **TESTED LOCAL:** 29 testes Node PASS, frontend build PASS. Duas regressões browser adicionadas (auto preenchimento e falha/repetição); execução local indisponível por ausência do pacote Playwright, aguardando CI. Análise remota desta nova versão com documento do usuário ainda não observada.
+- **NEXT:** concluir CI, publicar a correção e repetir upload no live. Não afirmar que todos os dados de um documento desconhecido foram extraídos.
+
 
 ### 2026-10-28 — Fase 7: publicação conectada concluída
 - **IMPLEMENTED / DEPLOYED:** PR #9 integrado a main, merge `b8f47103fa2cc98974fd595980c9bbd4bafc4539`; Workers Builds SUCCESS. Workspace em `/workspace/`, legado preservado na raiz.
