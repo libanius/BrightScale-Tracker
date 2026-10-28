@@ -115,6 +115,7 @@ test("environment rejects production, secret and non-anon JWT keys", async () =>
 test("document context preserves unknowns and only explicit work dates", async () => {
  const {smartContext,fromAI}=await core();
  assert.deepEqual(smartContext({smart_context:{scope:"Floor",constraints:null}}),{scope:"Floor",standard:"",constraints:"",rhythm:"",time:""});
+ assert.equal(fromAI({client:{email:"client@example.test"}}).client_email,"client@example.test");
  const p=fromAI({estimate:{issued_date:"2026-10-28"},schedule:{start_date:"2026-11-02",end_date:null}});
  assert.equal(p.start_date,"2026-11-02");assert.equal(p.end_date,"");
  assert.equal(fromAI({estimate:{issued_date:"2026-10-28"}}).start_date,"");

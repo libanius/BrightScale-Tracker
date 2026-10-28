@@ -146,6 +146,7 @@ export function fromAI(raw) {
   p.end_date = raw.schedule?.end_date || "";
   p.name = raw.project_title || "";
   p.client_name = raw.client?.name || "";
+  p.client_email = raw.client?.email || "";
   p.address = raw.site_address || "";
   p.estimate_number = raw.estimate?.number || "";
   if (raw.estimate?.total != null)
