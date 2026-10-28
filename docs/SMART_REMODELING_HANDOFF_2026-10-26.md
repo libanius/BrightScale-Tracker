@@ -137,6 +137,7 @@ Nota: Essa divisão é uma **proposta de implementação**, não uma revogação
 ## Checkpoint operacional (fonte atual para próxima IA)
 
 ### Auditoria de fechamento — 2026-10-28
+- **SYNCED:** [PR #12](https://github.com/libanius/BrightScale-Tracker/pull/12), implementação `6fe119fa7f1dfee353296f6c18dfd168091b191a`; árvore remota idêntica à local (`9bef4ef80579a27813caafc7cc3901999144b085`). CI e merge consultar no PR; não presumir resultado.
 - **VERIFIED:** domínio principal `https://tracker.brightscalegroup.com/workspace/` abriu no navegador cloud com login e “Conectado ao Supabase”. O 403 do cliente HTTP de terminal não prova falha do site.
 - **FIXED / REMOTE:** recibos Edge v2 ACTIVE. Variável `URL` ocultava o construtor global e fazia CORS rejeitar todas as origens. Renomeada para `SUPABASE_URL`; mantida autenticação explícita e verificação PM/RLS antes de ler a fila.
 - **SECURED / REMOTE:** dez tabelas abandonadas `tracker.pilot_*` estavam com RLS desligado e SELECT para authenticated. Corrigida a alegação anterior de proteção: migration `tracker_secure_abandoned_pilot` agora habilita RLS e revoga grants PUBLIC/anon/authenticated, sem apagar dados. Confirmados 40/40 live RLS, 10/10 piloto RLS, zero grants expostos; advisor não acusa mais RLS desabilitado.
@@ -209,6 +210,7 @@ Nota: Essa divisão é uma **proposta de implementação**, não uma revogação
 ## Log de continuidade
 
 ### 2026-10-28 — Auditoria de fechamento: recibos, isolamento e domínio principal
+- **SYNCED:** [PR #12](https://github.com/libanius/BrightScale-Tracker/pull/12), código `6fe119fa7f1dfee353296f6c18dfd168091b191a`; árvore de implementação conferida contra a local.
 - **IMPLEMENTED / DEPLOYED:** correção do shadowing de `URL` no endpoint de recibos, publicado como v2. Novos testes executam o handler inteiro; validam CORS, falta de configuração, identidade inválida, PM não proprietário e envio sintético para destinatário resolvido no servidor.
 - **CORREÇÃO FACTUAL:** handoff/README diziam que o scaffold abandonado estava protegido; catálogo e advisor mostraram dez tabelas `tracker.pilot_*` com RLS desligado/grant authenticated. SQL versionado `live/sql/secure-abandoned-pilot.sql` aplicado como migration `tracker_secure_abandoned_pilot`; dados preservados, nenhuma tabela live/public/private modificada. Verificação remota 40/40 live RLS, 10/10 piloto RLS, zero grants expostos. Aviso RLS-disabled eliminado; avisos existentes de outros serviços não foram alterados.
 - **TESTED LOCAL:** `npm test` 34/34; `npm run test:sql` 37 verificações e herdadas PASS; `npm run test:live-schema` PASS, incluindo repetição da correção e preservação de linha sintética; `npm run build` PASS. Sem mudança de bundle.
