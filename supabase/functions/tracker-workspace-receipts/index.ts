@@ -1,5 +1,5 @@
 import { sendReceipt } from "./send.mjs";
-const URL = Deno.env.get("SUPABASE_URL") || "";
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 const ANON = Deno.env.get("SUPABASE_ANON_KEY") || "";
 const SERVICE =
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ||
@@ -45,7 +45,7 @@ Deno.serve(async (req: Request) => {
   if (!SERVICE || !RESEND || !FROM)
     return reply({ error: "receipt_service_not_configured" }, 503);
   try {
-    const who = await fetch(URL + "/auth/v1/user", {
+    const who = await fetch(SUPABASE_URL + "/auth/v1/user", {
       headers: { authorization, apikey: ANON, "Accept-Profile": "tracker" },
       signal: AbortSignal.timeout(10000),
     });
@@ -57,7 +57,7 @@ Deno.serve(async (req: Request) => {
       return reply({ error: "invalid_project" }, 400);
     // Verify PM ownership with caller's actual JWT/RLS BEFORE using service credentials.
     const own = await fetch(
-      URL + "/rest/v1/live_projects?id=eq." + project + "&select=id,owner_id",
+      SUPABASE_URL + "/rest/v1/live_projects?id=eq." + project + "&select=id,owner_id",
       {
         headers: { authorization, apikey: ANON, "Accept-Profile": "tracker" },
         signal: AbortSignal.timeout(10000),
@@ -75,7 +75,7 @@ Deno.serve(async (req: Request) => {
       "Content-Profile": "tracker",
     };
     const pending = await fetch(
-      URL +
+      SUPABASE_URL +
         "/rest/v1/live_workspace_email_outbox?project_id=eq." +
         project +
         "&status=eq.pending&select=*&limit=10",
@@ -92,7 +92,7 @@ Deno.serve(async (req: Request) => {
         continue;
       }
       const receipt = await fetch(
-        URL +
+        SUPABASE_URL +
           "/rest/v1/live_workspace_signatures?id=eq." +
           job.signature_id +
           "&project_id=eq." +
@@ -117,7 +117,7 @@ Deno.serve(async (req: Request) => {
           apiKey: RESEND,
         });
         const marked = await fetch(
-          URL +
+          SUPABASE_URL +
             "/rest/v1/live_workspace_email_outbox?id=eq." +
             job.id +
             "&project_id=eq." +
