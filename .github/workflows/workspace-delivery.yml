@@ -1,0 +1,41 @@
+name: Tracker workspace delivery
+on:
+  pull_request:
+  push:
+    branches: [feat/tracker-delivery]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  rules-and-sql:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm test
+      - run: npm run test:sql
+      - run: npm run test:live-schema
+      - run: npm run build
+      - name: Check reproducible static bundle
+        run: git diff --exit-code -- workspace/build
+      - name: Check edge source syntax without any secrets or outbound calls
+        run: |
+          node - <<'JS'
+          const esbuild=require('esbuild');
+          for(const entry of ['tracker-workspace-plan','tracker-workspace-receipts','tracker-workspace-team']) esbuild.buildSync({entryPoints:['supabase/functions/'+entry+'/index.ts'],bundle:true,platform:'neutral',external:['npm:*'],outfile:'/tmp/'+entry+'.js'});
+          JS
+  workspace-browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install 'playwright==1.56.0'
+      - run: python -m unittest discover -s tests/browser -p 'test_workspace.py' -v

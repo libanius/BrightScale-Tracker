@@ -7,3 +7,7 @@ dashboard-data.json
 backups/
 brightscale-backup-*.json
 *.backup.json
+node_modules/
+workspace/build/
+# Ephemeral live verification outputs must not enter the public repository.
+live-test-results/

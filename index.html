@@ -1408,14 +1408,17 @@ function openContractReview(file, analysis) {
     destinationSelect.innerHTML = '<option value="">Criar um novo projeto</option>';
     S.projects.forEach(function(project) {
       var option = document.createElement('option');
+      // Existing contracts must be amended through an approved Change Order,
+      // not silently changed by importing another estimate.
       option.value = project.id;
-      option.textContent = 'Adicionar ao projeto existente: ' + project.name;
+      option.disabled = true;
+      option.textContent = 'Projeto existente: ' + project.name + ' (Change Order necessário)';
       destinationSelect.appendChild(option);
     });
     destinationField.appendChild(destinationSelect);
     if (S.projects.length) {
       destinationField.appendChild(div('', '<div style="font-size:11px;color:var(--mu);margin-top:6px;line-height:1.5">' +
-        'Ao escolher um projeto existente, o app cria uma nova unit, anexa o arquivo e soma o valor ao total do projeto.</div>'));
+        'Adicionar um estimate a um projeto existente está bloqueado até o fluxo formal de Change Order estar disponível. O contrato original não será alterado.</div>'));
     }
     mo.appendChild(destinationField);
 
@@ -1524,15 +1527,18 @@ function openContractReview(file, analysis) {
   });
 }
 
-function importContractToProject(file, rawText, data, targetProjectId) {
-  var now = new Date().toISOString();
-  var existingProject = targetProjectId ? S.projects.filter(function(project) {
-    return project.id === targetProjectId;
-  })[0] : null;
-  if (targetProjectId && !existingProject) {
-    return Promise.reject(new Error('Projeto selecionado não foi encontrado'));
+function assertEstimateCreatesNewProject(targetProjectId) {
+  if (targetProjectId) {
+    throw new Error('Para adicionar escopo a um projeto existente, formalize primeiro um Change Order aprovado. O estimate não pode alterar o contrato original.');
   }
-  var projectId = existingProject ? existingProject.id : uid();
+}
+
+function importContractToProject(file, rawText, data, targetProjectId) {
+  // Protect the original contract before writing documents, units or tasks.
+  try { assertEstimateCreatesNewProject(targetProjectId); }
+  catch (err) { return Promise.reject(err); }
+  var now = new Date().toISOString();
+  var projectId = uid();
   var unitId = uid();
   var documentId = uid();
   var rawWeights = data.scopes.map(function(scope) {
@@ -1568,33 +1574,20 @@ function importContractToProject(file, rawText, data, targetProjectId) {
     })
   ];
 
-  if (existingProject) {
-    var documentIds = Array.isArray(existingProject.documentIds)
-      ? existingProject.documentIds.slice()
-      : (existingProject.documentId ? [existingProject.documentId] : []);
-    if (documentIds.indexOf(documentId) < 0) documentIds.push(documentId);
-    promises.push(dbPut('projects', Object.assign({}, existingProject, {
-      contractTotal: Number(existingProject.contractTotal || 0) + Number(data.total || 0),
-      contractSummary: [existingProject.contractSummary, data.summary].filter(Boolean).join('\n\n'),
-      documentId: existingProject.documentId || documentId,
-      documentIds: documentIds,
-      updatedAt: now
-    })));
-  } else {
-    promises.push(dbPut('projects', {
-      id: projectId,
-      name: data.projectName,
-      address: data.address,
-      client: {name: data.clientName, contact: data.clientPhone || '', phone: data.clientPhone || '', email: data.clientEmail || ''},
-      estimateNumber: data.estimateNumber || '',
-      contractTotal: data.total,
-      contractSummary: data.summary,
-      documentId: documentId,
-      documentIds: [documentId],
-      createdAt: now,
-      updatedAt: now
-    }));
-  }
+  // New project only. Existing projects are protected until Change Orders are implemented.
+  promises.push(dbPut('projects', {
+    id: projectId,
+    name: data.projectName,
+    address: data.address,
+    client: {name: data.clientName, contact: data.clientPhone || '', phone: data.clientPhone || '', email: data.clientEmail || ''},
+    estimateNumber: data.estimateNumber || '',
+    contractTotal: data.total,
+    contractSummary: data.summary,
+    documentId: documentId,
+    documentIds: [documentId],
+    createdAt: now,
+    updatedAt: now
+  }));
 
   window.__lastImportScopeIds = {};
   data.scopes.forEach(function(scopeTpl, scopeIndex) {
@@ -4712,6 +4705,11 @@ function openScopeForm(unitId, scope) {
   });
 }
 
+// Keep acceptance criteria and future task metadata when editing existing tasks.
+function preserveTaskOnSave(existingTask, changes) {
+  return Object.assign({}, existingTask || {}, changes);
+}
+
 function openTaskForm(scopeId, task) {
   showModal(function(mo, close) {
     mo.appendChild(div('mtit', task ? 'Editar Task' : 'Nova Task'));
@@ -4782,7 +4780,7 @@ function openTaskForm(scopeId, task) {
       
       var now = new Date().toISOString();
       markModalSaving(mo);
-      dbPut('tasks', {
+      dbPut('tasks', preserveTaskOnSave(task, {
         id: task ? task.id : uid(),
         scopeId: scopeId,
         title: name,
@@ -4792,7 +4790,7 @@ function openTaskForm(scopeId, task) {
         status: status,
         createdAt: task ? task.createdAt : now,
         updatedAt: now
-      }).then(function() {
+      })).then(function() {
         setScopeOpen(scopeId, true);
         return reloadAndPublishDashboard();
       }).then(function() {
@@ -4872,7 +4870,7 @@ function openTaskEdit(task) {
       var status = prog === 0 ? 'pending' : prog === 100 ? 'completed' : 'in_progress';
       markModalSaving(mo);
       
-      dbPut('tasks', {
+      dbPut('tasks', preserveTaskOnSave(task, {
         id: task.id,
         scopeId: task.scopeId,
         title: title,
@@ -4882,7 +4880,7 @@ function openTaskEdit(task) {
         status: status,
         createdAt: task.createdAt,
         updatedAt: new Date().toISOString()
-      }).then(function() {
+      })).then(function() {
         setScopeOpen(task.scopeId, true);
         return reloadAndPublishDashboard();
       }).then(function() {

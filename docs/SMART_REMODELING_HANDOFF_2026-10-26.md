@@ -136,6 +136,34 @@ Nota: Essa divisão é uma **proposta de implementação**, não uma revogação
 
 ## Checkpoint operacional (fonte atual para próxima IA)
 
+### LIVE — autorização do proprietário em 2026-10-28
+- **DECIDED:** usuário autorizou usar o ambiente Supabase existente e aceitou perda dos dados atuais. Esta autorização substitui o bloqueio anterior por falta de staging separado. Não houve necessidade de apagar dados.
+- **IMPLEMENTED / REMOTE:** 40 tabelas `tracker.live_*` com RLS e funções correspondentes; helpers `tracker_private.workspace_*`. Somente admins existentes do Tracker podem criar projetos/equipe. Nenhuma alteração de dados ou objetos dos serviços em `public/private`.
+- **TESTED LIVE:** 16 verificações reais com três contas GoTrue temporárias e JWTs reais: login PM/sub/client, bloqueio pré-baseline, phase gate, reporte, validação, finanças segregadas, vistoria sem crédito automático, eventos/restrição, assinatura e revogação. Contas/memberships temporárias removidas. Um projeto claramente TESTE LIVE está disponível ao admin da empresa. Endpoint temporário de diagnóstico desativado (410, verify_jwt=true).
+- **AI LIVE:** endpoint `tracker-workspace-plan` retornou HTTP 200 e 2 escopos para estimate sintético, com autenticação PM real. Credencial existente usada apenas no servidor; nenhuma chave secreta no repositório.
+- **APP:** configuração pública automática, schema tracker, sessão existente reutilizável e login por código; convidados só recebem acesso ao escopo/obra atribuídos. Novo endpoint `tracker-workspace-team` resolve conta existente ou convida por Supabase Auth após ação explícita do PM.
+- **PENDENTE ESPECÍFICO:** `RESEND_API_KEY` não existe no ambiente; cópias automáticas de assinatura ficam na fila, sem falsa marcação de envio. Download do recibo/assinatura funciona; e-mails de acesso usam Supabase Auth separadamente. Não foram enviados convites/mensagens a terceiros pelo agente.
+- **TESTED LOCAL:** 28 Node, 37 verificações SQL herdadas/workspace, teste de namespace live (40 tabelas, serviços/grants existentes preservados, setup PM-only) e build dos 3 endpoints PASS. Ainda falta validar convites/OTP pelo usuário e uma obra real.
+- **DEPLOY:** código live em preparação para o PR #9/main; atualizar evidência de publicação após CI e Cloudflare. Não confundir código conectado com teste de campo.
+- **Histórico técnico:** migrations com DROP dispararam erro nativo requestState; nova materialização cria definições finais sem DROP. Primeiro scaffold deixou 10 tabelas piloto vazias e protegidas em tracker, não usadas pelo app live. Migrações seguintes foram confirmadas; nenhuma exclusão improvisada.
+- **NEXT:** publicar UI conectada, verificar login/tela no domínio, registrar commit/deploy; usuário iniciar teste com estimate real. Configurar a chave de cópias por e-mail quando disponibilizada.
+
+
+### Entrega integrada — 2026-10-28 (Flórida)
+- **DECIDED:** proprietário autorizou prosseguir até a entrega e registrar o avanço por fase após a análise do fluxo completo. Preservar decisões 1–39 e não reiniciar entrevista.
+- **Branch:** `feat/tracker-delivery`, baseada no main `86cde6e`, integrando o backend PR #5 e guardrails PR #2. Não removidos arquivos, dados, PRs ou branches existentes.
+- **Fase 1 — integração:** IMPLEMENTED local; guardrails e backend reconciliados.
+- **Fase 2 — entrada e cadastro:** IMPLEMENTED local: PDF/TXT/JSON, contexto SMART, sugestão IA isolada (configuração remota pendente), revisão editável, pesos/critério/dependência e criação idempotente/atômica de novo projeto.
+- **Fase 3 — equipe e valores:** IMPLEMENTED local: diretório por PM, vínculo de conta e atribuição por escopo, responsabilidades e condições independentes; contrato cliente separado de subcontratos, créditos e registros manuais de pagamentos/despesas.
+- **Fase 4 — execução:** IMPLEMENTED local: baseline explícita, gates legais/safety/readiness, sub reporta, PM observa e valida em ações distintas, percentuais ponderados; eventos e correções vinculadas; restrição imediata de eventos/documentos; marcos, assinaturas com snapshot/hash e fila de cópias; CO assinado separado; encerramento com verificações.
+- **Fase 5 — interface e QA:** React/Motion implementados em `/workspace/` com linguagem visual aprovada. `npm test` **26/26 PASS**, `npm run test:sql` **37 checks PASS** + suíte SQL/RLS herdada PASS (PostgreSQL WASM/PGlite, identidades fictícias). **40 tabelas piloto com RLS**. Build do frontend e sintaxe/bundle dos dois endpoints PASS; npm audit produção: 0 vulnerabilidades reportadas. Browser CUA desktop: cadastro até revisão, PM vistoria/validação/evento e visões client/sub verificados com fixtures sem Auth/rede reais. **CI remoto PASS:** workspace #40636930048 (Node/SQL/build reproduzível + Chrome mobile 4/4), RLS #40636929953 (PG17/PostgREST JWT + Node + Chrome) e guardrails #40636929986. Regressões PM/cliente/segurança/offline #40636929878 também PASS. Isto continua usando identidades fictícias, não Supabase Auth/GoTrue remoto.
+- **Fase 6 — liberação:** BLOCKED para produção/obra real. Supabase separado não existe (dois serviços existentes preservados); não provisionado plano pago. Ainda faltam Auth OTP/JWT/PostgREST reais dos três perfis, teste remoto de IA e e-mail, offline/revogação/compatibilidade e plano explícito de migração dos projetos antigos. O titular havia adiado o teste manual de três perfis; não pedir novamente no meio do desenvolvimento. Funções de envio foram testadas só com transportes simulados: nenhum e-mail real enviado.
+- **Produção:** sem merge, deploy, migração, dados reais ou pagamentos. Legacy offline preservado; workspace novo ainda exige conexão para ações operacionais. Rascunho persiste na navegação interna, não no reload/troca de identidade; exportação manual disponível.
+- **Sincronização: SIM, PR #9 draft** — https://github.com/libanius/BrightScale-Tracker/pull/9 . Commit remoto de implementação `2b2542bc958db45f9cb2e9b271e75487132a13c3`, árvore `3542c9f5ab4a056c50f028eb1d4c05b37b04ef66` idêntica à testada localmente. Primeiro push foi rejeitado por possível egress; após revisão de payload/destino, terminal não tinha credencial. Acesso GitHub autenticado sincronizou 31 blobs novos (SHA conferido) + 19 existentes, sem dados reais/segredos. Bloqueio de sincronização resolvido; produção não alterada.
+- **Preview publicado e verificado no navegador:** https://feat-tracker-delivery-brightscale-tracker.brightscalegroup.workers.dev/workspace/ . Cloudflare Workers Builds do commit `2b2542b` SUCCESS. Interface acessível, sem conexão a banco real por padrão. **Próximos passos:** provisionar staging separado sem custo não autorizado; executar aceitação remota e migração/release controlados. P1/P2 de aprendizado, playbooks e negociação avançada não estão entregues por este MVP.
+
+### Referência histórica do checkpoint anterior (preservada)
+
 - **Atualizado:** 2026-10-27 (horário da Flórida). **Decisões 1–39 confirmadas**, entrevista expressamente encerrada; não perguntar decisão 40.
 - **Produção:** aplicativo `main` no Tracker exibe `v2.0 · MVP` e conserva dados legados no Supabase compartilhado. **Nenhum código do aplicativo ou schema de produção foi alterado nesta implementação**; apenas documentação no `main`.
 - **PR #2 — Guardrails:** [draft, não merged](https://github.com/libanius/BrightScale-Tracker/pull/2). Preserva critérios/metadados das tasks, impede estimate em contrato existente e mantém marca visual v2.0. [Node #40559504678](https://github.com/libanius/BrightScale-Tracker/actions/runs/40559504678) e [agentes Chrome #40559504937](https://github.com/libanius/BrightScale-Tracker/actions/runs/40559504937) PASS. Precisa análise de merge/deploy controlado.
@@ -156,6 +184,48 @@ Nota: Essa divisão é uma **proposta de implementação**, não uma revogação
 - **Próxima etapa técnica (sem entrevista):** a integração **VISUAL** da aba COs está TESTED no PR #6, mas a ligação operacional ao Tracker continua **BLOCKED** sem novo backend, validação de permissões reais e migração/compatibilidade de project IDs. Próximo trabalho: desenhar/adotar um mapping explícito de `tracker.projects`/empresa para Change Orders, sem copiar dados reais ao banco público do piloto e sem escrever em produção; testar com projetos fictícios e fluxo PM/sub/cliente. Depois assinatura digital formal, emails, anexos, controles de fase/inspeção e QA offline. Nenhuma decisão 40.
 
 ## Log de continuidade
+
+### 2026-10-28 — Fase 6: ambiente existente autorizado e conexão live validada
+- **DECIDED:** autorização explícita de reutilização do Supabase atual, dados Tracker descartáveis; preservados serviços alheios e os dados existentes por implementação aditiva.
+- **IMPLEMENTED REMOTE:** schema tracker/live_* e tracker_private/workspace_*; endpoints de IA, cópias e vínculo/convite de equipe; 40 tabelas RLS. Frontend deixa de exigir configuração manual e mantém distinção de papéis/valores.
+- **TESTED LIVE:** 16 verificações Auth real/JWT/RLS e IA HTTP 200; nenhuma simulação de SDK nessa etapa. Auth temporário limpo; probe desativado. Projeto demonstrativo identificado como TESTE LIVE, sem pagamentos verdadeiros.
+- **BLOCKED somente para cópias por e-mail:** ausência de RESEND_API_KEY; fila e downloads mantidos. Login/convite Auth é serviço separado e requer teste de entrega no e-mail do usuário.
+- **NEXT:** concluir CI/publicação da UI conectada e teste de campo acompanhado do proprietário. Sem nova entrevista de produto e sem custo/plano extra.
+
+
+### 2026-10-28 — Fase 5 sincronizada: PR #9, CI e preview verificados
+- **SYNCED:** PR #9 draft, commit `2b2542bc958db45f9cb2e9b271e75487132a13c3`. Árvore remota igual à árvore local testada; integridade dos blobs conferida. A rejeição automática inicial de egress foi resolvida por inspeção do payload e verificação do destino; uso do conector autenticado resolveu a ausência de credencial do terminal. Não houve bypass nem nova transmissão de documentos privados.
+- **TESTED CI:** [workspace #40636930048](https://github.com/libanius/BrightScale-Tracker/actions/runs/40636930048) PASS: 26 Node, 37 verificações SQL novas + suíte herdada, build reproduzível, funções e 4 testes Chrome mobile. [RLS #40636929953](https://github.com/libanius/BrightScale-Tracker/actions/runs/40636929953) PASS: Node/Chrome/PG17 + PostgREST/JWT sintético, 40 tabelas RLS. [Guardrails #40636929986](https://github.com/libanius/BrightScale-Tracker/actions/runs/40636929986) PASS; [regressões #40636929878](https://github.com/libanius/BrightScale-Tracker/actions/runs/40636929878) PM/Client/Security/Offline PASS, health público intencionalmente skipped em PR.
+- **PREVIEW:** Workers Builds SUCCESS; URL `/workspace/` aberta com browser CUA e interface carregada. https://feat-tracker-delivery-brightscale-tracker.brightscalegroup.workers.dev/workspace/ . Não é deploy no domínio de produção.
+- **Fase 6 BLOCKED:** ambiente Supabase separado ainda inexistente; não pausar serviços nem gerar custos sem autorização. Login real, configurações e testes remotos de IA/cópias, compatibilidade/offline e aceitação de campo ainda pendentes. Usuário havia adiado teste manual dos três perfis; não alegar entrega final de produção nem fazer merge automático.
+- **NEXT:** disponibilizar infraestrutura separada autorizada, testar OTP/JWT/RLS reais e serviços remotos, validar migração e piloto de obra antes da liberação final. Sem pergunta 40 e sem novos handoffs concorrentes.
+
+
+### 2026-10-28 — Fase 5: jornada integrada e pacote de liberação
+- **IMPLEMENTED (local):** React/Motion, PDF.js local, adapter RLS sem seletor de papel; SQL 005 (cadastro, pesos, equipe, termos, evidências, gates, observação/validação, eventos, assinaturas, fila de e-mail, financeiro manual e fechamento); endpoints isolados para IA e cópias de aceite.
+- **TESTED:** 26 testes Node, 37 verificações novas SQL e suíte RLS herdada; 40 tabelas protegidas; frontend + funções compilados; 0 vulnerabilidades npm de produção reportadas. Browser CUA: PM vistoria 65% sem mudança oficial até validar, crédito anterior preservado; registro de evento; cliente vê preço do cliente, sub vê somente subcontrato/crédito; wizard preserva valores até revisão. Dados 100% sintéticos.
+- **Correções verificadas:** UUID compatível com HTTP, pesos visíveis, proteção contra respostas tardias após troca de identidade, gate de fase, recibo não pode quitar dois milestones, restrição de evidência inclusive após fechamento, CO exige assinatura para ativar no workspace.
+- **Não verificado:** Supabase Auth/GoTrue remoto, browser CI mobile, envio/entrega real de e-mail, modelo IA real, uso de campo e migração de produção. Sem qualquer alegação de validade jurídica definitiva de assinaturas.
+- **Documentação:** `workspace/README.md`; este handoff continua sendo a única referência viva. Nenhum novo handoff concorrente.
+- **NEXT:** sincronizar apenas código/dados fictícios para a branch do repositório identificado, rodar CI, manter fase 6 bloqueada enquanto requisitos remotos estiverem pendentes.
+
+
+### 2026-10-28 — Fases 2–4: cadastro, equipe, valores e execução no workspace
+- **IMPLEMENTED local:** `staging/sql/005_workspace.sql`: criação atômica e idempotente de projeto revisado; cliente e contrato; pessoas reutilizáveis por PM; escopos e tarefas com pesos explícitos e critérios; documentos privados; vistoria e validação PM separadas de créditos; eventos/correções/restrições; marcos e registros manuais de movimentações.
+- **TESTED:** PostgreSQL em WASM (PGlite): migrações 001–005, suíte SQL/RLS herdada PASS e 25 verificações novas PASS. Não equivale a Supabase Auth ou HTTP remoto.
+- **IMPLEMENTED local:** interface `workspace/` em React/Motion com linguagem visual aprovada, upload PDF/TXT/JSON e leitura PDF local, contexto SMART, revisão de dados/equipe/pesos/marcos, cadastro de subs, detalhe de tarefas, vistorias, eventos, anexos e financeiro. Backend responde por RLS; nenhuma troca de papel autoritativa no frontend.
+- **TESTED:** Node 24/24 PASS e build esbuild PASS. Browser identificou `crypto.randomUUID` indisponível em preview HTTP; corrigido com UUID via `crypto.getRandomValues`. Nova rodada de browser em andamento.
+- **BLOCKED / NOT SYNCED:** primeira tentativa de `git push` foi rejeitada pela revisão automática por destino/egress não explicitamente autorizado e possível conteúdo privado; não houve bypass nem nova tentativa. Commits estão locais até resolver autorização/provar payload. Supabase remoto separado continua ausente. Nenhum merge/deploy/migração de produção.
+- **Limites:** aceite autenticado com snapshot/hash não equivale a assinatura formal validada/cópia por e-mail; integração final da IA, gates e uso remoto ainda em execução. Sem pagamentos automáticos, dados reais ou acesso a schemas compartilhados.
+- **NEXT:** concluir QA browser, fluxo de IA isolado, testes de integração e pacote revisável; preparar release sem alegar conclusão operacional enquanto Auth remoto estiver bloqueado.
+
+
+### 2026-10-28 — Fase 1: integração para entrega iniciada
+- **IMPLEMENTED (branch):** backend PR #5 consolidado com main; guardrails PR #2 reaplicados, sem apagar dados/arquivos/branches.
+- **TESTED:** Node guardrails 8/8, gateway 11/11. Teste HTTP não executado por ausência de serviço local; isto não comprova falha de RLS.
+- **Verificado:** dois projetos Supabase existentes; ambiente separado não provisionado. Produção sem alterações.
+- **NEXT:** novo cadastro atômico, equipe/valores e execução no design aprovado.
+
 
 ### 2026-10-28 — Owner APPROVES UX Revision 2; field progress editing clarified
 - **Approval:** user explicitly responded “Está muito bom. Pode registrar aprovado.” Design Review **APPROVED** for the 3 UX screens and responsive style, not a release authorization. PR #8 still draft/unmerged; `main/index.html` unchanged. Ratified in [design brief](BRIGHTSCALE_TRACKER_REDESIGN_2026-10-27.md).
