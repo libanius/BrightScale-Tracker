@@ -1,0 +1,21 @@
+{
+  "name": "brightscale-tracker",
+  "version": "2.0.0",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build-workspace.cjs",
+    "test": "node --test tests/guardrails.test.cjs tests/staging-gateway.test.cjs tests/workspace.test.cjs tests/workspace-receipts.test.cjs",
+    "test:sql": "node tests/workspace-sql.cjs",
+    "dev": "node scripts/dev-workspace.cjs"
+  },
+  "dependencies": {
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "motion": "12.23.24",
+    "pdfjs-dist": "5.4.296"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.12",
+    "esbuild": "0.25.11"
+  }
+}

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0f">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta http-equiv="Cache-Control" content="no-store">
+<title>BrightScale 2.0 — STAGING (Isolado)</title>
+<style>
+:root{color-scheme:dark;--bg:#0a0a0f;--card:#151720;--line:#313341;--muted:#aab0c2;--text:#f2f4f6;--green:#00e5a0;--red:#ff7c7c;--orange:#ffbf75;}
+*{box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font:15px/1.55 system-ui,-apple-system,sans-serif;margin:0;min-height:100vh;}
+main{max-width:860px;margin:0 auto;padding:20px 16px 64px;}
+h1{font-size:clamp(23px,5vw,32px);letter-spacing:-.6px;line-height:1.2;margin:4px 0 10px;}h2{font-size:19px;margin:8px 0 12px;}h3{font-size:16px;margin:4px 0 8px;}
+p{margin:5px 0 12px;}
+.eyebrow{font-size:11px;font-weight:850;letter-spacing:1.3px;color:var(--green);}
+.muted,small{color:var(--muted);}
+.muted{font-size:13px;}
+.card{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:16px;margin:14px 0;}
+.notice{border:1px solid #3e674e;background:#183027;border-radius:12px;padding:12px 14px;font-size:12px;margin:14px 0;}
+.issue{color:var(--red)}.success{color:var(--green)}
+#message{min-height:26px;margin:8px 0;font-size:13px;font-weight:650}
+label{display:block;color:var(--muted);font-size:13px;font-weight:700;margin:11px 0 4px;}
+input,select,textarea{width:100%;padding:11px;border-radius:10px;border:1px solid #4a4b59;background:#0f1118;color:var(--text);font:inherit;}
+textarea{min-height:65px;resize:vertical;}
+button{border-radius:10px;border:1px solid var(--line);padding:11px 14px;background:#252835;color:var(--text);font:inherit;font-weight:750;cursor:pointer;}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--green);outline-offset:2px;}
+button:disabled{opacity:.5;cursor:wait}
+button.primary{background:var(--green);color:#06170f;border-color:var(--green)}
+button.danger{color:#ffcaca;border-color:#7b4f4f}
+button.secondary{color:var(--muted)}
+.row{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
+.actions>*{flex:1 1 145px}
+.stack{display:grid;gap:14px}
+.grid{display:grid;gap:12px}
+@media(min-width:690px){.grid{grid-template-columns:1fr 1fr}}
+.pill{font-size:12px;padding:3px 8px;border-radius:20px;border:1px solid #466858;display:inline-block;color:var(--green)}
+.pill.wait{color:var(--orange);border-color:#805e39}
+progress{width:100%;height:10px;accent-color:var(--green)}
+code{color:var(--green);word-break:break-all}
+footer{margin-top:25px;color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+<main>
+ <div class="eyebrow">BRIGHTSCALE TRACKER 2.0 · TEST ENVIRONMENT</div>
+ <h1>Portal piloto — progresso e validação</h1>
+ <p class="muted">Login real no Supabase STAGING. PM e sub usam o mesmo portal, mas as permissões são verificadas pelo banco de dados.</p>
+ <div class="notice"><strong>APENAS STAGING.</strong> Não usar projetos, clientes, credenciais, contratos ou subcontratados reais. Este portal não opera pagamentos e não modifica o Tracker em produção. Necessita de um Supabase <strong>novo e vazio</strong> com a migração de staging aprovada.</div>
+ <p id="message" role="status" aria-live="polite"></p>
+ <div id="app"></div>
+ <footer>Dados fictícios · Autenticação Supabase · RLS obrigatório · Crédito não é pagamento · Sem migração automática de dados históricos.</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js"></script>
+<script src="./pilot-gateway.js"></script>
+<script src="./pilot-ui.js"></script>
+</body>
+</html>

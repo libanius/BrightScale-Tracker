@@ -9,3 +9,13 @@ docs
 supabase
 .claude
 skills-lock.json
+/tests
+/scripts
+/staging/sql
+/staging/tests
+/package.json
+/package-lock.json
+/workspace/app.jsx
+/workspace/core.js
+/workspace/api.js
+/workspace/package.json

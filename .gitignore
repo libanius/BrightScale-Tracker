@@ -7,3 +7,5 @@ dashboard-data.json
 backups/
 brightscale-backup-*.json
 *.backup.json
+node_modules/
+workspace/build/

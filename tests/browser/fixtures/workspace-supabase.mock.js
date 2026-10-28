@@ -1,0 +1,15 @@
+/* SYNTHETIC TEST FIXTURE ONLY. Not used by workspace/index.html. No network/Auth. */
+(()=>{const create=window.supabase.createClient;const role=window.__pilotMockRole||'pm';const pid='demo-project',sid='demo-scope',tid='demo-task';const rows={
+ pilot_workspace_details:[{project_id:pid,client_name:'SYNTHETIC Client',address:'SYNTHETIC Site'}],
+ pilot_workspace_client_terms:[{project_id:pid,amount_cents:1000050}],
+ pilot_workspace_weights:[{scope_id:sid,weight_pct:100}],
+ pilot_workspace_task_config:[{task_id:tid,criteria:'SYNTHETIC level surface acceptance'}],
+ pilot_workspace_scope_config:[{scope_id:sid,weight_pct:100}],
+ pilot_workspace_gates:[{scope_id:sid,reason:'SYNTHETIC ready'}],
+ pilot_workspace_people:[],pilot_workspace_documents:[],pilot_workspace_observations:[],pilot_workspace_events:[],pilot_workspace_payments:[],pilot_workspace_milestones:[],pilot_workspace_receipts:[]
+};let overrideValidation=null;window.supabase.createClient=(...args)=>{const c=create(...args),from=c.from.bind(c),rpc=c.rpc.bind(c);c.from=table=>{
+ if(!(table in rows)&&!(table==='pilot_validations'&&overrideValidation))return from(table);
+ window.__pilotQueried.push(table);let filters=[];const forbidden=role==='client'?['pilot_workspace_scope_config','pilot_workspace_observations','pilot_workspace_payments']:role==='sub'?['pilot_workspace_client_terms','pilot_workspace_milestones','pilot_workspace_receipts']:[];
+ if(forbidden.includes(table))throw Error('Forbidden query in fixture: '+table);
+ const result=()=>({data:(table==='pilot_validations'?overrideValidation:rows[table]).filter(r=>filters.every(f=>f.values.includes(r[f.field]))),error:null});const b={select:()=>b,eq:(field,value)=>{filters.push({field,values:[value]});return b},in:(field,values)=>{filters.push({field,values});return b},single:async()=>({...result(),data:result().data[0]}),then:(resolve,reject)=>Promise.resolve(result()).then(resolve,reject)};return b;
+ };c.rpc=async(name,p)=>{if(name!=='pilot_workspace_command')return rpc(name,p);window.__pilotRpcCalls.push({name,payload:p});const d=p.p_data;if(p.p_action==='observe'){rows.pilot_workspace_observations.push({id:'synthetic-observation',project_id:pid,task_id:d.task_id,observed_pct:d.percent,note:d.note,created_at:'2026-10-28T12:00:00Z'});}if(p.p_action==='validate_observation'){const o=rows.pilot_workspace_observations[0];o.validated_at='2026-10-28T12:05:00Z';overrideValidation=[{task_id:o.task_id,validated_pct:o.observed_pct}];}if(p.p_action==='event')rows.pilot_workspace_events.push({id:'synthetic-event',project_id:pid,kind:d.kind,body:d.body,visibility:d.visibility,created_at:'2026-10-28T12:00:00Z'});return {data:{saved:true,payment_authorized:false},error:null};};return c;};})();
