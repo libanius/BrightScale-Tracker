@@ -66,7 +66,9 @@ export function validatePlan(p) {
     (p.milestones || []).reduce((a, m) => a + m.amount_cents, 0) >
     p.amount_cents
   )
-    throw Error("Marcos excedem o contrato.");
+    throw Error(
+      `Marcos excedem o contrato. Marcos de cobrança: ${money(p.milestones.reduce((a, m) => a + m.amount_cents, 0))}; contrato: ${money(p.amount_cents)}. Excesso de ${money(p.milestones.reduce((a, m) => a + m.amount_cents, 0) - p.amount_cents)}. Revise os valores em “5. Revisão”.`,
+    );
   return p;
 }
 export function progress(snapshot, weights) {
@@ -137,6 +139,38 @@ export function smartContext(raw) {
     ]),
   );
 }
+// Convert a percentage schedule to cents without independently rounding each item.
+// Overallocated/invalid schedules are preserved for explicit PM correction, never normalized.
+export function milestoneAmounts(total, percentages) {
+  const values = percentages.map(Number);
+  if (values.some((n) => !Number.isFinite(n) || n < 0 || n > 100))
+    throw Error("Percentuais dos marcos inválidos. Revise a sugestão.");
+  const scale = 1000000;
+  const weights = values.map((n) => BigInt(Math.round(n * scale)));
+  const denominator = 100n * BigInt(scale);
+  const sum = weights.reduce((a, b) => a + b, 0n);
+  if (sum > denominator)
+    return values.map((n) => Math.round((total * n) / 100));
+  const numerators = weights.map((w) => BigInt(total) * w);
+  const amounts = numerators.map((n) => Number(n / denominator));
+  const target = Number((BigInt(total) * sum + denominator / 2n) / denominator);
+  let remaining = target - amounts.reduce((a, b) => a + b, 0);
+  const order = numerators
+    .map((n, i) => ({ i, remainder: n % denominator }))
+    .sort((a, b) =>
+      a.remainder === b.remainder
+        ? a.i - b.i
+        : a.remainder > b.remainder
+          ? -1
+          : 1,
+    );
+  for (const { i } of order) {
+    if (remaining <= 0) break;
+    amounts[i]++;
+    remaining--;
+  }
+  return amounts;
+}
 export function fromAI(raw) {
   const p = blankPlan();
   p.open_questions = raw.open_questions || [];
@@ -173,11 +207,13 @@ export function fromAI(raw) {
       due_date: "",
     })),
   }));
-  p.milestones = (raw.milestones || []).map((m) => ({
+  const amounts = milestoneAmounts(
+    p.amount_cents,
+    (raw.milestones || []).map((m) => m.percent_of_contract || 0),
+  );
+  p.milestones = (raw.milestones || []).map((m, i) => ({
     title: m.title || "",
-    amount_cents: Math.round(
-      (p.amount_cents * Number(m.percent_of_contract || 0)) / 100,
-    ),
+    amount_cents: amounts[i],
     is_deposit: /deposit|sinal/i.test(m.title || ""),
   }));
   return p;
