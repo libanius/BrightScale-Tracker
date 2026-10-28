@@ -136,6 +136,9 @@ Nota: Essa divisão é uma **proposta de implementação**, não uma revogação
 
 ## Checkpoint operacional (fonte atual para próxima IA)
 
+### Marcos de cobrança — correção publicada (PR #11)
+- Distribuição exata de centavos sem alterar contrato; revisão dos marcos acessível antes da validação final. Total e excesso visíveis; sobrecobrança real continua bloqueada. CI final quatro suítes SUCCESS (30 Node / 7 browser no workspace). Ver log da correção.
+
 ### Documento → preenchimento automático — publicado
 - **PR #10 merged**, merge `5e625332d7aeef278e6bf60b032e955acfc4c132`, código `4a3656e9a5bccdf6c4d57874ba9deded32d14b06`.
 - **CI final SUCCESS:** workspace #40687064303 (29 Node, SQL/namespace/build e 6 testes mobile, incluindo upload automático e falha/repetição); RLS #40687064273; regressões #40687064281; guardrails #40687064423.
@@ -201,7 +204,8 @@ Nota: Essa divisão é uma **proposta de implementação**, não uma revogação
 - **IMPLEMENTED:** percentuais de marcos importados convertidos para centavos por alocação de maior resto com aritmética inteira; cronograma de 100% soma exatamente o contrato, cronograma parcial conserva seu percentual. Não normaliza percentuais acima de 100 nem altera preços contratuais.
 - **UX FIX:** Conferir plano validava marcos antes de permitir acesso ao editor na Revisão. Agora permite chegar ao editor; salvar mantém validação integral e backend inalterado. Revisão mostra contrato, total e excesso explícito.
 - **TESTED LOCAL:** 30 Node PASS, incluindo contrato ímpar, cronogramas parciais, percentuais fracionários, 597 combinações de centavos e não normalização de sobrecobrança; frontend build PASS. Novo browser cobre upload com US$100.01/50-50 e edição de excesso. Documento real causador do screenshot não disponível para conferir se foi centavo ou percentual errado; não afirmar diagnóstico específico do documento.
-- **NEXT:** CI, publicação no main e mesmo preview do proprietário; repetir importação e revisar os valores antes de salvar. Sem alteração Supabase/pagamentos.
+- **RELEASE:** PR #11 merged, código `08d29364bfbe9adb171100ce8f76e9ce6d3e59d4`, merge `cf435acf06b091da58d2c1703b13124436431b7c`. Mesmo preview do proprietário atualizado por fast-forward. Quatro suítes CI SUCCESS: workspace #40689790744 (30 Node, SQL/build, 7 browser), RLS #40689790983, regressões #40689790908, guardrails #40689790964.
+- **NEXT:** repetir importação e revisar os valores antes de salvar. Documento real não inspecionado; se houver excesso real, o PM deve corrigir a sugestão. Sem alteração Supabase/pagamentos.
 
 
 ### 2026-10-28 — Correção de campo: documento antes das perguntas SMART
