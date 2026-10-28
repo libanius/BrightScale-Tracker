@@ -136,8 +136,11 @@ Nota: Essa divisão é uma **proposta de implementação**, não uma revogação
 
 ## Checkpoint operacional (fonte atual para próxima IA)
 
-### Documento → preenchimento automático — correção em andamento
-- Nova extração automática e contexto SMART em código; planner v2 remoto ativo. Publicação frontend/CI pendentes nesta entrada. Ver log da correção.
+### Documento → preenchimento automático — publicado
+- **PR #10 merged**, merge `5e625332d7aeef278e6bf60b032e955acfc4c132`, código `4a3656e9a5bccdf6c4d57874ba9deded32d14b06`.
+- **CI final SUCCESS:** workspace #40687064303 (29 Node, SQL/namespace/build e 6 testes mobile, incluindo upload automático e falha/repetição); RLS #40687064273; regressões #40687064281; guardrails #40687064423.
+- **LIVE UI VERIFIED:** o mesmo preview feat-tracker-delivery foi atualizado por fast-forward ao merge e aberto no navegador: texto de análise automática e botão de reanálise presentes. Planner v2 ativo. Documento real do proprietário ainda não exercitado nesta correção; PDF imagem continua sem OCR.
+- Primeira execução browser identificou nome acessível instável de textarea preenchida; corrigido com aria-label explícito. Uma sincronização intermediária de bundle foi corrigida antes de merge; árvore final e hashes conferidos, CI verde.
 
 ### LIVE — publicado em 2026-10-28
 - **ACESSO VERIFICADO:** https://feat-tracker-delivery-brightscale-tracker.brightscalegroup.workers.dev/workspace/ mostra login automático conectado ao Supabase real. Domínio principal não confirmado nesta sessão: HTTP GET retornou 403; causa não determinada. Não declarar indisponibilidade para o usuário nem contornar controles.
@@ -199,7 +202,7 @@ Nota: Essa divisão é uma **proposta de implementação**, não uma revogação
 - **UX:** estado local de leitura/análise, formulário bloqueado durante processamento, texto preservado após falha e botão de repetição. Revisão PM continua obrigatória; nenhuma licença/ausência de restrições presumida. PDF somente imagem continua sem OCR nesta versão.
 - **REMOTE:** planner Edge v2 ACTIVE, schema smart_context nullable e schedule com datas de execução explícitas; autenticação PM existente preservada. Nenhuma alteração de banco.
 - **TESTED LOCAL:** 29 testes Node PASS, frontend build PASS. Duas regressões browser adicionadas (auto preenchimento e falha/repetição); execução local indisponível por ausência do pacote Playwright, aguardando CI. Análise remota desta nova versão com documento do usuário ainda não observada.
-- **NEXT:** concluir CI, publicar a correção e repetir upload no live. Não afirmar que todos os dados de um documento desconhecido foram extraídos.
+- **RELEASE VERIFIED:** PR #10 merged, quatro suítes CI finais SUCCESS; preview usado pelo proprietário atualizado e tela de importação automática conferida. Próximo: repetir upload do documento real, revisar extração/lacunas. Não afirmar extração completa de documento desconhecido.
 
 
 ### 2026-10-28 — Fase 7: publicação conectada concluída
