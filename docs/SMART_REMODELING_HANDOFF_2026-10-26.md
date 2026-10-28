@@ -1,6 +1,6 @@
 # BrightScale Tracker 2.0 — Handoff oficial para continuidade com outras IAs
 
-**Atualizado:** 2026-10-27  
+**Atualizado:** 2026-10-28  
 **Status:** **39 decisões de produto confirmadas. Rodada de entrevista ENCERRADA por solicitação expressa do responsável em 2026-10-27.** Próxima prioridade: revisar os PRs de integridade e testar o MVP de ponta a ponta em ambiente isolado antes de uso em obra real. Decisões 35–39 são visão de produto, não funcionalidades entregues.  
 **Projeto:** Smart Remodeling / BrightScale Tracker 2.0  
 **Código:** `libanius/BrightScale-Tracker` (`main`)  
@@ -136,7 +136,13 @@ Nota: Essa divisão é uma **proposta de implementação**, não uma revogação
 
 ## Checkpoint operacional (fonte atual para próxima IA)
 
-### LIVE — autorização do proprietário em 2026-10-28
+### LIVE — publicado em 2026-10-28
+- **ACESSO VERIFICADO:** https://feat-tracker-delivery-brightscale-tracker.brightscalegroup.workers.dev/workspace/ mostra login automático conectado ao Supabase real. Domínio principal não confirmado nesta sessão: HTTP GET retornou 403; causa não determinada. Não declarar indisponibilidade para o usuário nem contornar controles.
+- **RELEASE:** PR #9 merged; commit de conexão `255d7438ddf99deb0f1c7ec876d64d37efe25a53`, merge `b8f47103fa2cc98974fd595980c9bbd4bafc4539`. Workers Builds de produção SUCCESS confirmado pelo check GitHub.
+- **CI FINAL:** workspace #40684759792, RLS #40684759699, regressões PM/client/security/offline #40684759717 e guardrails #40684759672: todos SUCCESS.
+- **BROWSER:** preview conectado abriu a tela “Entre no seu Tracker”, sem configuração manual. Tentativa de inspecionar a aba de produção foi impedida pelo gate do navegador ao adquirir uma aba de erro anterior; nenhuma tentativa de contornar. Aceitação OTP/mailbox e campo permanecem pendentes.
+
+### Autorização e validação remota — 2026-10-28
 - **DECIDED:** usuário autorizou usar o ambiente Supabase existente e aceitou perda dos dados atuais. Esta autorização substitui o bloqueio anterior por falta de staging separado. Não houve necessidade de apagar dados.
 - **IMPLEMENTED / REMOTE:** 40 tabelas `tracker.live_*` com RLS e funções correspondentes; helpers `tracker_private.workspace_*`. Somente admins existentes do Tracker podem criar projetos/equipe. Nenhuma alteração de dados ou objetos dos serviços em `public/private`.
 - **TESTED LIVE:** 16 verificações reais com três contas GoTrue temporárias e JWTs reais: login PM/sub/client, bloqueio pré-baseline, phase gate, reporte, validação, finanças segregadas, vistoria sem crédito automático, eventos/restrição, assinatura e revogação. Contas/memberships temporárias removidas. Um projeto claramente TESTE LIVE está disponível ao admin da empresa. Endpoint temporário de diagnóstico desativado (410, verify_jwt=true).
@@ -144,7 +150,7 @@ Nota: Essa divisão é uma **proposta de implementação**, não uma revogação
 - **APP:** configuração pública automática, schema tracker, sessão existente reutilizável e login por código; convidados só recebem acesso ao escopo/obra atribuídos. Novo endpoint `tracker-workspace-team` resolve conta existente ou convida por Supabase Auth após ação explícita do PM.
 - **PENDENTE ESPECÍFICO:** `RESEND_API_KEY` não existe no ambiente; cópias automáticas de assinatura ficam na fila, sem falsa marcação de envio. Download do recibo/assinatura funciona; e-mails de acesso usam Supabase Auth separadamente. Não foram enviados convites/mensagens a terceiros pelo agente.
 - **TESTED LOCAL:** 28 Node, 37 verificações SQL herdadas/workspace, teste de namespace live (40 tabelas, serviços/grants existentes preservados, setup PM-only) e build dos 3 endpoints PASS. Ainda falta validar convites/OTP pelo usuário e uma obra real.
-- **DEPLOY:** código live em preparação para o PR #9/main; atualizar evidência de publicação após CI e Cloudflare. Não confundir código conectado com teste de campo.
+- **DEPLOY:** código live incorporado ao main e Cloudflare Workers Builds SUCCESS. Não confundir publicação com teste de campo.
 - **Histórico técnico:** migrations com DROP dispararam erro nativo requestState; nova materialização cria definições finais sem DROP. Primeiro scaffold deixou 10 tabelas piloto vazias e protegidas em tracker, não usadas pelo app live. Migrações seguintes foram confirmadas; nenhuma exclusão improvisada.
 - **NEXT:** publicar UI conectada, verificar login/tela no domínio, registrar commit/deploy; usuário iniciar teste com estimate real. Configurar a chave de cópias por e-mail quando disponibilizada.
 
@@ -184,6 +190,14 @@ Nota: Essa divisão é uma **proposta de implementação**, não uma revogação
 - **Próxima etapa técnica (sem entrevista):** a integração **VISUAL** da aba COs está TESTED no PR #6, mas a ligação operacional ao Tracker continua **BLOCKED** sem novo backend, validação de permissões reais e migração/compatibilidade de project IDs. Próximo trabalho: desenhar/adotar um mapping explícito de `tracker.projects`/empresa para Change Orders, sem copiar dados reais ao banco público do piloto e sem escrever em produção; testar com projetos fictícios e fluxo PM/sub/cliente. Depois assinatura digital formal, emails, anexos, controles de fase/inspeção e QA offline. Nenhuma decisão 40.
 
 ## Log de continuidade
+
+### 2026-10-28 — Fase 7: publicação conectada concluída
+- **IMPLEMENTED / DEPLOYED:** PR #9 integrado a main, merge `b8f47103fa2cc98974fd595980c9bbd4bafc4539`; Workers Builds SUCCESS. Workspace em `/workspace/`, legado preservado na raiz.
+- **TESTED:** quatro suítes CI SUCCESS (workspace 40684759792, RLS 40684759699, browser regressions 40684759717, guardrails 40684759672). Testes remotos 16/16 e IA HTTP200 previamente registrados.
+- **BROWSER:** preview mostra conexão automática e login por e-mail. Inspeção da aba de erro anterior de produção bloqueada pelo browser URL policy; nenhum contorno. OTP/invite delivery e obra real ainda não aceitos pelo proprietário.
+- **LIMIT:** cópias automáticas de recibos dependem de RESEND_API_KEY, botão de envio ocultado e download disponível. Workspace exige rede para gravações; recursos avançados continuam fora deste MVP.
+- **NEXT:** proprietário abrir workspace, entrar com conta BrightScale autorizada e testar estimate real; validar entrega de Auth e, quando fornecida, configurar chave de cópias.
+
 
 ### 2026-10-28 — Fase 6: ambiente existente autorizado e conexão live validada
 - **DECIDED:** autorização explícita de reutilização do Supabase atual, dados Tracker descartáveis; preservados serviços alheios e os dados existentes por implementação aditiva.
