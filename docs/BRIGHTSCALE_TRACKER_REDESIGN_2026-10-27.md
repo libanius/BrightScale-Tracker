@@ -40,7 +40,7 @@ Three priority screen specs, **all PM-first concept with sample data**:
 
 ## UX Revision 2 — owner selected option B (2026-10-27)
 
-**Approved direction to produce updated visuals:** larger fonts, more breathing room, and rounded application cards. This explicitly revises the earlier Brand Kit *application component geometry* in this prototype; it does **not** amend official SVG logos/mark geometry or the core brand palette. User has **NOT** yet approved the final visual screens for production.
+**Visual APPROVED by the owner (2026-10-28):** the three-screen UX Revision 2 with larger fonts, more breathing room, and rounded application cards. This explicitly revises the earlier Brand Kit *application component geometry*; it does **not** amend official SVG logo/mark geometry or the core brand palette. **DESIGN APPROVED ≠ CODE MERGED, RELEASE AUTHORIZED, or COMPLETE FEATURE IMPLEMENTATION.**
 
 - **PR #8:** [Draft visual review](https://github.com/libanius/BrightScale-Tracker/pull/8), `design/ux-revision-2-review` created from `main`, with standalone `ux-revision-2.html` containing Dashboard, Project Detail and Change Orders design concepts. Independent of PR #5 and PR #6; **no merge or production release**.
 - **Isolated published preview:** [Cloudflare preview URL](https://design-ux-revision-2-review-brightscale-tracker.brightscalegroup.workers.dev/ux-revision-2.html). Cloudflare GitHub check for commit `f2933a346d3d985f6747bde17c14711b2f5f81c1` reported build and preview deployment SUCCESS. This is **not** `tracker.brightscalegroup.com`.
@@ -49,3 +49,17 @@ Three priority screen specs, **all PM-first concept with sample data**:
 - **Interactive proof:** local headless Chromium tested Dashboard/Project/CO at 393px mobile and 1440px desktop, financial role-projection, modal selection, no console errors and no network. Additional sizes 320, 360, 375, 390, 430, 768, 1024, 1440px tested with IndexedDB/localStorage/sessionStorage and fetch deliberately disabled; no overflow. `prefers-reduced-motion` supported. Motion for React is **not installed or used** in this design-only prototype.
 - **Conversation-local deliverables:** `BrightScale_Tracker_Revision_2.html`, two preview PNGs and `BrightScale_Tracker_Revision_2_Review_Package.zip`, with README/test evidence. Figma currently has only foundation assets; a newly created Figma file may remain empty due to Starter connection limit — **never claim the three screens exist in Figma yet**.
 - **Next:** user reviews updated visual design; after visual approval, create editable Figma frames/tokens when access allows, then implement approved React/Motion UI separately from the existing backend. Do not silently migrate contracts or alter production schemas.
+
+## 2026-10-28 — UX Revision 2 VISUAL APPROVED; clarify PM field progress control
+
+**Owner explicitly approved the visual:** “Está muito bom. Pode registrar aprovado.” Record: **APPROVED DESIGN** for Dashboard, Project Detail and Change Orders, including readability, whitespace and softened application card geometry. PR #8 remains draft and intentionally unmerged. This does **not** authorize integrating sample data or rolling out unfinished Auth/RLS.
+
+**Usability question immediately following approval:** “Onde eu mudo as porcentagens de progressão quando eu bater o olho em um trabalho e anoto que tantos porcento está pronto?”
+
+- **In the approved UX prototype**, 72%, 58%, etc. are display-only illustrative figures. The UX demo does **not** include an editable field progress input; do not direct anyone to edit real data in that demo.
+- **In the currently deployed legacy Tracker UI**, `Projetos → projeto → Unit → Progresso por Scope → expand Scope → tocar Task ou lápis → Editar Task → slider Progresso (0–100 in steps of 5) → Salvar`. This writes the legacy task progress and recalculates legacy aggregated progress; **it is NOT the new audited subcontractor-report → PM-validate → recognized-credit pipeline**.
+- **Desired UX enhancement (not yet designed/implemented or independently ratified):** on Project Detail / 7-phase rail, tap a phase → task → **Registrar progresso da vistoria**. Offer 0–100% entry with numeric input and slider, date/time and optional evidence/note; show **PM-observed** distinct from **sub-reported** and **PM-validated**. The PM can intentionally confirm validated progress after reviewing acceptance criteria, with a separate explicit action and preserved audit history. Any credit recognition follows its independent authorized validation rule; never grant automatic payment. Original baseline and existing recognized credits remain immutable; CO progress is separate.
+- Aggregate percentages should be derived from PM-validated task percentages and the approved task/scope weights, **not** arbitrarily set on overall project/phase cards. Include clear provenance: reported / observed / validated and who/when. No silent overwrites.
+- The above request is a **UX discovery/placement need within existing decisions 7–10, 29–39**, not product decision 40. The exact final interaction awaits visual design review; no production permission changes.
+
+**Next development:** design the PM field-inspection progress editor in a new isolated prototype, then review; keep the current approved Revision 2 as the visual baseline, with no automatic merge or deployment.
