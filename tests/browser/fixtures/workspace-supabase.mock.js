@@ -7,7 +7,7 @@
  pilot_workspace_scope_config:[{scope_id:sid,weight_pct:100}],
  pilot_workspace_gates:[{scope_id:sid,reason:'SYNTHETIC ready'}],
  pilot_workspace_people:[],pilot_workspace_documents:[],pilot_workspace_observations:[],pilot_workspace_events:[],pilot_workspace_payments:[],pilot_workspace_milestones:[],pilot_workspace_receipts:[]
-};let overrideValidation=null;window.supabase.createClient=(...args)=>{const c=create(...args),from=c.from.bind(c),rpc=c.rpc.bind(c);c.from=table=>{
+};let overrideValidation=null;window.supabase.createClient=(...args)=>{const c=create(...args),from=c.from.bind(c),rpc=c.rpc.bind(c);c.functions={invoke:async(name,{body})=>{window.__analysisCalls=(window.__analysisCalls||[]).concat(body);await new Promise(r=>setTimeout(r,150));if(body.text.includes('FAIL_ANALYSIS'))return {error:{message:'SYNTHETIC analysis failed'}};return {data:{plan:{project_title:'SYNTHETIC extracted project',client:{name:'SYNTHETIC extracted client'},site_address:'SYNTHETIC extracted address',estimate:{total:1234.56},smart_context:{scope:'Instalar piso conforme documento',standard:'Acabamento descrito',constraints:null,rhythm:null,time:null},open_questions:['Confirmar acesso ao local'],scopes:[],milestones:[]}},error:null}}};c.from=table=>{
  if(!(table in rows)&&!(table==='pilot_validations'&&overrideValidation))return from(table);
  window.__pilotQueried.push(table);let filters=[];const forbidden=role==='client'?['pilot_workspace_scope_config','pilot_workspace_observations','pilot_workspace_payments']:role==='sub'?['pilot_workspace_client_terms','pilot_workspace_milestones','pilot_workspace_receipts']:[];
  if(forbidden.includes(table))throw Error('Forbidden query in fixture: '+table);

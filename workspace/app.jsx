@@ -10,6 +10,7 @@ import {
   validatePlan,
   progress,
   fromAI,
+  smartContext,
   checkConfig,
   requestUUID,
 } from "./core.js";
@@ -720,7 +721,9 @@ function NewProject({ api, user, people, tell, run, onCreated }) {
       time: "",
     }),
     [reviewed, R] = useState(false),
-    [requestID] = useState(() => requestUUID());
+    [requestID] = useState(() => requestUUID()),
+    [processing, Processing] = useState(""),
+    [analyzed, Analyzed] = useState(false);
   const set = (key, v) => {
       Plan((p) => ({ ...p, [key]: v }));
       R(false);
@@ -748,41 +751,90 @@ function NewProject({ api, user, people, tell, run, onCreated }) {
     )
       throw Error("Use PDF, TXT ou JSON de plano.");
     File(f);
-    if (f.name.endsWith(".json")) {
-      const p = JSON.parse(await f.text());
-      const imported = p.project_title ? fromAI(p) : p;
-      if (
-        !Array.isArray(imported.scopes) ||
-        imported.scopes.some((s) => !Array.isArray(s.tasks))
-      )
-        throw Error("JSON de plano inválido.");
-      Plan({ ...blankPlan(), ...imported });
-      Text("Plano JSON importado para revisão.");
-      return;
-    }
-    if (f.type === "application/pdf" || f.name.toLowerCase().endsWith(".pdf")) {
-      const pdf = await pdfjs.getDocument({
-        data: await f.arrayBuffer(),
-        isEvalSupported: false,
-      }).promise;
-      try {
-        let result = "";
-        if (pdf.numPages > 100) throw Error("Limite de 100 páginas.");
-        for (let i = 1; i <= pdf.numPages; i++) {
-          const page = await pdf.getPage(i);
-          const c = await page.getTextContent();
-          result += c.items.map((x) => x.str).join(" ") + "\n";
-        }
-        Text(result);
-        if (!result.trim())
-          tell(
-            "PDF sem texto. Preencha manualmente ou envie uma versão com texto selecionável.",
-          );
-      } finally {
-        await pdf.destroy();
+    Analyzed(false);
+    Processing("Lendo documento…");
+    try {
+      let extracted = "";
+      if (f.name.endsWith(".json")) {
+        const p = JSON.parse(await f.text());
+        const imported = p.project_title ? fromAI(p) : p;
+        if (
+          !Array.isArray(imported.scopes) ||
+          imported.scopes.some((s) => !Array.isArray(s.tasks))
+        )
+          throw Error("JSON de plano inválido.");
+        Plan({ ...blankPlan(), ...imported });
+        Text("Plano JSON importado para revisão.");
+        Q(smartContext(p));
+        Analyzed(true);
+        R(false);
+        Step(1);
+        return;
       }
-    } else Text(await f.text());
-    R(false);
+      if (
+        f.type === "application/pdf" ||
+        f.name.toLowerCase().endsWith(".pdf")
+      ) {
+        const pdf = await pdfjs.getDocument({
+          data: await f.arrayBuffer(),
+          isEvalSupported: false,
+        }).promise;
+        try {
+          let result = "";
+          if (pdf.numPages > 100) throw Error("Limite de 100 páginas.");
+          for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const c = await page.getTextContent();
+            result += c.items.map((x) => x.str).join(" ") + "\n";
+          }
+          extracted = result;
+          Text(result);
+          if (!result.trim())
+            tell(
+              "PDF sem texto. Preencha manualmente ou envie uma versão com texto selecionável.",
+            );
+        } finally {
+          await pdf.destroy();
+        }
+      } else {
+        extracted = await f.text();
+        Text(extracted);
+      }
+      R(false);
+      if (extracted.trim()) await analyzeDocument(extracted, {});
+    } finally {
+      Processing("");
+    }
+  }
+  async function analyzeDocument(source = text, context = questions) {
+    if (!api || !user)
+      throw Error(
+        "Entre com sua conta para preencher automaticamente. O texto extraído continua disponível.",
+      );
+    Processing(
+      "Analisando documento e preenchendo o rascunho com IA… Pode levar até um minuto.",
+    );
+    try {
+      const result = await api.analyze(source, context);
+      Plan(fromAI(result.plan));
+      const extracted = smartContext(result.plan);
+      Q(
+        Object.fromEntries(
+          Object.keys(extracted).map((k) => [
+            k,
+            context[k]?.trim() || extracted[k],
+          ]),
+        ),
+      );
+      R(false);
+      Analyzed(true);
+      Step(1);
+      tell(
+        "Documento analisado. Revise os dados preenchidos e confirme apenas o que falta.",
+      );
+    } finally {
+      Processing("");
+    }
   }
   async function save() {
     validatePlan(plan);
@@ -815,478 +867,519 @@ function NewProject({ api, user, people, tell, run, onCreated }) {
     <>
       <p className="eyebrow">NOVO PROJETO</p>
       <h1>Do estimate ao plano.</h1>
-      <div className="steps">
-        {[
-          "Documento",
-          "Contexto SMART",
-          "Projeto",
-          "Escopo e equipe",
-          "Revisão",
-        ].map((t, i) => (
-          <button
-            key={t}
-            className={step === i ? "active" : ""}
-            onClick={() => Step(i)}
-          >
-            {i + 1}. {t}
-          </button>
-        ))}
-      </div>
-      {step === 0 && (
-        <Card title="Importar documento">
-          <label>
-            Estimate aprovado / plano
-            <input
-              type="file"
-              accept=".pdf,.txt,.json"
-              onChange={(e) => run(() => upload(e.target.files[0]))}
-            />
-          </label>
-          <p className="hint">
-            O arquivo fica no rascunho desta aba até você salvar. Nada é enviado
-            para análise sem sua ação.
-          </p>
-          <Area
-            label="Texto extraído · confira antes de analisar"
-            value={text}
-            onChange={Text}
-          />
-          <Button secondary onClick={() => Step(1)}>
-            Continuar
-          </Button>
-        </Card>
+      {processing && (
+        <p role="status" aria-live="polite" className="notice">
+          {processing}
+        </p>
       )}
-      {step === 1 && (
-        <Card title="Contexto antes de gerar o plano">
+      <fieldset
+        disabled={!!processing}
+        style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}
+        aria-busy={!!processing}
+      >
+        <div className="steps">
           {[
-            ["scope", "Scope · limites e exclusões do serviço"],
-            ["standard", "Model · padrão e acabamento esperado"],
-            [
-              "constraints",
-              "Alignment · acesso, materiais, licenças e restrições críticas",
-            ],
-            ["rhythm", "Rhythm · horários e comunicação"],
-            ["time", "Time · datas e dependências"],
-          ].map(([k, t]) => (
-            <Area
-              key={k}
-              label={t}
-              value={questions[k]}
-              onChange={(v) => Q({ ...questions, [k]: v })}
-            />
+            "Documento",
+            "Contexto SMART",
+            "Projeto",
+            "Escopo e equipe",
+            "Revisão",
+          ].map((t, i) => (
+            <button
+              key={t}
+              className={step === i ? "active" : ""}
+              onClick={() => Step(i)}
+            >
+              {i + 1}. {t}
+            </button>
           ))}
-          <p className="hint">
-            Pendências críticas precisam ser esclarecidas antes da liberação da
-            fase. A IA não confirma licença, segurança ou aprovação contratual.
-          </p>
-          <div className="actions">
+        </div>
+        {step === 0 && (
+          <Card title="Importar documento">
+            <label>
+              Estimate aprovado / plano
+              <input
+                type="file"
+                accept=".pdf,.txt,.json"
+                onChange={(e) => run(() => upload(e.target.files[0]))}
+              />
+            </label>
+            <p className="hint">
+              Ao selecionar um PDF ou TXT, o texto será analisado pela IA para
+              preencher o rascunho. Revise antes de salvar; nada é aprovado
+              automaticamente.
+            </p>
+            <Area
+              label="Texto extraído · confira antes de analisar"
+              value={text}
+              onChange={Text}
+            />
             <Button
               disabled={!api || !text.trim()}
-              onClick={() =>
-                run(async () => {
-                  if (!questions.scope.trim() || !questions.constraints.trim())
-                    throw Error("Preencha escopo e restrições críticas.");
-                  const result = await api.analyze(text, questions);
-                  Plan(fromAI(result.plan));
-                  tell(
-                    "Sugestão gerada. Confira todos os dados, pesos e critérios.",
-                  );
-                  Step(2);
-                })
-              }
+              onClick={() => run(() => analyzeDocument())}
             >
-              Gerar sugestão com IA
+              Analisar e preencher automaticamente
             </Button>
-            <Button secondary onClick={() => Step(2)}>
-              Preencher manualmente
+            <Button secondary onClick={() => Step(1)}>
+              Continuar manualmente
             </Button>
-          </div>
-        </Card>
-      )}
-      {step === 2 && (
-        <Card title="Dados da obra">
-          <Field
-            label="Nome do projeto"
-            value={plan.name}
-            onChange={(v) => set("name", v)}
-          />
-          <Field
-            label="Cliente"
-            value={plan.client_name}
-            onChange={(v) => set("client_name", v)}
-          />
-          <Field
-            label="Endereço"
-            value={plan.address}
-            onChange={(v) => set("address", v)}
-          />
-          <div className="form-grid">
-            <Field
-              label="Número do estimate"
-              value={plan.estimate_number}
-              onChange={(v) => set("estimate_number", v)}
-            />
-            <Money
-              label="Valor do contrato (USD)"
-              value={plan.amount_cents}
-              onChange={(v) => set("amount_cents", v)}
-            />
-            <Field
-              label="Início previsto"
-              type="date"
-              value={plan.start_date}
-              onChange={(v) => set("start_date", v)}
-            />
-            <Field
-              label="Término previsto"
-              type="date"
-              value={plan.end_date}
-              onChange={(v) => set("end_date", v)}
-            />
-          </div>
-          {LIVE?.live && (
-            <>
-              <Field
-                label="E-mail de acesso do cliente"
-                value={plan.client_email || ""}
-                onChange={(v) => set("client_email", v)}
+          </Card>
+        )}
+        {step === 1 && (
+          <Card title="Revise o contexto extraído">
+            <p className="hint">
+              {analyzed
+                ? "Rascunho preenchido a partir do documento. Confira os campos; em branco significa informação não encontrada."
+                : "Envie o documento ou use Analisar e preencher automaticamente. Você também pode complementar manualmente."}
+            </p>
+            {plan.open_questions?.length > 0 && (
+              <div className="notice">
+                <strong>Pendências para confirmar</strong>
+                <ul>
+                  {plan.open_questions.map((q, i) => (
+                    <li key={i}>{q}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {[
+              ["scope", "Scope · limites e exclusões do serviço"],
+              ["standard", "Model · padrão e acabamento esperado"],
+              [
+                "constraints",
+                "Alignment · acesso, materiais, licenças e restrições críticas",
+              ],
+              ["rhythm", "Rhythm · horários e comunicação"],
+              ["time", "Time · datas e dependências"],
+            ].map(([k, t]) => (
+              <Area
+                key={k}
+                label={t}
+                value={questions[k]}
+                onChange={(v) => {
+                  Q({ ...questions, [k]: v });
+                  R(false);
+                }}
               />
+            ))}
+            <p className="hint">
+              Pendências críticas precisam ser esclarecidas antes da liberação
+              da fase. A IA não confirma licença, segurança ou aprovação
+              contratual.
+            </p>
+            <div className="actions">
               <Button
-                secondary
+                disabled={!api || !text.trim()}
                 onClick={() =>
                   run(async () => {
-                    const r = await api.inviteAccount({
-                      kind: "client",
-                      name: plan.client_name,
-                      email: plan.client_email,
-                    });
-                    set("client_user_id", r.user_id);
-                    tell(
-                      r.invitation_sent
-                        ? "Convite de acesso enviado ao cliente."
-                        : "Conta existente do cliente vinculada.",
-                    );
+                    await analyzeDocument();
                   })
                 }
               >
-                Vincular ou convidar cliente
+                {analyzed
+                  ? "Atualizar sugestão com complementos"
+                  : "Analisar e preencher automaticamente"}
               </Button>
-            </>
-          )}
-          <Field
-            label="ID da conta do cliente (opcional)"
-            value={plan.client_user_id}
-            onChange={(v) => set("client_user_id", v)}
-          />
-          <Area
-            label="Condições de cobrança do cliente"
-            value={plan.payment_terms}
-            onChange={(v) => set("payment_terms", v)}
-          />
-          <Button onClick={() => Step(3)}>Revisar escopo e equipe</Button>
-        </Card>
-      )}
-      {step === 3 && (
-        <>
-          <p className="hint">
-            Pesos dos escopos:{" "}
-            {plan.scopes.reduce((a, s) => a + Number(s.weight_pct || 0), 0)}% /
-            100%. Tarefas também devem somar 100% dentro de cada escopo.
-          </p>
-          {plan.scopes.map((s, i) => (
-            <Card key={i} title={"Escopo " + (i + 1)}>
+              <Button secondary onClick={() => Step(2)}>
+                {analyzed
+                  ? "Continuar com os dados preenchidos"
+                  : "Preencher manualmente"}
+              </Button>
+            </div>
+          </Card>
+        )}
+        {step === 2 && (
+          <Card title="Dados da obra">
+            <Field
+              label="Nome do projeto"
+              value={plan.name}
+              onChange={(v) => set("name", v)}
+            />
+            <Field
+              label="Cliente"
+              value={plan.client_name}
+              onChange={(v) => set("client_name", v)}
+            />
+            <Field
+              label="Endereço"
+              value={plan.address}
+              onChange={(v) => set("address", v)}
+            />
+            <div className="form-grid">
               <Field
-                label="Nome do escopo"
-                value={s.name}
-                onChange={(v) => scope(i, "name", v)}
+                label="Número do estimate"
+                value={plan.estimate_number}
+                onChange={(v) => set("estimate_number", v)}
               />
-              <div className="form-grid">
+              <Money
+                label="Valor do contrato (USD)"
+                value={plan.amount_cents}
+                onChange={(v) => set("amount_cents", v)}
+              />
+              <Field
+                label="Início previsto"
+                type="date"
+                value={plan.start_date}
+                onChange={(v) => set("start_date", v)}
+              />
+              <Field
+                label="Término previsto"
+                type="date"
+                value={plan.end_date}
+                onChange={(v) => set("end_date", v)}
+              />
+            </div>
+            {LIVE?.live && (
+              <>
                 <Field
-                  label="Peso na obra (%)"
-                  type="number"
-                  min="0.01"
-                  max="100"
-                  step="0.01"
-                  value={s.weight_pct}
-                  onChange={(v) => scope(i, "weight_pct", Number(v))}
+                  label="E-mail de acesso do cliente"
+                  value={plan.client_email || ""}
+                  onChange={(v) => set("client_email", v)}
                 />
-                <Money
-                  label="Subcontrato (USD)"
-                  value={s.subcontract_cents}
-                  onChange={(v) => scope(i, "subcontract_cents", v)}
+                <Button
+                  secondary
+                  onClick={() =>
+                    run(async () => {
+                      const r = await api.inviteAccount({
+                        kind: "client",
+                        name: plan.client_name,
+                        email: plan.client_email,
+                      });
+                      set("client_user_id", r.user_id);
+                      tell(
+                        r.invitation_sent
+                          ? "Convite de acesso enviado ao cliente."
+                          : "Conta existente do cliente vinculada.",
+                      );
+                    })
+                  }
+                >
+                  Vincular ou convidar cliente
+                </Button>
+              </>
+            )}
+            <Field
+              label="ID da conta do cliente (opcional)"
+              value={plan.client_user_id}
+              onChange={(v) => set("client_user_id", v)}
+            />
+            <Area
+              label="Condições de cobrança do cliente"
+              value={plan.payment_terms}
+              onChange={(v) => set("payment_terms", v)}
+            />
+            <Button onClick={() => Step(3)}>Revisar escopo e equipe</Button>
+          </Card>
+        )}
+        {step === 3 && (
+          <>
+            <p className="hint">
+              Pesos dos escopos:{" "}
+              {plan.scopes.reduce((a, s) => a + Number(s.weight_pct || 0), 0)}%
+              / 100%. Tarefas também devem somar 100% dentro de cada escopo.
+            </p>
+            {plan.scopes.map((s, i) => (
+              <Card key={i} title={"Escopo " + (i + 1)}>
+                <Field
+                  label="Nome do escopo"
+                  value={s.name}
+                  onChange={(v) => scope(i, "name", v)}
                 />
-              </div>
-              <Select
-                label="Subcontractor"
-                value={s.person_id}
-                onChange={(v) => scope(i, "person_id", v)}
-                options={[
-                  ["", "A definir"],
-                  ...people.map((p) => [p.id, p.name]),
-                ]}
-              />
-              <Area
-                label="Materiais e responsabilidades do sub"
-                value={s.responsibilities}
-                onChange={(v) => scope(i, "responsibilities", v)}
-              />
-              <Area
-                label="Condições de pagamento do sub"
-                value={s.payment_terms}
-                onChange={(v) => scope(i, "payment_terms", v)}
-              />
-              {s.tasks.map((t, j) => (
-                <div className="task-editor" key={j}>
+                <div className="form-grid">
                   <Field
-                    label={"Tarefa " + (j + 1)}
-                    value={t.title}
-                    onChange={(v) => task(i, j, "title", v)}
+                    label="Peso na obra (%)"
+                    type="number"
+                    min="0.01"
+                    max="100"
+                    step="0.01"
+                    value={s.weight_pct}
+                    onChange={(v) => scope(i, "weight_pct", Number(v))}
                   />
-                  <Area
-                    label="Critérios de aceite"
-                    value={t.criteria}
-                    onChange={(v) => task(i, j, "criteria", v)}
+                  <Money
+                    label="Subcontrato (USD)"
+                    value={s.subcontract_cents}
+                    onChange={(v) => scope(i, "subcontract_cents", v)}
                   />
-                  <div className="form-grid">
+                </div>
+                <Select
+                  label="Subcontractor"
+                  value={s.person_id}
+                  onChange={(v) => scope(i, "person_id", v)}
+                  options={[
+                    ["", "A definir"],
+                    ...people.map((p) => [p.id, p.name]),
+                  ]}
+                />
+                <Area
+                  label="Materiais e responsabilidades do sub"
+                  value={s.responsibilities}
+                  onChange={(v) => scope(i, "responsibilities", v)}
+                />
+                <Area
+                  label="Condições de pagamento do sub"
+                  value={s.payment_terms}
+                  onChange={(v) => scope(i, "payment_terms", v)}
+                />
+                {s.tasks.map((t, j) => (
+                  <div className="task-editor" key={j}>
                     <Field
-                      label="Peso dentro do escopo (%)"
-                      type="number"
-                      step="0.01"
-                      value={t.weight_pct}
-                      onChange={(v) => task(i, j, "weight_pct", Number(v))}
+                      label={"Tarefa " + (j + 1)}
+                      value={t.title}
+                      onChange={(v) => task(i, j, "title", v)}
                     />
-                    <Field
-                      label="Prazo da tarefa"
-                      type="date"
-                      value={t.due_date}
-                      onChange={(v) => task(i, j, "due_date", v)}
+                    <Area
+                      label="Critérios de aceite"
+                      value={t.criteria}
+                      onChange={(v) => task(i, j, "criteria", v)}
                     />
-                    <Select
-                      label="Dependência desta tarefa"
-                      value={t.depends_on_index ?? -1}
-                      onChange={(v) =>
-                        task(i, j, "depends_on_index", Number(v))
+                    <div className="form-grid">
+                      <Field
+                        label="Peso dentro do escopo (%)"
+                        type="number"
+                        step="0.01"
+                        value={t.weight_pct}
+                        onChange={(v) => task(i, j, "weight_pct", Number(v))}
+                      />
+                      <Field
+                        label="Prazo da tarefa"
+                        type="date"
+                        value={t.due_date}
+                        onChange={(v) => task(i, j, "due_date", v)}
+                      />
+                      <Select
+                        label="Dependência desta tarefa"
+                        value={t.depends_on_index ?? -1}
+                        onChange={(v) =>
+                          task(i, j, "depends_on_index", Number(v))
+                        }
+                        options={[
+                          [-1, "Sem dependência"],
+                          ...s.tasks
+                            .slice(0, j)
+                            .map((x, k) => [k, x.title || "Tarefa " + (k + 1)]),
+                        ]}
+                      />
+                    </div>
+                    <Button
+                      secondary
+                      disabled={s.tasks.length === 1}
+                      onClick={() =>
+                        scope(
+                          i,
+                          "tasks",
+                          s.tasks.filter((_, k) => k !== j),
+                        )
                       }
-                      options={[
-                        [-1, "Sem dependência"],
-                        ...s.tasks
-                          .slice(0, j)
-                          .map((x, k) => [k, x.title || "Tarefa " + (k + 1)]),
-                      ]}
-                    />
+                    >
+                      Remover tarefa do rascunho
+                    </Button>
                   </div>
+                ))}
+                <div className="actions">
                   <Button
                     secondary
-                    disabled={s.tasks.length === 1}
                     onClick={() =>
-                      scope(
-                        i,
-                        "tasks",
-                        s.tasks.filter((_, k) => k !== j),
+                      scope(i, "tasks", [
+                        ...s.tasks,
+                        {
+                          title: "",
+                          criteria: "",
+                          weight_pct: 0,
+                          due_date: "",
+                        },
+                      ])
+                    }
+                  >
+                    ＋ Tarefa
+                  </Button>
+                  <Button
+                    secondary
+                    disabled={plan.scopes.length === 1}
+                    onClick={() =>
+                      set(
+                        "scopes",
+                        plan.scopes.filter((_, j) => j !== i),
                       )
                     }
                   >
-                    Remover tarefa do rascunho
+                    Remover escopo do rascunho
                   </Button>
                 </div>
-              ))}
-              <div className="actions">
-                <Button
-                  secondary
-                  onClick={() =>
-                    scope(i, "tasks", [
-                      ...s.tasks,
-                      { title: "", criteria: "", weight_pct: 0, due_date: "" },
-                    ])
-                  }
-                >
-                  ＋ Tarefa
-                </Button>
-                <Button
-                  secondary
-                  disabled={plan.scopes.length === 1}
-                  onClick={() =>
-                    set(
-                      "scopes",
-                      plan.scopes.filter((_, j) => j !== i),
-                    )
-                  }
-                >
-                  Remover escopo do rascunho
-                </Button>
-              </div>
-            </Card>
-          ))}
-          <Button
-            secondary
-            onClick={() =>
-              set("scopes", [...plan.scopes, blankPlan().scopes[0]])
-            }
-          >
-            ＋ Escopo
-          </Button>
-          <Button
-            onClick={() =>
-              run(() => {
-                validatePlan(plan);
-                Step(4);
-              })
-            }
-          >
-            Conferir plano
-          </Button>
-        </>
-      )}
-      {step === 4 && (
-        <>
-          <Card title="Resumo antes de criar">
-            {(plan.open_questions || []).length > 0 && (
-              <div className="notice">
-                <b>Pontos a esclarecer</b>
-                {plan.open_questions.map((q, i) => (
-                  <p key={i}>{q}</p>
-                ))}
-              </div>
-            )}
-            <h3>{plan.name || "Projeto sem nome"}</h3>
-            <p>
-              {plan.client_name} · {plan.address}
-            </p>
-            <div className="money-grid">
-              <div>
-                <small>Contrato cliente</small>
-                <b>{money(plan.amount_cents)}</b>
-              </div>
-              <div>
-                <small>Subcontratos previstos</small>
-                <b>
-                  {money(
-                    plan.scopes.reduce((a, s) => a + s.subcontract_cents, 0),
-                  )}
-                </b>
-              </div>
-            </div>
-            {plan.scopes.map((s, i) => (
-              <p key={i}>
-                {s.name || "Escopo sem nome"} · peso {s.weight_pct}% ·{" "}
-                {s.tasks.length} tarefas
-              </p>
-            ))}
-            <p>
-              O projeto será criado em rascunho. Aprovar a baseline é uma ação
-              separada.
-            </p>
-          </Card>
-          <Card title="Marcos de cobrança">
-            {plan.milestones.map((m, i) => (
-              <div className="task-editor" key={i}>
-                <Field
-                  label="Entrega / marco"
-                  value={m.title}
-                  onChange={(v) =>
-                    set(
-                      "milestones",
-                      plan.milestones.map((x, j) =>
-                        j === i ? { ...x, title: v } : x,
-                      ),
-                    )
-                  }
-                />
-                <Money
-                  label="Valor (USD)"
-                  value={m.amount_cents}
-                  onChange={(v) =>
-                    set(
-                      "milestones",
-                      plan.milestones.map((x, j) =>
-                        j === i ? { ...x, amount_cents: v } : x,
-                      ),
-                    )
-                  }
-                />
-                <label className="check">
-                  <input
-                    type="checkbox"
-                    checked={!!m.is_deposit}
-                    onChange={(e) =>
-                      set(
-                        "milestones",
-                        plan.milestones.map((x, j) =>
-                          j === i ? { ...x, is_deposit: e.target.checked } : x,
-                        ),
-                      )
-                    }
-                  />
-                  Sinal / depósito
-                </label>
-                <Button
-                  secondary
-                  onClick={() =>
-                    set(
-                      "milestones",
-                      plan.milestones.filter((_, j) => j !== i),
-                    )
-                  }
-                >
-                  Remover marco do rascunho
-                </Button>
-              </div>
+              </Card>
             ))}
             <Button
               secondary
               onClick={() =>
-                set("milestones", [
-                  ...plan.milestones,
-                  { title: "", amount_cents: 0, is_deposit: false },
-                ])
+                set("scopes", [...plan.scopes, blankPlan().scopes[0]])
               }
             >
-              ＋ Marco
+              ＋ Escopo
             </Button>
-          </Card>
-          <Card title="Confirmação do PM">
-            <label className="check">
-              <input
-                type="checkbox"
-                checked={reviewed}
-                onChange={(e) => R(e.target.checked)}
-              />
-              Revisei dados, escopos, pesos, valores e critérios. Pendências de
-              acesso serão tratadas antes do uso externo.
-            </label>
-            <div className="actions">
-              <Button
-                disabled={!api || !user || !reviewed}
-                onClick={() => run(save)}
-              >
-                Criar projeto em rascunho
-              </Button>
+            <Button
+              onClick={() =>
+                run(() => {
+                  validatePlan(plan);
+                  Step(4);
+                })
+              }
+            >
+              Conferir plano
+            </Button>
+          </>
+        )}
+        {step === 4 && (
+          <>
+            <Card title="Resumo antes de criar">
+              {(plan.open_questions || []).length > 0 && (
+                <div className="notice">
+                  <b>Pontos a esclarecer</b>
+                  {plan.open_questions.map((q, i) => (
+                    <p key={i}>{q}</p>
+                  ))}
+                </div>
+              )}
+              <h3>{plan.name || "Projeto sem nome"}</h3>
+              <p>
+                {plan.client_name} · {plan.address}
+              </p>
+              <div className="money-grid">
+                <div>
+                  <small>Contrato cliente</small>
+                  <b>{money(plan.amount_cents)}</b>
+                </div>
+                <div>
+                  <small>Subcontratos previstos</small>
+                  <b>
+                    {money(
+                      plan.scopes.reduce((a, s) => a + s.subcontract_cents, 0),
+                    )}
+                  </b>
+                </div>
+              </div>
+              {plan.scopes.map((s, i) => (
+                <p key={i}>
+                  {s.name || "Escopo sem nome"} · peso {s.weight_pct}% ·{" "}
+                  {s.tasks.length} tarefas
+                </p>
+              ))}
+              <p>
+                O projeto será criado em rascunho. Aprovar a baseline é uma ação
+                separada.
+              </p>
+            </Card>
+            <Card title="Marcos de cobrança">
+              {plan.milestones.map((m, i) => (
+                <div className="task-editor" key={i}>
+                  <Field
+                    label="Entrega / marco"
+                    value={m.title}
+                    onChange={(v) =>
+                      set(
+                        "milestones",
+                        plan.milestones.map((x, j) =>
+                          j === i ? { ...x, title: v } : x,
+                        ),
+                      )
+                    }
+                  />
+                  <Money
+                    label="Valor (USD)"
+                    value={m.amount_cents}
+                    onChange={(v) =>
+                      set(
+                        "milestones",
+                        plan.milestones.map((x, j) =>
+                          j === i ? { ...x, amount_cents: v } : x,
+                        ),
+                      )
+                    }
+                  />
+                  <label className="check">
+                    <input
+                      type="checkbox"
+                      checked={!!m.is_deposit}
+                      onChange={(e) =>
+                        set(
+                          "milestones",
+                          plan.milestones.map((x, j) =>
+                            j === i
+                              ? { ...x, is_deposit: e.target.checked }
+                              : x,
+                          ),
+                        )
+                      }
+                    />
+                    Sinal / depósito
+                  </label>
+                  <Button
+                    secondary
+                    onClick={() =>
+                      set(
+                        "milestones",
+                        plan.milestones.filter((_, j) => j !== i),
+                      )
+                    }
+                  >
+                    Remover marco do rascunho
+                  </Button>
+                </div>
+              ))}
               <Button
                 secondary
-                onClick={() => downloadJSON(plan, "plano-rascunho.json")}
+                onClick={() =>
+                  set("milestones", [
+                    ...plan.milestones,
+                    { title: "", amount_cents: 0, is_deposit: false },
+                  ])
+                }
               >
-                Exportar rascunho
+                ＋ Marco
               </Button>
-            </div>
-            {!user && (
-              <p className="hint">
-                Conecte e autentique sua conta para salvar o projeto. Exporte o
-                rascunho antes de sair desta tela.
-              </p>
-            )}
-          </Card>
-        </>
-      )}
-      {step < 4 && (
-        <div className="actions">
-          <Button
-            secondary
-            onClick={() => downloadJSON(plan, "plano-rascunho.json")}
-          >
-            Exportar rascunho
-          </Button>
-        </div>
-      )}
+            </Card>
+            <Card title="Confirmação do PM">
+              <label className="check">
+                <input
+                  type="checkbox"
+                  checked={reviewed}
+                  onChange={(e) => R(e.target.checked)}
+                />
+                Revisei dados, escopos, pesos, valores e critérios. Pendências
+                de acesso serão tratadas antes do uso externo.
+              </label>
+              <div className="actions">
+                <Button
+                  disabled={!api || !user || !reviewed}
+                  onClick={() => run(save)}
+                >
+                  Criar projeto em rascunho
+                </Button>
+                <Button
+                  secondary
+                  onClick={() => downloadJSON(plan, "plano-rascunho.json")}
+                >
+                  Exportar rascunho
+                </Button>
+              </div>
+              {!user && (
+                <p className="hint">
+                  Conecte e autentique sua conta para salvar o projeto. Exporte
+                  o rascunho antes de sair desta tela.
+                </p>
+              )}
+            </Card>
+          </>
+        )}
+        {step < 4 && (
+          <div className="actions">
+            <Button
+              secondary
+              onClick={() => downloadJSON(plan, "plano-rascunho.json")}
+            >
+              Exportar rascunho
+            </Button>
+          </div>
+        )}
+      </fieldset>
     </>
   );
 }

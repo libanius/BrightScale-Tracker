@@ -1,5 +1,5 @@
 import postgres from "npm:postgres@3.4.5";
-// Dedicated NEW staging project only. No shared schemas or production data.
+// Authenticated Tracker planner; document data is not authorization.
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 const PUBLISHABLE = Deno.env.get("SUPABASE_ANON_KEY") || "";
 const sql = postgres(Deno.env.get("SUPABASE_DB_URL") || "", {
@@ -29,6 +29,8 @@ const SCHEMA = {
   type: "object",
   additionalProperties: false,
   required: [
+    "smart_context",
+    "schedule",
     "project_title",
     "trade_summary",
     "client",
@@ -42,6 +44,24 @@ const SCHEMA = {
     "risks",
   ],
   properties: {
+    smart_context: {
+      type: "object",
+      additionalProperties: false,
+      required: ["scope", "standard", "constraints", "rhythm", "time"],
+      properties: {
+        scope: nstr,
+        standard: nstr,
+        constraints: nstr,
+        rhythm: nstr,
+        time: nstr,
+      },
+    },
+    schedule: {
+      type: "object",
+      additionalProperties: false,
+      required: ["start_date", "end_date"],
+      properties: { start_date: nstr, end_date: nstr },
+    },
     project_title: str,
     trade_summary: str,
     client: {
@@ -164,6 +184,7 @@ R Rhythm — consistent workflow with progress reviews.
 T Time — realistic schedule with clear milestones.
 
 Rules:
+- First extract all available project/client/estimate/price/date and SMART facts from the document and PM context. smart_context contains concise source-grounded summaries: scope (work, exclusions), standard (materials/finishes), constraints (access, responsibilities, permits/restrictions), rhythm (hours/communication), time (dates/dependencies). Use null for any unknown field; never assume no restrictions, permits approved, or agreed hours. schedule dates are only explicit work dates, never estimate issue dates or inferred dates. Add specific unresolved questions once to open_questions. Do not demand re-entry of information already in the document. Missing SMART answers never prevent a draft suggestion. Distinguish suggested weights/duration/risks from extracted facts. Write smart_context and open_questions in Portuguese.
 - Use ONLY what the estimate says. Never invent prices, quantities, brands, colors or rooms. Missing or ambiguous information goes into open_questions (short, specific, answerable by the client or PM).
 - Scopes: group the work by trade/phase in the real execution order on site (protection/prep → demo → rough-in → install → finish → cleanup/walkthrough). 2 to 7 scopes. weight_percent reflects share of effort and must sum to 100.
 - Tasks: atomic, verifiable steps a crew lead can mark done. Each has acceptance_criteria a project manager can check on a walkthrough in one sentence (measurable when possible). Keep quantities and rooms from the estimate.
