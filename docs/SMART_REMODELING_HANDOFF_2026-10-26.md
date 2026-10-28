@@ -197,6 +197,13 @@ Nota: Essa divisão é uma **proposta de implementação**, não uma revogação
 
 ## Log de continuidade
 
+### 2026-10-28 — Correção de campo: marcos e arredondamento
+- **IMPLEMENTED:** percentuais de marcos importados convertidos para centavos por alocação de maior resto com aritmética inteira; cronograma de 100% soma exatamente o contrato, cronograma parcial conserva seu percentual. Não normaliza percentuais acima de 100 nem altera preços contratuais.
+- **UX FIX:** Conferir plano validava marcos antes de permitir acesso ao editor na Revisão. Agora permite chegar ao editor; salvar mantém validação integral e backend inalterado. Revisão mostra contrato, total e excesso explícito.
+- **TESTED LOCAL:** 30 Node PASS, incluindo contrato ímpar, cronogramas parciais, percentuais fracionários, 597 combinações de centavos e não normalização de sobrecobrança; frontend build PASS. Novo browser cobre upload com US$100.01/50-50 e edição de excesso. Documento real causador do screenshot não disponível para conferir se foi centavo ou percentual errado; não afirmar diagnóstico específico do documento.
+- **NEXT:** CI, publicação no main e mesmo preview do proprietário; repetir importação e revisar os valores antes de salvar. Sem alteração Supabase/pagamentos.
+
+
 ### 2026-10-28 — Correção de campo: documento antes das perguntas SMART
 - **IMPLEMENTED:** seleção PDF/TXT lê texto e chama a IA automaticamente, preenchendo projeto, cliente, endereço, valor, termos, datas explícitas e contexto SMART. Pendências aparecem para confirmação; retirado bloqueio que exigia digitar escopo/restrições antes da análise. JSON de plano é importado sem nova chamada.
 - **UX:** estado local de leitura/análise, formulário bloqueado durante processamento, texto preservado após falha e botão de repetição. Revisão PM continua obrigatória; nenhuma licença/ausência de restrições presumida. PDF somente imagem continua sem OCR nesta versão.

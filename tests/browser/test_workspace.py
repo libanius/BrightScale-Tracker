@@ -75,3 +75,17 @@ class Workspace(unittest.TestCase):
   self.page.get_by_text('SYNTHETIC analysis failed',exact=True).wait_for()
   self.assertIn('FAIL_ANALYSIS',self.page.get_by_label('Texto extraído · confira antes de analisar',exact=True).input_value())
   self.assertTrue(self.page.get_by_role('button',name='Analisar e preencher automaticamente',exact=True).is_enabled())
+
+ def test_odd_cent_milestones_and_overbilling_editor_remain_accessible(self):
+  self.enter('pm');self.page.get_by_role('button',name='Novo projeto',exact=True).click()
+  self.page.locator('input[type=file]').set_input_files({'name':'synthetic.txt','mimeType':'text/plain','buffer':b'MILESTONE_TEST SYNTHETIC approved estimate'})
+  self.page.get_by_text('Revise o contexto extraído',exact=True).wait_for()
+  self.page.get_by_role('button',name='4. Escopo e equipe',exact=True).click()
+  self.page.get_by_role('button',name='Conferir plano',exact=True).click()
+  fields=self.page.get_by_label('Valor (USD)',exact=True)
+  self.assertEqual(fields.nth(0).input_value(),'50.01');self.assertEqual(fields.nth(1).input_value(),'50.00')
+  fields.nth(0).fill('60.00')
+  self.page.get_by_role('button',name='4. Escopo e equipe',exact=True).click()
+  self.page.get_by_role('button',name='Conferir plano',exact=True).click()
+  self.page.get_by_role('alert').get_by_text('Os marcos ultrapassam',exact=False).wait_for()
+  self.assertEqual(fields.nth(0).input_value(),'60.00')

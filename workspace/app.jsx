@@ -1219,7 +1219,7 @@ function NewProject({ api, user, people, tell, run, onCreated }) {
             <Button
               onClick={() =>
                 run(() => {
-                  validatePlan(plan);
+                  validatePlan({ ...plan, milestones: [] });
                   Step(4);
                 })
               }
@@ -1269,6 +1269,27 @@ function NewProject({ api, user, people, tell, run, onCreated }) {
               </p>
             </Card>
             <Card title="Marcos de cobrança">
+              <p>
+                Contrato: <strong>{money(plan.amount_cents)}</strong> · Total
+                dos marcos:{" "}
+                <strong>
+                  {money(
+                    plan.milestones.reduce((a, m) => a + m.amount_cents, 0),
+                  )}
+                </strong>
+              </p>
+              {plan.milestones.reduce((a, m) => a + m.amount_cents, 0) >
+                plan.amount_cents && (
+                <p role="alert" className="notice error">
+                  Os marcos ultrapassam o contrato em{" "}
+                  {money(
+                    plan.milestones.reduce((a, m) => a + m.amount_cents, 0) -
+                      plan.amount_cents,
+                  )}
+                  . Confira os valores abaixo antes de salvar. O contrato não
+                  foi alterado.
+                </p>
+              )}
               {plan.milestones.map((m, i) => (
                 <div className="task-editor" key={i}>
                   <Field

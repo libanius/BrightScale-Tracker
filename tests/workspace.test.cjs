@@ -113,10 +113,53 @@ test("environment rejects production, secret and non-anon JWT keys", async () =>
 });
 
 test("document context preserves unknowns and only explicit work dates", async () => {
- const {smartContext,fromAI}=await core();
- assert.deepEqual(smartContext({smart_context:{scope:"Floor",constraints:null}}),{scope:"Floor",standard:"",constraints:"",rhythm:"",time:""});
- assert.equal(fromAI({client:{email:"client@example.test"}}).client_email,"client@example.test");
- const p=fromAI({estimate:{issued_date:"2026-10-28"},schedule:{start_date:"2026-11-02",end_date:null}});
- assert.equal(p.start_date,"2026-11-02");assert.equal(p.end_date,"");
- assert.equal(fromAI({estimate:{issued_date:"2026-10-28"}}).start_date,"");
+  const { smartContext, fromAI } = await core();
+  assert.deepEqual(
+    smartContext({ smart_context: { scope: "Floor", constraints: null } }),
+    { scope: "Floor", standard: "", constraints: "", rhythm: "", time: "" },
+  );
+  assert.equal(
+    fromAI({ client: { email: "client@example.test" } }).client_email,
+    "client@example.test",
+  );
+  const p = fromAI({
+    estimate: { issued_date: "2026-10-28" },
+    schedule: { start_date: "2026-11-02", end_date: null },
+  });
+  assert.equal(p.start_date, "2026-11-02");
+  assert.equal(p.end_date, "");
+  assert.equal(
+    fromAI({ estimate: { issued_date: "2026-10-28" } }).start_date,
+    "",
+  );
+});
+
+test("milestone percentages allocate exact cents, preserve partial schedules and reject overbilling", async () => {
+  const { milestoneAmounts, fromAI, validatePlan, blankPlan } = await core();
+  assert.deepEqual(milestoneAmounts(10001, [50, 50]), [5001, 5000]);
+  assert.deepEqual(milestoneAmounts(5, [50, 50]), [3, 2]);
+  assert.deepEqual(milestoneAmounts(10001, [25, 25]), [2501, 2500]);
+  for (let total = 1; total < 200; total++)
+    for (const weights of [
+      [50, 50],
+      [30, 30, 40],
+      [33.33, 33.33, 33.34],
+    ])
+      assert.equal(
+        milestoneAmounts(total, weights).reduce((a, b) => a + b, 0),
+        total,
+      );
+  assert.deepEqual(milestoneAmounts(10000, [60, 60]), [6000, 6000]);
+  assert.throws(() => milestoneAmounts(100, [-1, 101]));
+  const p = fromAI({
+    estimate: { total: 100.01 },
+    milestones: [
+      { title: "Deposit", percent_of_contract: 50 },
+      { title: "Final", percent_of_contract: 50 },
+    ],
+  });
+  assert.equal(
+    p.milestones.reduce((a, b) => a + b.amount_cents, 0),
+    10001,
+  );
 });
