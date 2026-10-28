@@ -171,8 +171,19 @@ export function fromAI(raw) {
   }));
   return p;
 }
-export function checkConfig(url, key, host) {
+export function checkConfig(url, key, host, live = false) {
+  const authorizedLive =
+    live === true &&
+    new URL(url).hostname === "hyvoatfozlpsevsbkxxm.supabase.co" &&
+    ([
+      "tracker.brightscalegroup.com",
+      "localhost",
+      "127.0.0.1",
+      "terminal.local",
+    ].includes(host) ||
+      host.endsWith("-brightscale-tracker.brightscalegroup.workers.dev"));
   if (
+    !authorizedLive &&
     !["localhost", "127.0.0.1", "terminal.local"].includes(host) &&
     !host.endsWith("-brightscale-tracker.brightscalegroup.workers.dev")
   )
@@ -189,6 +200,7 @@ export function checkConfig(url, key, host) {
   )
     throw Error("Informe a URL exata do Supabase de testes.");
   if (
+    !authorizedLive &&
     ["hyvoatfozlpsevsbkxxm", "wihfneccjwmtxzvivfzf"].some(
       (ref) => u.hostname === ref + ".supabase.co",
     )

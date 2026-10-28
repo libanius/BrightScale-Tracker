@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "build": "node scripts/build-workspace.cjs",
-    "test": "node --test tests/guardrails.test.cjs tests/staging-gateway.test.cjs tests/workspace.test.cjs tests/workspace-receipts.test.cjs",
+    "test": "node --test tests/guardrails.test.cjs tests/staging-gateway.test.cjs tests/workspace.test.cjs tests/workspace-receipts.test.cjs tests/workspace-live.test.cjs",
     "test:sql": "node tests/workspace-sql.cjs",
-    "dev": "node scripts/dev-workspace.cjs"
+    "dev": "node scripts/dev-workspace.cjs",
+    "test:live-schema": "node tests/live-schema.test.cjs"
   },
   "dependencies": {
     "react": "19.2.0",

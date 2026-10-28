@@ -19,6 +19,7 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: npm test
       - run: npm run test:sql
+      - run: npm run test:live-schema
       - run: npm run build
       - name: Check reproducible static bundle
         run: git diff --exit-code -- workspace/build
@@ -26,7 +27,7 @@ jobs:
         run: |
           node - <<'JS'
           const esbuild=require('esbuild');
-          for(const entry of ['tracker-workspace-plan','tracker-workspace-receipts']) esbuild.buildSync({entryPoints:['supabase/functions/'+entry+'/index.ts'],bundle:true,platform:'neutral',outfile:'/tmp/'+entry+'.js'});
+          for(const entry of ['tracker-workspace-plan','tracker-workspace-receipts','tracker-workspace-team']) esbuild.buildSync({entryPoints:['supabase/functions/'+entry+'/index.ts'],bundle:true,platform:'neutral',external:['npm:*'],outfile:'/tmp/'+entry+'.js'});
           JS
   workspace-browser:
     runs-on: ubuntu-24.04

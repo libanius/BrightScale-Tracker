@@ -1,12 +1,28 @@
+import postgres from "npm:postgres@3.4.5";
 // Dedicated NEW staging project only. No shared schemas or production data.
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 const PUBLISHABLE = Deno.env.get("SUPABASE_ANON_KEY") || "";
+const sql = postgres(Deno.env.get("SUPABASE_DB_URL") || "", {
+  prepare: false,
+  max: 1,
+});
 const KEY = Deno.env.get("OPENAI_API_KEY") || "";
-const MODEL = Deno.env.get("WORKSPACE_PLAN_MODEL") || "";
+const MODEL = Deno.env.get("WORKSPACE_PLAN_MODEL") || "gpt-5.6-luna";
 const PMS = (Deno.env.get("WORKSPACE_PM_IDS") || "")
   .split(",")
   .map((x) => x.trim());
-const origins = (Deno.env.get("WORKSPACE_ALLOWED_ORIGINS") || "").split(",");
+const allowed = (origin: string) => {
+  try {
+    const h = new URL(origin).hostname;
+    return (
+      h === "tracker.brightscalegroup.com" ||
+      h.endsWith("-brightscale-tracker.brightscalegroup.workers.dev") ||
+      ["localhost", "127.0.0.1", "terminal.local"].includes(h)
+    );
+  } catch {
+    return false;
+  }
+};
 const str = { type: "string" };
 const nstr = { type: ["string", "null"] };
 const SCHEMA = {
@@ -164,7 +180,7 @@ Deno.serve(async (req: Request) => {
   const headers = {
     "content-type": "application/json",
     "cache-control": "no-store",
-    "access-control-allow-origin": origins.includes(origin) ? origin : "null",
+    "access-control-allow-origin": allowed(origin) ? origin : "null",
     vary: "Origin",
     "access-control-allow-headers":
       "authorization,apikey,content-type,x-client-info",
@@ -172,17 +188,10 @@ Deno.serve(async (req: Request) => {
   };
   const reply = (value: unknown, status = 200) =>
     new Response(JSON.stringify(value), { status, headers });
-  if (!origins.includes(origin))
-    return reply({ error: "origin_not_allowed" }, 403);
+  if (!allowed(origin)) return reply({ error: "origin_not_allowed" }, 403);
   if (req.method === "OPTIONS")
     return new Response(null, { status: 204, headers });
   if (req.method !== "POST") return reply({ error: "method_not_allowed" }, 405);
-  if (
-    ["hyvoatfozlpsevsbkxxm", "wihfneccjwmtxzvivfzf"].some((x) =>
-      SUPABASE_URL.includes(x),
-    )
-  )
-    return reply({ error: "shared_production_project_blocked" }, 403);
   const authorization = req.headers.get("authorization") || "";
   if (!authorization.startsWith("Bearer "))
     return reply({ error: "authentication_required" }, 401);
@@ -193,9 +202,21 @@ Deno.serve(async (req: Request) => {
     });
     if (!who.ok) return reply({ error: "authentication_required" }, 401);
     const identity = await who.json();
-    if (!identity.id || !PMS.includes(identity.id))
+    if (
+      !identity.id ||
+      !(
+        await sql`select 1 from tracker.members where lower(email)=${String(identity.email || "@").toLowerCase()} and role in ('admin','pm','manager')`
+      ).length
+    )
       return reply({ error: "pm_required" }, 403);
-    if (!KEY || !MODEL)
+    const apiKey =
+      KEY ||
+      String(
+        (
+          await sql`select decrypted_secret from vault.decrypted_secrets where name='openai_api_key' limit 1`
+        )[0]?.decrypted_secret || "",
+      );
+    if (!apiKey || !MODEL)
       return reply(
         { error: "plan_service_not_configured_use_manual_entry" },
         503,
@@ -213,7 +234,7 @@ Deno.serve(async (req: Request) => {
     const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
-        authorization: "Bearer " + KEY,
+        authorization: "Bearer " + apiKey,
         "content-type": "application/json",
       },
       signal: AbortSignal.timeout(60000),

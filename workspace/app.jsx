@@ -107,6 +107,7 @@ const ERRORS = {
   already_reviewed: "Este relatório já foi revisado. Atualize a tela.",
   workspace_payment_reference: "Já existe um registro com esta referência.",
 };
+const LIVE = window.BRIGHTSCALE_WORKSPACE_CONFIG;
 function App() {
   const identity = useRef(null),
     epoch = useRef(0),
@@ -123,8 +124,8 @@ function App() {
     [snap, setSnap] = useState(null),
     [people, setPeople] = useState([]),
     [loading, setLoading] = useState(false);
-  const [url, setURL] = useState(""),
-    [key, setKey] = useState(""),
+  const [url, setURL] = useState(LIVE?.url || ""),
+    [key, setKey] = useState(LIVE?.key || ""),
     [email, setEmail] = useState(""),
     [otp, setOTP] = useState(""),
     [sent, setSent] = useState(false);
@@ -159,7 +160,12 @@ function App() {
     }
   }
   async function connect() {
-    const origin = checkConfig(url, key, location.hostname);
+    const origin = checkConfig(
+      url,
+      key,
+      location.hostname,
+      LIVE?.live === true,
+    );
     if (!window.supabase)
       throw Error("SDK indisponível. Verifique sua conexão.");
     subscription.current?.unsubscribe();
@@ -169,8 +175,14 @@ function App() {
     setProjects([]);
     setPeople([]);
     const c = window.supabase.createClient(origin, key, {
-      auth: { persistSession: true, detectSessionInUrl: true },
+      db: { schema: LIVE?.live ? "tracker" : "public" },
+      auth: {
+        persistSession: true,
+        detectSessionInUrl: true,
+        ...(LIVE?.live ? { storageKey: "bs-tracker-auth" } : {}),
+      },
     });
+    c._workspaceLive = LIVE?.live === true;
     setClient(c);
     const a = createAPI(c);
     setApi(a);
@@ -180,8 +192,10 @@ function App() {
       epoch.current++;
       c._workspaceUser = u?.id;
       setUser(u);
-      if (u) queueMicrotask(() => run(() => load(a, u)));
-      else {
+      if (u) {
+        if (_event === "SIGNED_IN") setPage("overview");
+        queueMicrotask(() => run(() => load(a, u)));
+      } else {
         setProjects([]);
         setSnap(null);
         setPeople([]);
@@ -196,8 +210,13 @@ function App() {
       setUser(r.data.user);
       await load(a, r.data.user);
     }
-    tell("Ambiente conectado.");
+    if (!r.data?.user) setPage("setup");
+    tell("Conectado. Entre com seu e-mail autorizado para continuar.");
   }
+  useEffect(() => {
+    if (LIVE?.live) run(connect);
+    return () => subscription.current?.unsubscribe();
+  }, []);
   async function openProject(p) {
     const token = ++epoch.current;
     setSelected(p.id);
@@ -271,7 +290,7 @@ function App() {
           ) : (
             <p>Comece importando um estimate.</p>
           )}
-          <small>Implementação em validação</small>
+          <small>Live · Smart Remodeling</small>
         </div>
       </aside>
       <div className="shell">
@@ -287,7 +306,7 @@ function App() {
                   setup: "Conexão",
                 }[page]}
           </span>
-          <span className="badge">Ambiente de testes</span>
+          <span className="badge">Conectado ao Supabase</span>
         </header>
         <main>
           <p
@@ -307,25 +326,32 @@ function App() {
             {page === "setup" && (
               <>
                 <p className="eyebrow">ACESSO</p>
-                <h1>Conecte seu ambiente.</h1>
+                <h1>
+                  {LIVE?.live
+                    ? "Entre no seu Tracker."
+                    : "Conecte seu ambiente."}
+                </h1>
                 <p className="subheading">
-                  Use um Supabase separado com as migrações do workspace. Os
-                  bancos existentes estão protegidos.
+                  {LIVE?.live
+                    ? "O ambiente BrightScale já está conectado. Entre com seu e-mail autorizado."
+                    : "Configure o ambiente de testes para continuar."}
                 </p>
-                <Card title="Configuração">
-                  <Field
-                    label="URL do Supabase de testes"
-                    value={url}
-                    onChange={setURL}
-                    type="url"
-                  />
-                  <Field
-                    label="Chave publishable / anon"
-                    value={key}
-                    onChange={setKey}
-                  />
-                  <Button onClick={() => run(connect)}>Conectar</Button>
-                </Card>
+                {!LIVE?.live && (
+                  <Card title="Configuração">
+                    <Field
+                      label="URL do Supabase de testes"
+                      value={url}
+                      onChange={setURL}
+                      type="url"
+                    />
+                    <Field
+                      label="Chave publishable / anon"
+                      value={key}
+                      onChange={setKey}
+                    />
+                    <Button onClick={() => run(connect)}>Conectar</Button>
+                  </Card>
+                )}
                 {client && !user && (
                   <Card title="Entrar">
                     <Field
@@ -340,11 +366,17 @@ function App() {
                           run(async () => {
                             const r = await client.auth.signInWithOtp({
                               email,
-                              options: { shouldCreateUser: false },
+                              options: {
+                                shouldCreateUser: false,
+                                emailRedirectTo:
+                                  location.origin + location.pathname,
+                              },
                             });
                             if (r.error) throw r.error;
                             setSent(true);
-                            tell("Confira o e-mail de acesso.");
+                            tell(
+                              "Digite nesta tela o código recebido no seu e-mail.",
+                            );
                           })
                         }
                       >
@@ -602,6 +634,7 @@ function App() {
   );
 }
 function Team({ api, people, run, tell, reload }) {
+  const [accessEmail, AccessEmail] = useState("");
   const [name, N] = useState(""),
     [contact, C] = useState(""),
     [specialty, S] = useState(""),
@@ -613,34 +646,50 @@ function Team({ api, people, run, tell, reload }) {
         <Field label="Contato" value={contact} onChange={C} />
         <Field label="Especialidade" value={specialty} onChange={S} />
         <Field
-          label="ID da conta autenticada (opcional)"
-          value={uid}
-          onChange={U}
+          label={
+            LIVE?.live
+              ? "E-mail de acesso do profissional"
+              : "ID da conta autenticada (opcional)"
+          }
+          value={LIVE?.live ? accessEmail : uid}
+          onChange={LIVE?.live ? AccessEmail : U}
         />
         <p className="hint">
-          Sem uma conta vinculada, o profissional fica cadastrado, mas não
-          recebe acesso ao portal. Nenhum convite é enviado automaticamente.
+          {LIVE?.live
+            ? "Ao confirmar, vinculamos a conta existente ou enviamos um convite ao e-mail informado. O acesso à obra depende da sua atribuição do escopo."
+            : "Sem conta vinculada, o profissional fica cadastrado sem acesso ao portal."}
         </p>
         <Button
           disabled={!api}
           onClick={() =>
             run(async () => {
-              await api.command(null, "person", {
-                name,
-                contact,
-                specialty,
-                user_id: uid,
-              });
+              if (LIVE?.live)
+                await api.inviteAccount({
+                  name,
+                  email: accessEmail,
+                  contact,
+                  specialty,
+                });
+              else
+                await api.command(null, "person", {
+                  name,
+                  contact,
+                  specialty,
+                  user_id: uid,
+                });
               N("");
               C("");
               S("");
               U("");
+              AccessEmail("");
               await reload();
               tell("Profissional cadastrado.");
             })
           }
         >
-          Salvar profissional
+          {LIVE?.live
+            ? "Salvar e vincular/convidar profissional"
+            : "Salvar profissional"}
         </Button>
       </Card>
       <Card title="Diretório">
@@ -895,6 +944,35 @@ function NewProject({ api, user, people, tell, run, onCreated }) {
               onChange={(v) => set("end_date", v)}
             />
           </div>
+          {LIVE?.live && (
+            <>
+              <Field
+                label="E-mail de acesso do cliente"
+                value={plan.client_email || ""}
+                onChange={(v) => set("client_email", v)}
+              />
+              <Button
+                secondary
+                onClick={() =>
+                  run(async () => {
+                    const r = await api.inviteAccount({
+                      kind: "client",
+                      name: plan.client_name,
+                      email: plan.client_email,
+                    });
+                    set("client_user_id", r.user_id);
+                    tell(
+                      r.invitation_sent
+                        ? "Convite de acesso enviado ao cliente."
+                        : "Conta existente do cliente vinculada.",
+                    );
+                  })
+                }
+              >
+                Vincular ou convidar cliente
+              </Button>
+            </>
+          )}
           <Field
             label="ID da conta do cliente (opcional)"
             value={plan.client_user_id}
@@ -1925,6 +2003,7 @@ function Milestones({ snap, command, api, run, reload }) {
         </Button>
       )}
       {snap.role === "pm" &&
+        LIVE?.receiptEmail !== false &&
         snap.emailStatus?.some((e) => e.status === "pending") && (
           <Button
             secondary
@@ -1955,6 +2034,12 @@ function Milestones({ snap, command, api, run, reload }) {
         >
           Baixar registros de aceite
         </Button>
+      )}
+      {LIVE?.receiptEmail === false && (
+        <p className="hint">
+          A cópia por e-mail está indisponível. Você pode baixar os registros e
+          assinaturas nesta tela.
+        </p>
       )}
       <p className="hint">
         Aceites eletrônicos preservam identidade, versão e hash. O status de

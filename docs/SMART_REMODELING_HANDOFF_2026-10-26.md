@@ -136,6 +136,19 @@ Nota: Essa divisão é uma **proposta de implementação**, não uma revogação
 
 ## Checkpoint operacional (fonte atual para próxima IA)
 
+### LIVE — autorização do proprietário em 2026-10-28
+- **DECIDED:** usuário autorizou usar o ambiente Supabase existente e aceitou perda dos dados atuais. Esta autorização substitui o bloqueio anterior por falta de staging separado. Não houve necessidade de apagar dados.
+- **IMPLEMENTED / REMOTE:** 40 tabelas `tracker.live_*` com RLS e funções correspondentes; helpers `tracker_private.workspace_*`. Somente admins existentes do Tracker podem criar projetos/equipe. Nenhuma alteração de dados ou objetos dos serviços em `public/private`.
+- **TESTED LIVE:** 16 verificações reais com três contas GoTrue temporárias e JWTs reais: login PM/sub/client, bloqueio pré-baseline, phase gate, reporte, validação, finanças segregadas, vistoria sem crédito automático, eventos/restrição, assinatura e revogação. Contas/memberships temporárias removidas. Um projeto claramente TESTE LIVE está disponível ao admin da empresa. Endpoint temporário de diagnóstico desativado (410, verify_jwt=true).
+- **AI LIVE:** endpoint `tracker-workspace-plan` retornou HTTP 200 e 2 escopos para estimate sintético, com autenticação PM real. Credencial existente usada apenas no servidor; nenhuma chave secreta no repositório.
+- **APP:** configuração pública automática, schema tracker, sessão existente reutilizável e login por código; convidados só recebem acesso ao escopo/obra atribuídos. Novo endpoint `tracker-workspace-team` resolve conta existente ou convida por Supabase Auth após ação explícita do PM.
+- **PENDENTE ESPECÍFICO:** `RESEND_API_KEY` não existe no ambiente; cópias automáticas de assinatura ficam na fila, sem falsa marcação de envio. Download do recibo/assinatura funciona; e-mails de acesso usam Supabase Auth separadamente. Não foram enviados convites/mensagens a terceiros pelo agente.
+- **TESTED LOCAL:** 28 Node, 37 verificações SQL herdadas/workspace, teste de namespace live (40 tabelas, serviços/grants existentes preservados, setup PM-only) e build dos 3 endpoints PASS. Ainda falta validar convites/OTP pelo usuário e uma obra real.
+- **DEPLOY:** código live em preparação para o PR #9/main; atualizar evidência de publicação após CI e Cloudflare. Não confundir código conectado com teste de campo.
+- **Histórico técnico:** migrations com DROP dispararam erro nativo requestState; nova materialização cria definições finais sem DROP. Primeiro scaffold deixou 10 tabelas piloto vazias e protegidas em tracker, não usadas pelo app live. Migrações seguintes foram confirmadas; nenhuma exclusão improvisada.
+- **NEXT:** publicar UI conectada, verificar login/tela no domínio, registrar commit/deploy; usuário iniciar teste com estimate real. Configurar a chave de cópias por e-mail quando disponibilizada.
+
+
 ### Entrega integrada — 2026-10-28 (Flórida)
 - **DECIDED:** proprietário autorizou prosseguir até a entrega e registrar o avanço por fase após a análise do fluxo completo. Preservar decisões 1–39 e não reiniciar entrevista.
 - **Branch:** `feat/tracker-delivery`, baseada no main `86cde6e`, integrando o backend PR #5 e guardrails PR #2. Não removidos arquivos, dados, PRs ou branches existentes.
@@ -171,6 +184,14 @@ Nota: Essa divisão é uma **proposta de implementação**, não uma revogação
 - **Próxima etapa técnica (sem entrevista):** a integração **VISUAL** da aba COs está TESTED no PR #6, mas a ligação operacional ao Tracker continua **BLOCKED** sem novo backend, validação de permissões reais e migração/compatibilidade de project IDs. Próximo trabalho: desenhar/adotar um mapping explícito de `tracker.projects`/empresa para Change Orders, sem copiar dados reais ao banco público do piloto e sem escrever em produção; testar com projetos fictícios e fluxo PM/sub/cliente. Depois assinatura digital formal, emails, anexos, controles de fase/inspeção e QA offline. Nenhuma decisão 40.
 
 ## Log de continuidade
+
+### 2026-10-28 — Fase 6: ambiente existente autorizado e conexão live validada
+- **DECIDED:** autorização explícita de reutilização do Supabase atual, dados Tracker descartáveis; preservados serviços alheios e os dados existentes por implementação aditiva.
+- **IMPLEMENTED REMOTE:** schema tracker/live_* e tracker_private/workspace_*; endpoints de IA, cópias e vínculo/convite de equipe; 40 tabelas RLS. Frontend deixa de exigir configuração manual e mantém distinção de papéis/valores.
+- **TESTED LIVE:** 16 verificações Auth real/JWT/RLS e IA HTTP 200; nenhuma simulação de SDK nessa etapa. Auth temporário limpo; probe desativado. Projeto demonstrativo identificado como TESTE LIVE, sem pagamentos verdadeiros.
+- **BLOCKED somente para cópias por e-mail:** ausência de RESEND_API_KEY; fila e downloads mantidos. Login/convite Auth é serviço separado e requer teste de entrega no e-mail do usuário.
+- **NEXT:** concluir CI/publicação da UI conectada e teste de campo acompanhado do proprietário. Sem nova entrevista de produto e sem custo/plano extra.
+
 
 ### 2026-10-28 — Fase 5 sincronizada: PR #9, CI e preview verificados
 - **SYNCED:** PR #9 draft, commit `2b2542bc958db45f9cb2e9b271e75487132a13c3`. Árvore remota igual à árvore local testada; integridade dos blobs conferida. A rejeição automática inicial de egress foi resolvida por inspeção do payload e verificação do destino; uso do conector autenticado resolveu a ausência de credencial do terminal. Não houve bypass nem nova transmissão de documentos privados.

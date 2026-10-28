@@ -1,17 +1,23 @@
 export function createAPI(client) {
-  const base = window.PilotGateway.create(client);
+  const db = client._workspaceLive
+    ? {
+        from: (n) => client.from(n.replace(/^pilot_/, "live_")),
+        rpc: (n, p) => client.rpc(n.replace(/^pilot_/, "live_"), p),
+      }
+    : client;
+  const base = window.PilotGateway.create(db);
   const check = (r) => {
     if (r.error) throw Error(r.error.message);
     return r.data;
   };
   async function rows(table, field, id, columns = "*") {
-    return check(await client.from(table).select(columns).eq(field, id)) || [];
+    return check(await db.from(table).select(columns).eq(field, id)) || [];
   }
   return {
     ...base,
     command: async (project, action, data) =>
       check(
-        await client.rpc("pilot_workspace_command", {
+        await db.rpc("pilot_workspace_command", {
           p_project: project,
           p_action: action,
           p_data: data,
@@ -25,8 +31,7 @@ export function createAPI(client) {
       const tasks = s.tasks.map((x) => x.id);
       const many = async (table, field, values, columns = "*") =>
         values.length
-          ? check(await client.from(table).select(columns).in(field, values)) ||
-            []
+          ? check(await db.from(table).select(columns).in(field, values)) || []
           : [];
       const [details, weights, criteria, events, documents] = await Promise.all(
         [
@@ -99,11 +104,16 @@ export function createAPI(client) {
     },
     async download(id) {
       return check(
-        await client
+        await db
           .from("pilot_workspace_documents")
           .select("name,mime,data_base64,sha256")
           .eq("id", id)
           .single(),
+      );
+    },
+    async inviteAccount(body) {
+      return check(
+        await client.functions.invoke("tracker-workspace-team", { body }),
       );
     },
     async dispatchReceipts(project_id) {

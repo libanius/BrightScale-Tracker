@@ -1,16 +1,33 @@
 import { sendReceipt } from "./send.mjs";
 const URL = Deno.env.get("SUPABASE_URL") || "";
 const ANON = Deno.env.get("SUPABASE_ANON_KEY") || "";
-const SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+const SERVICE =
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ||
+  JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") || "{}").default ||
+  "";
 const RESEND = Deno.env.get("RESEND_API_KEY") || "";
-const FROM = Deno.env.get("WORKSPACE_RECEIPT_FROM") || "";
-const ORIGINS = (Deno.env.get("WORKSPACE_ALLOWED_ORIGINS") || "").split(",");
+const FROM =
+  Deno.env.get("WORKSPACE_RECEIPT_FROM") ||
+  Deno.env.get("RESEND_FROM_EMAIL") ||
+  Deno.env.get("RESEND_FROM") ||
+  "BrightScale <contact@brightscalegroup.com>";
+const allowed = (origin: string) => {
+  try {
+    const h = new URL(origin).hostname;
+    return (
+      h === "tracker.brightscalegroup.com" ||
+      h.endsWith("-brightscale-tracker.brightscalegroup.workers.dev")
+    );
+  } catch {
+    return false;
+  }
+};
 Deno.serve(async (req: Request) => {
   const origin = req.headers.get("origin") || "";
   const headers = {
     "content-type": "application/json",
     "cache-control": "no-store",
-    "access-control-allow-origin": ORIGINS.includes(origin) ? origin : "null",
+    "access-control-allow-origin": allowed(origin) ? origin : "null",
     vary: "Origin",
     "access-control-allow-headers":
       "authorization,apikey,content-type,x-client-info",
@@ -18,17 +35,10 @@ Deno.serve(async (req: Request) => {
   };
   const reply = (v: unknown, status = 200) =>
     new Response(JSON.stringify(v), { status, headers });
-  if (!ORIGINS.includes(origin))
-    return reply({ error: "origin_not_allowed" }, 403);
+  if (!allowed(origin)) return reply({ error: "origin_not_allowed" }, 403);
   if (req.method === "OPTIONS")
     return new Response(null, { status: 204, headers });
   if (req.method !== "POST") return reply({ error: "method_not_allowed" }, 405);
-  if (
-    ["hyvoatfozlpsevsbkxxm", "wihfneccjwmtxzvivfzf"].some((x) =>
-      URL.includes(x),
-    )
-  )
-    return reply({ error: "production_project_blocked" }, 403);
   const authorization = req.headers.get("authorization") || "";
   if (!authorization.startsWith("Bearer "))
     return reply({ error: "authentication_required" }, 401);
@@ -36,7 +46,7 @@ Deno.serve(async (req: Request) => {
     return reply({ error: "receipt_service_not_configured" }, 503);
   try {
     const who = await fetch(URL + "/auth/v1/user", {
-      headers: { authorization, apikey: ANON },
+      headers: { authorization, apikey: ANON, "Accept-Profile": "tracker" },
       signal: AbortSignal.timeout(10000),
     });
     if (!who.ok) return reply({ error: "authentication_required" }, 401);
@@ -47,9 +57,9 @@ Deno.serve(async (req: Request) => {
       return reply({ error: "invalid_project" }, 400);
     // Verify PM ownership with caller's actual JWT/RLS BEFORE using service credentials.
     const own = await fetch(
-      URL + "/rest/v1/pilot_projects?id=eq." + project + "&select=id,owner_id",
+      URL + "/rest/v1/live_projects?id=eq." + project + "&select=id,owner_id",
       {
-        headers: { authorization, apikey: ANON },
+        headers: { authorization, apikey: ANON, "Accept-Profile": "tracker" },
         signal: AbortSignal.timeout(10000),
       },
     );
@@ -61,10 +71,12 @@ Deno.serve(async (req: Request) => {
       apikey: SERVICE,
       authorization: "Bearer " + SERVICE,
       "content-type": "application/json",
+      "Accept-Profile": "tracker",
+      "Content-Profile": "tracker",
     };
     const pending = await fetch(
       URL +
-        "/rest/v1/pilot_workspace_email_outbox?project_id=eq." +
+        "/rest/v1/live_workspace_email_outbox?project_id=eq." +
         project +
         "&status=eq.pending&select=*&limit=10",
       { headers: serviceHeaders, signal: AbortSignal.timeout(10000) },
@@ -81,7 +93,7 @@ Deno.serve(async (req: Request) => {
       }
       const receipt = await fetch(
         URL +
-          "/rest/v1/pilot_workspace_signatures?id=eq." +
+          "/rest/v1/live_workspace_signatures?id=eq." +
           job.signature_id +
           "&project_id=eq." +
           project +
@@ -106,7 +118,7 @@ Deno.serve(async (req: Request) => {
         });
         const marked = await fetch(
           URL +
-            "/rest/v1/pilot_workspace_email_outbox?id=eq." +
+            "/rest/v1/live_workspace_email_outbox?id=eq." +
             job.id +
             "&project_id=eq." +
             project,
